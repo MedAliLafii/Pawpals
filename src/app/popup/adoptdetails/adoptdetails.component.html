@@ -1,0 +1,30 @@
+<div class="modal-backdrop" (click)="close()"></div>
+
+<div class="modal-content">
+  <div class="modal-header">
+    <h2>{{ pet.petName }}</h2>
+    <button class="close-button" (click)="close()">✕</button>
+  </div>
+
+  <div class="modal-body">
+    <img [src]="'assets/' + pet.imageURL" [alt]="pet.petName || 'Pet image'" />
+    <p><strong>Breed:</strong> {{ pet.breed }}</p>
+    <p><strong>Age:</strong> {{ pet.age }} months</p>
+    <p><strong>Gender:</strong> {{ pet.gender }}</p>
+    <p><strong>Location:</strong> {{ pet.location }}</p>
+    <p><strong>Description:</strong> {{ pet.description }}</p>
+
+    <p *ngIf="pet.goodWithKids == 1"><strong>✓</strong> Good with Kids</p>
+    <p *ngIf="pet.goodWithOtherPets == 1"><strong>✓</strong> Good with Other Pets</p>
+    <p *ngIf="pet.houseTrained == 1"><strong>✓</strong> House Trained</p>
+    <p *ngIf="pet.specialNeeds == 1"><strong>✓</strong> Special Needs</p>
+
+    <h5>Contact Information:</h5>
+    <p><strong>Phone:</strong> <a [href]="'tel:' + pet.ownerPhone">{{ pet.ownerPhone }}</a></p>
+    <p><strong>Email:</strong> <a [href]="'mailto:' + pet.ownerEmail">{{ pet.ownerEmail }}</a></p>
+
+    <a class="contact-owner" [href]="'tel:' + pet.ownerPhone">Contact Owner</a>
+  </div>
+
+  
+</div>

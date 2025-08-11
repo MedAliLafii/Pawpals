@@ -1,0 +1,60 @@
+<footer class="footer bg-white border-t pt-12 pb-8 mt-12">
+    <div class="container">
+      <div class="grid">
+        <!-- Brand Column -->
+        <div class="brand-column">
+          <a routerLink="/" class="brand-link">
+            <!-- Removed Lucide icon -->
+            <div class="logo-container">
+                <i class="fa-solid fa-paw fa-rotate-by" style="--fa-rotate-angle: 45deg;color: #22c55e;"></i>
+                <span class="logo-text">PawPals</span>
+                
+              </div>
+          </a>
+          <p class="brand-description">
+            At PawPals, we’re dedicated to connecting pets with loving families. Our mission is to ensure every pet finds a forever home filled with care and affection.
+          </p>
+        </div>
+  
+        <!-- Quick Links -->
+        <div>
+          <h3 class="footer-title">Quick Links</h3>
+          <ul class="footer-list">
+            <li><a routerLink="/lost" class="footer-link">Lost Pets</a></li>
+            <li><a routerLink="/adoption" class="footer-link">Adopt a Pet</a></li>
+            <li><a routerLink="/shop" class="footer-link">Pet Shop</a></li>
+            <li><a routerLink="/post" class="footer-link">Post a Pet</a></li>
+          </ul>
+        </div>
+  
+        <!-- Support -->
+        <div>
+          <h3 class="footer-title">Support</h3>
+          <ul class="footer-list">
+            <li><a href="#" class="footer-link">FAQ</a></li>
+            <li><a href="#" class="footer-link">Contact Us</a></li>
+            <li><a href="#" class="footer-link">Privacy Policy</a></li>
+            <li><a href="#" class="footer-link">Terms of Service</a></li>
+          </ul>
+        </div>
+  
+        <!-- Newsletter -->
+        <div>
+          <h3 class="footer-title">Newsletter</h3>
+          <p class="newsletter-desc">Subscribe for updates and pet news.</p>
+          <form class="newsletter-form">
+            <input
+              type="email"
+              placeholder="Your email"
+              class="newsletter-input"
+            />
+            <button type="submit" class="newsletter-button">Subscribe</button>
+          </form>
+        </div>
+      </div>
+  
+      <div class="copyright">
+        <p>&copy; {{ currentYear }} PawPals.</p>
+      </div>
+    </div>
+</footer>

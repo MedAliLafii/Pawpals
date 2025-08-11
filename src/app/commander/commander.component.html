@@ -1,0 +1,89 @@
+<app-header></app-header>
+<div class="container">
+  <div class="title">
+    <h2>Order Form</h2>
+  </div>
+
+
+  <div class="d-flex">
+    <form>
+      <label>
+        <span>Name <span class="required">*</span></span>
+        <input type="text" name="lname" placeholder="Your name" [(ngModel)]="form.lname" required>
+      </label>
+      <label>
+        <span>Region <span class="required">*</span></span>
+        <select name="selection" [(ngModel)]="form.region" required>
+          <option value="Tunis">Tunis</option>
+          <option value="Sfax">Sfax</option>
+          <option value="Sousse">Sousse</option>
+          <option value="Ariana">Ariana</option>
+          <option value="Kairouan">Kairouan</option>
+          <option value="Bizerte">Bizerte</option>
+          <option value="Nabeul">Nabeul</option>
+          <option value="Gabès">Gabès</option>
+          <option value="Tozeur">Tozeur</option>
+          <option value="Monastir">Monastir</option>
+          <option value="Mahdia">Mahdia</option>
+          <option value="Jendouba">Jendouba</option>
+          <option value="Kasserine">Kasserine</option>
+          <option value="Kébili">Kébili</option>
+          <option value="Medenine">Medenine</option>
+          <option value="Ben Arous">Ben Arous</option>
+          <option value="Zaghouan">Zaghouan</option>
+          <option value="Siliana">Siliana</option>
+          <option value="Gafsa">Gafsa</option>
+          <option value="Tataouine">Tataouine</option>
+          <option value="Le Kef">Le Kef</option>
+          <option value="Manouba">Manouba</option>
+          <option value="Sidi Bouzid">Sidi Bouzid</option>
+          <option value="La Manouba">La Manouba</option>
+          <option value="Béja">Béja</option>
+        </select>
+      </label>
+      <label>
+        <span>Address <span class="required">*</span></span>
+        <input type="text" name="houseadd" placeholder="Street name and number" [(ngModel)]="form.houseadd" required>
+      </label>
+
+      <label>
+        <span>Phone <span class="required">*</span></span>
+        <input type="tel" name="phone" placeholder="Phone number" [(ngModel)]="form.phone" required>
+      </label>
+    </form>
+
+    <div class="Yorder">
+      <table>
+        <tr>
+          <th colspan="2">Your Order</th>
+        </tr>
+        <tr>
+          <td>Product</td>
+          <td>Price</td>
+        </tr>
+        <tr *ngFor="let item of cartItems">
+          <td>{{ item.quantite }} × {{ item.nom }}</td>
+          <td>{{ (item.prix * item.quantite) | number:'1.2-2' }} DT</td>
+        </tr>
+        <tr>
+          <td><strong>Total</strong></td>
+          <td><strong>{{ getTotal() | number:'1.2-2' }} DT</strong></td>
+        </tr>
+        <tr>
+          <td>Delivery</td>
+          <td>Free</td>
+        </tr>
+      </table>
+
+      <br>
+      <div>
+        <input type="radio" name="payment" value="virement" disabled> Bank transfer
+      </div>
+      <div>
+        <input type="radio" name="payment" value="livraison" [defaultChecked]="1"> Cash on delivery
+      </div>
+      <button (click)="passerComm()">Place Order</button>
+    </div>
+  </div>
+</div>
+<app-footer></app-footer>

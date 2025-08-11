@@ -1,0 +1,92 @@
+<head> 
+    <title>TechShop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+
+<div class="header">
+    <!-- Top section -->
+    <div class="header-section-1">
+        <div class="header-inner-section-1">
+            <!-- Logo -->
+            <div class="logo-container">
+                <a class="logo-text" routerLink="/homee">
+                    <i class="fa-solid fa-paw fa-rotate-by" style="--fa-rotate-angle: 45deg;color: #22c55e;"></i>
+                    PawPals
+                </a>
+            </div>
+            
+            <!-- Center links -->
+            <div class="header-links-center">
+                <a routerLink="/adoption" class="nav-link">
+                    <i class="fas fa-heart"></i> Adoption
+                </a>
+                <a routerLink="/lost" class="nav-link">
+                    <i class="fas fa-search"></i> Lost Pets
+                </a>
+                <a routerLink="/shop" class="nav-link">
+                    <i class="fas fa-shopping-bag"></i> Shop
+                </a>
+            </div>
+
+            <!-- Right side: search icon, cart, login/logout -->
+            <div class="header-section-1-buttons">
+                <button class="search-icon-btn" title="Search">
+                    <i class="fas fa-search"></i>
+                </button>
+                <a routerLink="/cart" class="cart-icon" title="Shopping Cart">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
+                </a>
+                <!-- User Menu -->
+                <div class="user-menu-container" *ngIf="isLoggedIn">
+                    <button class="user-btn" (click)="toggleUserMenu()" [title]="userName">
+                        <i class="fa-regular fa-user" style="color: #22c55e;"></i>
+                        {{ userName || 'User' }}
+                        <i class="fas fa-chevron-down ms-1"></i>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div class="user-dropdown" [class.show]="showUserMenu">
+                        <div class="dropdown-header">
+                            <i class="fas fa-user-circle"></i>
+                            <span>{{ userName || 'User' }}</span>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a routerLink="/profile" class="dropdown-item" (click)="closeUserMenu()">
+                            <i class="fas fa-user"></i> My Profile
+                        </a>
+                        <a routerLink="/orders" class="dropdown-item" (click)="closeUserMenu()">
+                            <i class="fas fa-shopping-bag"></i> My Orders
+                        </a>
+                        <a routerLink="/wishlist" class="dropdown-item" (click)="closeUserMenu()">
+                            <i class="fas fa-heart"></i> Wishlist
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item logout-btn" (click)="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Login Button for non-authenticated users -->
+                <button (click)="goToPage()" class="user-btn" *ngIf="!isLoggedIn" title="Login">
+                    <i class="fa-regular fa-user" style="color: #22c55e;"></i>
+                    Login
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic categories section -->
+    <div class="header-section-2" *ngIf="categories.length > 0">
+        <div class="categories-container">
+            <div class="category-item" *ngFor="let category of categories" (click)="goToCategory(category.categorieID)">
+                <i class="fas fa-tag"></i>
+                {{ category.nom }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast notifications -->
+<app-toast-container></app-toast-container>

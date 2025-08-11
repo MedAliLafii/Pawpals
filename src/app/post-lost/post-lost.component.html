@@ -1,0 +1,144 @@
+<app-header></app-header>
+
+<main class="main-wrapper">
+  <div class="form-container">
+    <div class="form-box">
+      <div class="form-header">
+        <h1> Report a Lost Pet</h1>
+        <p>Fill out this form to help others find your pet</p>
+      </div>
+
+      <form (ngSubmit)="handleSubmit(form)" #form="ngForm" class="form-content">
+        <!-- Pet Information -->
+        <section>
+          <h2>Pet Information</h2>
+          <div class="grid-2">
+            <div>
+              <label for="name">Pet Name *</label>
+              <input type="text" id="name" name="name" [(ngModel)]="formData.name" required />
+            </div>
+            <div>
+              <label for="breed">Breed/Species *</label>
+              <input type="text" id="breed" name="breed" [(ngModel)]="formData.breed" required />
+            </div>
+            <div>
+              <label for="age"><i class="icon-calendar"></i> Age *</label>
+              <input
+                type="text"
+                id="age"
+                name="age"
+                required
+                pattern="^[0-9]+$"
+                [(ngModel)]="formData.age"
+                #age="ngModel"
+              />
+              
+              <!-- Error Messages -->
+              <div class="error" *ngIf="age.invalid && (age.dirty || age.touched)">
+                <small *ngIf="age.errors?.['pattern']">Age must be a number.</small>
+              </div>
+            </div>
+            
+            <div>
+              <label for="type">Pet Type *</label>
+              <select id="type" name="type" [(ngModel)]="formData.type" required>
+                <option value="" disabled selected>Select type</option>
+                <option value="dog">Dog</option>
+                <option value="cat">Cat</option>
+                <option value="bird">Bird</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Image Upload -->
+          <div class="image-upload">
+            <label>Upload Photo</label>
+            <div class="image-preview" *ngIf="imagePreview">
+              <img [src]="imagePreview" alt="Preview" />
+              <button type="button" (click)="removeImage()">✕</button>
+            </div>
+            <div *ngIf="!imagePreview" class="image-drop">
+              <i class="icon-camera"></i>
+              <p>Drag & drop or click to upload</p>
+            </div>
+            <input type="file" id="image" (change)="handleImageChange($event)" accept="image/*" />
+            <button type="button" (click)="triggerFileInput()">Browse Files</button>
+          </div>
+        </section>
+
+        <!-- Lost Info -->
+        <section>
+          <h2>Lost Information</h2>
+          <div class="grid-2">
+            <div>
+              <label for="dateLost">Date Lost *</label>
+              <input type="date" id="dateLost" name="dateLost" [(ngModel)]="formData.dateLost" required />
+            </div>
+            <div>
+              <label for="location">Location *</label>
+              <select id="location" name="location" [(ngModel)]="formData.location" required>
+                <option value="" disabled selected>Select location</option>
+                <option value="Tunis">Tunis</option>
+                <option value="Ariana">Ariana</option>
+                <option value="Ben Arous">Ben Arous</option>
+                <option value="Sousse">Sousse</option>
+                <option value="Monastir">Monastir</option>
+                <option value="Sfax">Sfax</option>
+                <option value="Nabeul">Nabeul</option>
+                <option value="Gabès">Gabès</option>
+                <option value="Kairouan">Kairouan</option>
+                <option value="Kasserine">Kasserine</option>
+                <option value="Tozeur">Tozeur</option>
+                <option value="Bizerte">Bizerte</option>
+                <option value="Beja">Beja</option>
+                <option value="Jendouba">Jendouba</option>
+                <option value="Mahdia">Mahdia</option>
+                <option value="Siliana">Siliana</option>
+                <option value="Zaghouan">Zaghouan</option>
+                <option value="Medenine">Medenine</option>
+                <option value="Sidi Bouzid">Sidi Bouzid</option>
+                <option value="Tataouine">Tataouine</option>
+                <option value="Manouba">Manouba</option>
+                <option value="La Manouba">La Manouba</option>
+                <option value="Gafsa">Gafsa</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="description">Description *</label>
+          <textarea id="description" name="description" rows="4" [(ngModel)]="formData.description" required></textarea>
+        </section>
+
+        <!-- Contact Info -->
+        <section>
+          <h2>Contact Information</h2>
+          <div class="grid-2">
+            <div>
+              <label for="contactName">Your Name *</label>
+              <input type="text" id="contactName" name="contactName" [(ngModel)]="formData.contactName" required />
+            </div>
+            <div>
+              <label for="contactPhone">Phone *</label>
+              <input type="text" id="contactPhone" name="contactPhone" [(ngModel)]="formData.contactPhone" required />
+            </div>
+            <div class="full-width">
+              <label for="contactEmail">Email *</label>
+              <input type="email" id="contactEmail" name="contactEmail" [(ngModel)]="formData.contactEmail" required />
+            </div>
+          </div>
+        </section>
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <button type="button" class="cancel" (click)="navigateToLost()">Cancel</button>
+          <button type="submit" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Submitting...' : 'Post Lost Pet' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+
+<app-footer></app-footer>

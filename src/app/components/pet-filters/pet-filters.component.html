@@ -1,0 +1,69 @@
+<div class="filter-sidebar">
+
+  <!-- Location Dropdown -->
+  <div class="filter-section">
+    <span class="filter-title">Location</span>
+    <select class="filter-input filter-select" [value]="selectedLocation" (change)="onLocationChange($event)">
+      <option value="Tunis">Tunis</option>
+      <option value="Ariana">Ariana</option>
+      <option value="Ben Arous">Ben Arous</option>
+      <option value="Sousse">Sousse</option>
+      <option value="Monastir">Monastir</option>
+      <option value="Sfax">Sfax</option>
+      <option value="Nabeul">Nabeul</option>
+      <option value="Gabès">Gabès</option>
+      <option value="Kairouan">Kairouan</option>
+      <option value="Kasserine">Kasserine</option>
+      <option value="Tozeur">Tozeur</option>
+      <option value="Bizerte">Bizerte</option>
+      <option value="Beja">Beja</option>
+      <option value="Jendouba">Jendouba</option>
+      <option value="Mahdia">Mahdia</option>
+      <option value="Siliana">Siliana</option>
+      <option value="Zaghouan">Zaghouan</option>
+      <option value="Medenine">Medenine</option>
+      <option value="Sidi Bouzid">Sidi Bouzid</option>
+      <option value="Tataouine">Tataouine</option>
+      <option value="Manouba">Manouba</option>
+      <option value="La Manouba">La Manouba</option>
+      <option value="Gafsa">Gafsa</option>
+    </select>
+  </div>
+
+  <!-- Pet Type Filters -->
+  <div class="filter-section">
+    <span class="filter-title">Pet Type</span>
+    <div class="filter-checkbox">
+      <input type="checkbox" id="all-pets" [checked]="selectedTypes.length === 3" (change)="onTypeChange('all-pets', $event)" />
+      <label for="all-pets">All Pets</label>
+    </div>    
+    <div class="filter-checkbox">
+      <input type="checkbox" id="dogs" (change)="onTypeChange('dog', $event)" />
+      <label for="dogs">Dogs</label>
+    </div>
+    <div class="filter-checkbox">
+      <input type="checkbox" id="cats" (change)="onTypeChange('cat', $event)" />
+      <label for="cats">Cats</label>
+    </div>
+    <div class="filter-checkbox">
+      <input type="checkbox" id="birds" (change)="onTypeChange('bird', $event)" />
+      <label for="birds">Birds</label>
+    </div>
+    <div class="filter-checkbox">
+      <input type="checkbox" id="other-pets" (change)="onTypeChange('other-pets', $event)" />
+      <label for="other-pets">Other Pets</label>
+    </div>
+  </div>
+
+  <!-- Age Filters -->
+  <div class="filter-section">
+    <span class="filter-title">Age less than {{ selectedAges }} months</span>
+    <div class="filter-slider">
+      <input type="range" class='priice-slider' min="1" max="300" step="1" (input)="onAgeChange($event)" />
+    </div>
+  </div>
+
+
+  <!-- Reset Button -->
+  <button class="filter-reset" (click)="resetFilters()">Reset Filters</button>
+</div>

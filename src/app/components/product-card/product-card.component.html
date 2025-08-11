@@ -1,0 +1,77 @@
+<div class="product-card">
+  <div class="product-image">
+    <a [routerLink]="['/product', product.produitID]" class="product-card-link">
+      <img [src]="'assets/uploads/' + product.imageURL" [alt]="product.nom">
+      <div class="product-overlay">
+        <div class="overlay-content">
+          <i class="fas fa-eye"></i>
+          <span>View Details</span>
+        </div>
+      </div>
+    </a>
+    
+    <!-- Wishlist button -->
+    <button class="wishlist-btn" (click)="toggleWishlist()" [class.active]="isInWishlist">
+      <i class="fas fa-heart"></i>
+    </button>
+    
+    <!-- Stock indicator -->
+    <div class="stock-indicator" *ngIf="product.stock <= 5 && product.stock > 0">
+      <span class="stock-badge">Only {{ product.stock }} left!</span>
+    </div>
+    
+    <!-- Out of stock overlay -->
+    <div class="out-of-stock" *ngIf="product.stock === 0">
+      <span>Out of Stock</span>
+    </div>
+  </div>
+  
+  <div class="product-info">
+    <a [routerLink]="['/product', product.produitID]" class="product-card-link">
+      <h3 class="product-name">{{ product.nom }}</h3>
+      
+      <div class="rating" *ngIf="product.rating">
+        <div class="stars">
+          <i *ngFor="let star of getStarsArray(product.rating)" class="fas fa-star"></i>
+          <i *ngFor="let emptyStar of getEmptyStarsArray(product.rating)" class="far fa-star"></i>
+        </div>
+        <span class="rating-score">({{ product.rating }})</span>
+      </div>
+      
+      <p class="description">{{ product.description }}</p>
+      
+      <div class="price-quantity">
+        <div class="price-container">
+          <p class="price">{{ product.prix | currency:'TD ' }}</p>
+          <p class="old-price" *ngIf="product.oldPrice && product.oldPrice > product.prix">
+            {{ product.oldPrice | currency:'TD ' }}
+          </p>
+        </div>
+        <div class="stock-status">
+          <span class="in-stock" *ngIf="product.stock > 0">
+            <i class="fas fa-check-circle"></i> In Stock
+          </span>
+          <span class="out-of-stock-text" *ngIf="product.stock === 0">
+            <i class="fas fa-times-circle"></i> Out of Stock
+          </span>
+        </div>
+      </div>
+    </a>
+    
+    <div class="actions">
+      <button 
+        class="cart-button" 
+        (click)="addToCart()"
+        [disabled]="product.stock === 0"
+        [class.disabled]="product.stock === 0"
+      >
+        <i class="fas fa-shopping-cart"></i>
+        {{ product.stock === 0 ? 'Out of Stock' : 'Add to Cart' }}
+      </button>
+      
+      <button class="quick-view-btn" (click)="quickView()">
+        <i class="fas fa-eye"></i>
+      </button>
+    </div>
+  </div>
+</div>

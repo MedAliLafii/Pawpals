@@ -1,0 +1,47 @@
+<div class="filter-panel">
+  <!-- Catégories -->
+  <div>
+    <h2 class="panel-title">Categories</h2>
+    <ul class="category-list">
+      <li *ngFor="let category of categories" class="category-item">
+        <input
+          [id]="'category' + category.categorieID"
+          type="radio"
+          name="categoryFilter"
+          [(ngModel)]="selectedCategoryId"
+          [value]="category.categorieID"
+          (change)="onCategoryChange(category.categorieID)"
+          class="category-radio"
+        />
+        <label
+          [for]="'category' + category.categorieID"
+          class="category-label"
+        >
+          {{ category.nom }}
+        </label>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Prix -->
+  <div>
+    <h2 class="panel-title">Price</h2>
+    <div class="price-info">
+      Selected price: <span class="price-value">${{ selectedPrice }}</span>
+    </div>
+    <input
+      type="range"
+      [min]="minPrice"
+      [max]="maxPrice"
+      step="10"
+      [(ngModel)]="selectedPrice"
+      (input)="onPriceChange($event)"
+      class="price-slider"
+    />
+  </div>
+
+  <!-- Réinitialiser -->
+  <button (click)="resetFilters()" class="reset-button">
+    Réinitialiser
+  </button>
+</div>
