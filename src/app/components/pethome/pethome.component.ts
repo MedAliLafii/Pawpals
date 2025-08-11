@@ -102,7 +102,7 @@ export class PethomeComponent implements OnInit, OnChanges {
   }
 
   deleteAdoption(pet: any): void {
-    this.http.delete(`http://localhost:5000/adoptPet/delete/${pet.adoptionPetID}`, {
+    this.http.delete(`${environment.apiUrl}/adoptPet/delete/${pet.adoptionPetID}`, {
       withCredentials: true
     }).subscribe(
       (res) => {
