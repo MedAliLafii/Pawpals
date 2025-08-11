@@ -4,6 +4,7 @@ import { LostDetailsComponent } from '../../popup/lostdetails/lostdetails.compon
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { PetFilters } from '../pet-filters/pet-filters.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-petcard',
@@ -30,7 +31,7 @@ export class PetCardComponent implements OnInit, OnChanges {
   }
 
    checkAuthStatus(): void {
-    this.http.get<{ client: any }>('http://localhost:5000/Client/checkAuth', {
+    this.http.get<{ client: any }>(`${environment.apiUrl}/Client/checkAuth`, {
       withCredentials: true
     }).subscribe(
       (response) => {
@@ -53,7 +54,7 @@ export class PetCardComponent implements OnInit, OnChanges {
 
   fetchLostPets(){
     this.isLoading = true;
-    this.http.get<any[]>('http://localhost:5000/lostPet/all')
+    this.http.get<any[]>(`${environment.apiUrl}/lostPet/all`)
       .subscribe(
         (data) => {
           const processedPets = data.map(pet => {
@@ -85,7 +86,7 @@ export class PetCardComponent implements OnInit, OnChanges {
     queryParams = queryParams.slice(0, -1);  // Remove the trailing "&"
   
     this.isLoading = true; // Set loading to true while fetching
-    this.http.get<any[]>(`http://localhost:5000/lostPet/pets?${queryParams}`)
+    this.http.get<any[]>(`${environment.apiUrl}/lostPet/pets?${queryParams}`)
     .subscribe(
       (response) => {
         this.pets = this.limit ? response.slice(0, this.limit) : response;
@@ -100,7 +101,7 @@ export class PetCardComponent implements OnInit, OnChanges {
   }
   loadLostPets() {
     this.isLoading = true;
-    this.http.get<any[]>('http://localhost:5000/lostPet/lost')
+    this.http.get<any[]>(`${environment.apiUrl}/lostPet/lost`)
       .subscribe({
         next: (data) => {
           this.pets = this.limit ? data.slice(0, this.limit) : data;
@@ -125,7 +126,7 @@ export class PetCardComponent implements OnInit, OnChanges {
       if (!confirm('Are you sure you want to delete this lost pet post?')) return;
     
   
-      this.http.delete(`http://localhost:5000/lostPet/delete/${pet.lostPetID}`, {
+      this.http.delete(`${environment.apiUrl}/lostPet/delete/${pet.lostPetID}`, {
         withCredentials: true
       }).subscribe(
       (res) => {
