@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { Product, Category, ApiResponse, PaginatedResponse } from '../models';
+import { Product, Category, ApiResponse } from '../models';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
-  private readonly apiUrl = 'http://localhost:5000';
+  private readonly apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
@@ -26,7 +27,11 @@ export class ProductService {
 
     return this.http.get<Product[]>(`${this.apiUrl}/produit`, { params })
       .pipe(
-        catchError(this.handleError)
+        catchError((error) => {
+          console.warn('API not available, returning empty array:', error);
+          // Return empty array instead of throwing error to prevent app crash
+          return [];
+        })
       );
   }
 
@@ -34,7 +39,10 @@ export class ProductService {
   getProductById(id: number): Observable<Product> {
     return this.http.get<Product>(`${this.apiUrl}/produit/${id}`)
       .pipe(
-        catchError(this.handleError)
+        catchError((error) => {
+          console.warn('API not available for product details:', error);
+          return [];
+        })
       );
   }
 
@@ -42,7 +50,10 @@ export class ProductService {
   getProductSpecifications(id: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/fiche-technique/${id}`)
       .pipe(
-        catchError(this.handleError)
+        catchError((error) => {
+          console.warn('API not available for product specifications:', error);
+          return [];
+        })
       );
   }
 
@@ -50,7 +61,10 @@ export class ProductService {
   getCategories(): Observable<Category[]> {
     return this.http.get<Category[]>(`${this.apiUrl}/categorie`)
       .pipe(
-        catchError(this.handleError)
+        catchError((error) => {
+          console.warn('API not available for categories:', error);
+          return [];
+        })
       );
   }
 
@@ -65,7 +79,10 @@ export class ProductService {
     return this.http.get<ApiResponse<Product[]>>(`${this.apiUrl}/produit/search`, { params })
       .pipe(
         map(response => response.data!),
-        catchError(this.handleError)
+        catchError((error) => {
+          console.warn('API not available for search:', error);
+          return [];
+        })
       );
   }
 
@@ -74,12 +91,12 @@ export class ProductService {
     return this.http.get<ApiResponse<Product[]>>(`${this.apiUrl}/produit/featured?limit=${limit}`)
       .pipe(
         map(response => response.data!),
-        catchError(this.handleError)
+        catchError((error) => {
+          console.warn('API not available for featured products:', error);
+          return [];
+        })
       );
   }
 
-  private handleError(error: any) {
-    console.error('Product service error:', error);
-    return throwError(() => new Error(error.message || 'An error occurred while fetching products'));
-  }
+
 }
