@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: '' // Not needed for static data
+  apiUrl: 'https://pawpals-mu.vercel.app/api' // Your Vercel API URL
 };

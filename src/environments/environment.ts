@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: '' // Not needed for static data
+  apiUrl: 'http://localhost:5000'
 };
