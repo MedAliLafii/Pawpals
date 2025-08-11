@@ -5,8 +5,8 @@ import { HeaderComponent } from '../components/header/header.component';
 import { FooterComponent } from '../components/footer/footer.component';
 import { PetFiltersComponent } from '../components/pet-filters/pet-filters.component';
 import { PethomeComponent } from '../components/pethome/pethome.component';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { AdoptionService, AdoptionPet } from '../services/adoption.service';
 
 @Component({
   selector: 'app-adoption',
@@ -17,18 +17,18 @@ import { Router } from '@angular/router';
 })
 export class AdoptionComponent implements OnInit, OnChanges {
   @Input() filters!: { location: string; types: string[]; ages: number };
-  filteredPets: any[] = [];
-  allPets: any[] = [];
-  isLoggedIn: boolean = false;
-  clientId: number = 0;
+  filteredPets: AdoptionPet[] = [];
+  allPets: AdoptionPet[] = [];
+  isLoggedIn: boolean = true; // Set to true for demo
+  clientId: number = 1; // Set to 1 for demo
 
   constructor(
-    private http: HttpClient,
-    private router: Router // Inject Router service for navigation
+    private adoptionService: AdoptionService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.checkAuthStatus();
+    this.loadAdoptionPets();
   }
 
   
@@ -37,6 +37,8 @@ export class AdoptionComponent implements OnInit, OnChanges {
   }
 
   applyFilters(): void {
+    if (!this.filters) return;
+    
     const { location, types, ages } = this.filters;
 
     this.filteredPets = this.allPets.filter(pet => {
@@ -48,18 +50,15 @@ export class AdoptionComponent implements OnInit, OnChanges {
     });
   }
 
-  checkAuthStatus(): void {
-    this.http.get<{ client: any }>('http://localhost:5000/Client/checkAuth', {
-      withCredentials: true // Include cookies in request
-    }).subscribe(
-      (response) => {
-        console.log('Logged in:', response);
-        this.clientId = response.client.clientID;
-        this.isLoggedIn = true;
+  loadAdoptionPets(): void {
+    this.adoptionService.getAdoptionPets().subscribe(
+      (pets) => {
+        this.allPets = pets;
+        this.filteredPets = pets;
+        console.log('Loaded adoption pets:', pets);
       },
       (error) => {
-        console.log('Not logged in:', error);
-        this.isLoggedIn = false;
+        console.error('Error loading adoption pets:', error);
       }
     );
   }

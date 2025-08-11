@@ -11,7 +11,9 @@ const dbConfig = {
   connectionLimit: 10,
   acquireTimeout: 60000,
   timeout: 60000,
-  reconnect: true
+  reconnect: true,
+  // Railway MySQL doesn't require SSL in most cases
+  ssl: false
 };
 
 // Create connection pool

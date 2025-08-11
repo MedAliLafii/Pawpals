@@ -1,12 +1,12 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router'; // Import Router for navigation
+import { Router } from '@angular/router';
 import { PetCardComponent } from '../components/petcard/petcard.component';
 import { HeaderComponent } from '../components/header/header.component';
 import { FooterComponent } from '../components/footer/footer.component';
 import { PetFiltersComponent } from '../components/pet-filters/pet-filters.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { LostPetService, LostPet } from '../services/lost-pet.service';
 
 @Component({
   selector: 'app-lost',
@@ -17,18 +17,18 @@ import { CommonModule } from '@angular/common';
 })
 export class LostComponent implements OnInit, OnChanges {
   @Input() filters!: { location: string; types: string[]; ages: number };
-  filteredPets: any[] = [];
-  allPets: any[] = [];
-  isLoggedIn: boolean = false;
-  clientId: number = 0;
+  filteredPets: LostPet[] = [];
+  allPets: LostPet[] = [];
+  isLoggedIn: boolean = true; // Set to true for demo
+  clientId: number = 1; // Set to 1 for demo
 
   constructor(
-    private http: HttpClient,
-    private router: Router // Inject Router service for navigation
+    private lostPetService: LostPetService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.checkAuthStatus();
+    this.loadLostPets();
   }
 
   ngOnChanges(): void {
@@ -36,15 +36,30 @@ export class LostComponent implements OnInit, OnChanges {
   }
 
   applyFilters(): void {
+    if (!this.filters) return;
+    
     const { location, types, ages } = this.filters;
 
     this.filteredPets = this.allPets.filter(pet => {
-      const matchLocation = location ? pet.location === location : true;
+      const matchLocation = location ? pet.location.includes(location) : true;
       const matchType = types.length ? types.includes(pet.type) : true;
       const matchAge = ages ? ages === pet.age : true;
 
       return matchLocation && matchType && matchAge;
     });
+  }
+
+  loadLostPets(): void {
+    this.lostPetService.getLostPets().subscribe(
+      (pets) => {
+        this.allPets = pets;
+        this.filteredPets = pets;
+        console.log('Loaded lost pets:', pets);
+      },
+      (error) => {
+        console.error('Error loading lost pets:', error);
+      }
+    );
   }
 
   // Listen for filter changes
@@ -53,21 +68,7 @@ export class LostComponent implements OnInit, OnChanges {
     console.log('Filters updated:', this.filters);
   }
 
-  // Vérifie si l'utilisateur est connecté
-  checkAuthStatus(): void {
-    this.http.get<{ client: any }>('http://localhost:5000/Client/checkAuth', {
-      withCredentials: true // Inclut les cookies dans la requête
-    }).subscribe(
-      (response) => {
-        console.log('Already logged in:', response);
-        this.isLoggedIn = true;
-      },
-      (error) => {
-        console.log('Not logged in:', error);
-        this.isLoggedIn = false;
-      }
-    );
-  }
+
 
   // Handle the "Report a Lost Pet" click event
   handleReportLostPet(event: MouseEvent): void {
