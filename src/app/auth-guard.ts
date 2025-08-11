@@ -3,6 +3,7 @@ import { CanActivate, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http'; // Add HttpClient import
 import { catchError, map } from 'rxjs/operators';  // For error handling and response manipulation
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -11,7 +12,7 @@ export class SimpleAuthGuard implements CanActivate {
   constructor(private router: Router, private http: HttpClient) {}
 
   canActivate(): Observable<boolean> | Promise<boolean> | boolean {
-    return this.http.get<{client: any}>('http://localhost:5000/Client/checkAuth', { withCredentials: true }).pipe(
+    return this.http.get<{client: any}>(`${environment.apiUrl}/Client/checkAuth`, { withCredentials: true }).pipe(
       map((response) => {
         console.log(response);
         return true; // If the API call is successful, the user is authenticated

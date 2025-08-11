@@ -1,6 +1,3 @@
-CREATE Schema pawpals;
-use  pawpals;
-
 CREATE TABLE `adoptionpet` (
   `adoptionPetID` int NOT NULL AUTO_INCREMENT,
   `clientID` int NOT NULL,
@@ -21,14 +18,14 @@ CREATE TABLE `adoptionpet` (
   PRIMARY KEY (`adoptionPetID`),
   KEY `clientID` (`clientID`),
   CONSTRAINT `adoptionpet_ibfk_1` FOREIGN KEY (`clientID`) REFERENCES `client` (`clientID`) ON DELETE CASCADE
-) 
+);
 
 CREATE TABLE `categorie` (
   `categorieID` int NOT NULL AUTO_INCREMENT,
   `nom` varchar(100) NOT NULL,
   `description` text,
   PRIMARY KEY (`categorieID`)
-) 
+);
 
 CREATE TABLE `client` (
   `clientID` int NOT NULL AUTO_INCREMENT,
@@ -40,7 +37,7 @@ CREATE TABLE `client` (
   `region` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`clientID`),
   UNIQUE KEY `email` (`email`)
-) 
+);
 
 CREATE TABLE `commande` (
   `commandeID` int NOT NULL AUTO_INCREMENT,
@@ -52,7 +49,7 @@ CREATE TABLE `commande` (
   KEY `clientID` (`clientID`),
   CONSTRAINT `commande_ibfk_1` FOREIGN KEY (`clientID`) REFERENCES `client` (`clientID`) ON DELETE CASCADE,
   CONSTRAINT `commande_chk_1` CHECK ((`total` >= 0))
-) 
+);
 
 CREATE TABLE `commande_produit` (
   `commandeID` int NOT NULL,
@@ -63,7 +60,7 @@ CREATE TABLE `commande_produit` (
   CONSTRAINT `commande_produit_ibfk_1` FOREIGN KEY (`commandeID`) REFERENCES `commande` (`commandeID`) ON DELETE CASCADE,
   CONSTRAINT `commande_produit_ibfk_2` FOREIGN KEY (`produitID`) REFERENCES `produit` (`produitID`) ON DELETE CASCADE,
   CONSTRAINT `commande_produit_chk_1` CHECK ((`quantite` > 0))
-) 
+);
 
 CREATE TABLE `lostpet` (
   `lostPetID` int NOT NULL AUTO_INCREMENT,
@@ -83,7 +80,7 @@ CREATE TABLE `lostpet` (
   KEY `categorieID` (`categorieID`),
   CONSTRAINT `lostpet_ibfk_1` FOREIGN KEY (`clientID`) REFERENCES `client` (`clientID`) ON DELETE CASCADE,
   CONSTRAINT `lostpet_ibfk_2` FOREIGN KEY (`categorieID`) REFERENCES `categorie` (`categorieID`) ON DELETE SET NULL
-) 
+);
 
 CREATE TABLE `panier` (
   `panierID` int NOT NULL AUTO_INCREMENT,
@@ -91,7 +88,7 @@ CREATE TABLE `panier` (
   PRIMARY KEY (`panierID`),
   KEY `clientID` (`clientID`),
   CONSTRAINT `panier_ibfk_1` FOREIGN KEY (`clientID`) REFERENCES `client` (`clientID`) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE `panier_produit` (
   `panierID` int NOT NULL,
@@ -102,7 +99,7 @@ CREATE TABLE `panier_produit` (
   CONSTRAINT `panier_produit_ibfk_1` FOREIGN KEY (`panierID`) REFERENCES `panier` (`panierID`) ON DELETE CASCADE,
   CONSTRAINT `panier_produit_ibfk_2` FOREIGN KEY (`produitID`) REFERENCES `produit` (`produitID`) ON DELETE CASCADE,
   CONSTRAINT `panier_produit_chk_1` CHECK ((`quantite` > 0))
-)
+);
 
 CREATE TABLE `produit` (
   `produitID` int NOT NULL AUTO_INCREMENT,
@@ -118,7 +115,7 @@ CREATE TABLE `produit` (
   CONSTRAINT `produit_ibfk_1` FOREIGN KEY (`categorieID`) REFERENCES `categorie` (`categorieID`) ON DELETE SET NULL,
   CONSTRAINT `produit_chk_1` CHECK ((`prix` >= 0)),
   CONSTRAINT `produit_chk_2` CHECK ((`stock` >= 0))
-)
+);
 
 -- Insertion des catégories et des produits
 INSERT INTO categorie (categorieID, nom, description) VALUES
