@@ -5,7 +5,9 @@ import { Product } from '../../models';
 import { RouterModule, Router } from '@angular/router';
 import { ToastService } from '../../shared/services/toast.service';
 import { GuestCartService } from '../../services/guest-cart.service';
-import { environment } from '../../../environments/environment'; 
+import { environment } from '../../../environments/environment';
+import { AuthService } from '../../services/auth.service';
+import { filter, take } from 'rxjs/operators'; 
 
 @Component({
   selector: 'app-product-card',
@@ -22,7 +24,8 @@ export class ProductCardComponent implements OnInit {
     private http: HttpClient,
     private toastService: ToastService,
     private guestCartService: GuestCartService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   get produitID(): string {
@@ -48,10 +51,13 @@ export class ProductCardComponent implements OnInit {
       return;
     }
 
-    // Check if user is logged in
-    this.http.get(`${environment.BACK_URL}/Client/checkAuth`, { withCredentials: true })
-      .subscribe({
-        next: () => {
+    // Check if user is logged in using auth service
+    this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()),
+      take(1)
+    ).subscribe({
+      next: (authStatus) => {
+        if (authStatus.isAuthenticated) {
           // User is logged in, add to server cart
           this.http.post(
             `${environment.BACK_URL}/Cart/add`,
@@ -70,8 +76,7 @@ export class ProductCardComponent implements OnInit {
               }
             }
           });
-        },
-        error: () => {
+        } else {
           // User is not logged in, redirect to login
           this.toastService.warning('Please log in to add items to your cart.');
           // Store the current URL to redirect back after login
@@ -79,7 +84,8 @@ export class ProductCardComponent implements OnInit {
           // Navigate to login page
           this.router.navigate(['/login']);
         }
-      });
+      }
+    });
   }
 
   quickView(): void {

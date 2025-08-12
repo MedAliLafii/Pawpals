@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
 import { ScrollService } from '../services/scroll.service';
 import { ToastService } from '../shared/services/toast.service';
 import { environment } from '../../environments/environment';
+import { AuthService } from '../services/auth.service';
+import { filter, take } from 'rxjs/operators';
 @Component({
   selector: 'app-adoption',
   standalone: true,
@@ -28,7 +30,8 @@ export class AdoptionComponent implements OnInit, OnChanges {
     private http: HttpClient,
     private router: Router, // Inject Router service for navigation
     private scrollService: ScrollService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -55,17 +58,19 @@ export class AdoptionComponent implements OnInit, OnChanges {
   }
 
   checkAuthStatus(): void {
-    this.http.get<{ client: any }>(`${environment.BACK_URL}/Client/checkAuth`, {
-      withCredentials: true // Include cookies in request
-    }).subscribe(
-      (response) => {
-        console.log('Logged in:', response);
-        this.clientId = response.client.clientID;
-        this.isLoggedIn = true;
-      },
-      (error) => {
-        console.log('Not logged in:', error);
-        this.isLoggedIn = false;
+    this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()),
+      take(1)
+    ).subscribe(
+      (authStatus) => {
+        if (authStatus.isAuthenticated) {
+          console.log('Logged in:', authStatus.user);
+          this.clientId = authStatus.user.clientID;
+          this.isLoggedIn = true;
+        } else {
+          console.log('Not logged in');
+          this.isLoggedIn = false;
+        }
       }
     );
   }

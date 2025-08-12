@@ -6,6 +6,8 @@ import { FormsModule } from '@angular/forms';
 import { PetFilters } from '../pet-filters/pet-filters.component';
 import { environment } from '../../../environments/environment';
 import { ToastService } from '../../shared/services/toast.service';
+import { AuthService } from '../../services/auth.service';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-petcard',
@@ -26,7 +28,8 @@ export class PetCardComponent implements OnInit, OnChanges {
 
   constructor(
     private http: HttpClient,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -35,17 +38,19 @@ export class PetCardComponent implements OnInit, OnChanges {
   }
 
    checkAuthStatus(): void {
-    this.http.get<{ client: any }>(`${environment.BACK_URL}/Client/checkAuth`, {
-      withCredentials: true
-    }).subscribe(
-      (response) => {
-        console.log('Logged in:', response);
-        this.clientId = response.client.clientID;
-        this.isLoggedIn = true;
-      },
-      (error) => {
-        console.log('Not logged in:', error);
-        this.isLoggedIn = false;
+    this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()),
+      take(1)
+    ).subscribe(
+      (authStatus) => {
+        if (authStatus.isAuthenticated) {
+          console.log('Logged in:', authStatus.user);
+          this.clientId = authStatus.user.clientID;
+          this.isLoggedIn = true;
+        } else {
+          console.log('Not logged in');
+          this.isLoggedIn = false;
+        }
       }
     );
   }

@@ -10,6 +10,8 @@ import { CommonModule } from '@angular/common';
 import { ScrollService } from '../services/scroll.service';
 import { ToastService } from '../shared/services/toast.service';
 import { environment } from '../../environments/environment';
+import { AuthService } from '../services/auth.service';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-lost',
@@ -29,7 +31,8 @@ export class LostComponent implements OnInit, OnChanges {
     private http: HttpClient,
     private router: Router, // Inject Router service for navigation
     private scrollService: ScrollService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -62,16 +65,18 @@ export class LostComponent implements OnInit, OnChanges {
 
   // Vérifie si l'utilisateur est connecté
   checkAuthStatus(): void {
-    this.http.get<{ client: any }>(`${environment.BACK_URL}/Client/checkAuth`, {
-      withCredentials: true // Inclut les cookies dans la requête
-    }).subscribe(
-      (response) => {
-        console.log('Already logged in:', response);
-        this.isLoggedIn = true;
-      },
-      (error) => {
-        console.log('Not logged in:', error);
-        this.isLoggedIn = false;
+    this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()),
+      take(1)
+    ).subscribe(
+      (authStatus) => {
+        if (authStatus.isAuthenticated) {
+          console.log('Already logged in:', authStatus.user);
+          this.isLoggedIn = true;
+        } else {
+          console.log('Not logged in');
+          this.isLoggedIn = false;
+        }
       }
     );
   }

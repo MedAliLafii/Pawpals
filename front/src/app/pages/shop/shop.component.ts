@@ -11,6 +11,8 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ScrollService } from '../../services/scroll.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { AuthService } from '../../services/auth.service';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-shop',
@@ -33,7 +35,8 @@ export class ShopComponent {
     private route: ActivatedRoute,                   
     private http: HttpClient,
     private scrollService: ScrollService,
-    private toastService: ToastService                  
+    private toastService: ToastService,
+    private authService: AuthService                  
   ) {}
 
   ngOnInit(): void {
@@ -78,18 +81,18 @@ export class ShopComponent {
 
   // Vérifie si le client est connected en appelant l'API côté backend
   checkAuthStatus(): void {
-    this.http.get<{ client: any }>(`${environment.BACK_URL}/Client/checkAuth`, {
-      withCredentials: true // Inclut les cookies dans la requête (pour les sessions)
-    }).subscribe(
-      (response) => {
-        // If the client is connected, display a confirmation and update isLoggedIn
-        console.log('Already logged in:', response);
-        this.isLoggedIn = true;
-      },
-      (error) => {
-        // Otherwise, indicate that the user is not connected
-        console.log('Not logged in:', error);
-        this.isLoggedIn = false;
+    this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()),
+      take(1)
+    ).subscribe(
+      (authStatus) => {
+        if (authStatus.isAuthenticated) {
+          console.log('Already logged in:', authStatus.user);
+          this.isLoggedIn = true;
+        } else {
+          console.log('Not logged in');
+          this.isLoggedIn = false;
+        }
       }
     );
   }
@@ -107,19 +110,20 @@ export class ShopComponent {
 
   // Fonction pour déconnecter l'utilisateur
   logout(): void {
-    this.http.post(`${environment.BACK_URL}/Client/logout`, {}, {
-      withCredentials: true // Envoie aussi les cookies de session
-    }).subscribe(
-      () => {
+    this.authService.logout().subscribe({
+      next: () => {
         // If logout succeeds, display a message, update the state and redirect to home
         this.toastService.success('Logout successful');
         this.isLoggedIn = false;
         this.router.navigate(['/']);
       },
-      (error) => {
+      error: (error) => {
         // In case of logout failure, display the error
         console.log('Logout failed:', error);
+        // Even if logout fails, clear local state
+        this.isLoggedIn = false;
+        this.router.navigate(['/']);
       }
-    );
+    });
   }
 }

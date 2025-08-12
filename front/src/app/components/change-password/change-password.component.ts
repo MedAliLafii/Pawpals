@@ -6,6 +6,8 @@ import { Router } from '@angular/router';
 import { ToastService } from '../../shared/services/toast.service';
 import { HeaderComponent } from '../header/header.component';
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../../services/auth.service';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-change-password',
@@ -147,7 +149,8 @@ export class ChangePasswordComponent implements OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     private router: Router,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {
     this.passwordForm = this.fb.group({
       currentPassword: ['', [Validators.required]],
@@ -161,13 +164,17 @@ export class ChangePasswordComponent implements OnInit {
   }
 
   checkAuthStatus(): void {
-    this.http.get<any>(`${environment.BACK_URL}/Client/checkAuth`, { withCredentials: true })
-      .subscribe({
-        error: () => {
+    this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()),
+      take(1)
+    ).subscribe({
+      next: (authStatus) => {
+        if (!authStatus.isAuthenticated) {
           this.toastService.error('Please log in to change your password');
           this.router.navigate(['/login']);
         }
-      });
+      }
+    });
   }
 
   changePassword(): void {

@@ -4,6 +4,8 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../services/toast.service';
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../services/auth.service';
+import { filter, take } from 'rxjs/operators';
 
 export interface Review {
   reviewID: number;
@@ -158,7 +160,8 @@ export class ProductReviewsComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {
     this.reviewForm = this.fb.group({
       comment: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(500)]]
@@ -216,14 +219,13 @@ export class ProductReviewsComponent implements OnInit {
   }
 
   private checkAuthStatus(): void {
-    this.http.get(`${environment.BACK_URL}/Client/checkAuth`, { withCredentials: true })
-      .subscribe({
-        next: () => {
-          this.isLoggedIn = true;
-        },
-        error: () => {
-          this.isLoggedIn = false;
-        }
-      });
+    this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()),
+      take(1)
+    ).subscribe({
+      next: (authStatus) => {
+        this.isLoggedIn = authStatus.isAuthenticated;
+      }
+    });
   }
 }
