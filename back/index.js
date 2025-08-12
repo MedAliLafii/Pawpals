@@ -36,13 +36,13 @@ app.use((req, res, next) => {
 // Root route handler with environment debugging
 app.get("/", (req, res) => {
   console.log("Environment variables check:");
-  console.log("DB_HOST:", process.env.DB_HOST);
-  console.log("DB_PORT:", process.env.DB_PORT);
-  console.log("DB_USER:", process.env.DB_USER);
-  console.log("DB_PASSWORD:", process.env.DB_PASSWORD);
-  console.log("DB_NAME:", process.env.DB_NAME);
-  console.log("JWT_SECRET:", process.env.JWT_SECRET);
-  console.log("CORS_ORIGIN:", process.env.CORS_ORIGIN);
+  console.log("DB_HOST:", process.env.DB_HOST ? "Set" : "Not set");
+  console.log("DB_PORT:", process.env.DB_PORT ? "Set" : "Not set");
+  console.log("DB_USER:", process.env.DB_USER ? "Set" : "Not set");
+  console.log("DB_PASSWORD:", process.env.DB_PASSWORD ? "Set" : "Not set");
+  console.log("DB_NAME:", process.env.DB_NAME ? "Set" : "Not set");
+  console.log("JWT_SECRET:", process.env.JWT_SECRET ? "Set" : "Not set");
+  console.log("CORS_ORIGIN:", process.env.CORS_ORIGIN ? "Set" : "Not set");
   
   res.status(200).json({ 
     message: "Pawpals API is running", 
@@ -54,15 +54,6 @@ app.get("/", (req, res) => {
       cart: "/Cart",
       adoption: "/adoptPet",
       lostPets: "/lostPet"
-    },
-    envCheck: {
-      dbHost: process.env.DB_HOST,
-      dbPort: process.env.DB_PORT,
-      dbUser: process.env.DB_USER,
-      dbPassword: process.env.DB_PASSWORD,
-      dbName: process.env.DB_NAME,
-      jwtSecret: process.env.JWT_SECRET,
-      corsOrigin: process.env.CORS_ORIGIN
     }
   });
 });
@@ -98,7 +89,8 @@ app.get("/produit/:id", (req, res) => {
   // SQL query to fetch product info and its category name
   const sql = `SELECT produit.*, Categorie.nom AS nomCat
              FROM produit
-             LEFT JOIN Categorie ON produit.categorieID = Categorie.categorieID
+          app.use('/assets/uploadslost', express.static(path.join(__dirname, 'assets', 'uploadslost')));  // Serve static files from back/assets/uploadslost
+   LEFT JOIN Categorie ON produit.categorieID = Categorie.categorieID
              WHERE produitID = ?`;
 
 
