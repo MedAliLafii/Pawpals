@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 import { ScrollService } from '../services/scroll.service';
 import { ToastService } from '../shared/services/toast.service';
 import { ToastContainerComponent } from '../shared/components/toast-container/toast-container.component';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -18,7 +19,8 @@ export class LoginComponent {
     private http: HttpClient, 
     private router: Router,
     private scrollService: ScrollService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {}
 
   // Method called when the component loads
@@ -201,6 +203,12 @@ export class LoginComponent {
       next: (response: any) => {
         this.toastService.success('Login successful! Welcome back!');
 
+        // Store token in localStorage as fallback for cross-domain issues
+        if (response.token) {
+          localStorage.setItem('authToken', response.token);
+          localStorage.setItem('userData', JSON.stringify(response.client));
+        }
+
         // Reset button state
         if (loginButton) {
           loginButton.disabled = false;
@@ -245,13 +253,17 @@ export class LoginComponent {
 
   // Check if user is already logged in (active session on server side)
   checkAuthStatus(): void {
-    this.http.get<{ client: any }>(`${environment.BACK_URL}/Client/checkAuth`, { withCredentials: true }).subscribe(
-      (response) => {
-        console.log('Already logged in:', response); // Show info if user is authenticated
-        this.router.navigate(['/']); // Redirect to home if authenticated
+    this.authService.checkAuthStatus().subscribe(
+      (isAuthenticated) => {
+        if (isAuthenticated) {
+          console.log('Already logged in'); // Show info if user is authenticated
+          this.router.navigate(['/']); // Redirect to home if authenticated
+        } else {
+          console.log('Not logged in'); // Log error if not authenticated
+        }
       },
       (error) => {
-        console.log('Not logged in:', error); // Log error if not authenticated
+        console.log('Auth check error:', error); // Log error if not authenticated
       }
     );
   }

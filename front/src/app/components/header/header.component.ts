@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { ToastContainerComponent } from '../../shared/components/toast-container/toast-container.component';
 import { ToastService } from '../../shared/services/toast.service'; 
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-header', 
@@ -34,7 +35,8 @@ export class HeaderComponent implements OnInit {
     private categoryService: CategoryService, 
     private router: Router,                   
     private http: HttpClient,
-    private toastService: ToastService                  
+    private toastService: ToastService,
+    private authService: AuthService                  
   ) {}
 
   ngOnInit(): void {
@@ -62,20 +64,24 @@ export class HeaderComponent implements OnInit {
 
   // Check if the client is logged in by calling the backend API
   checkAuthStatus(): void {
-    this.http.get<{ client: any }>(`${environment.BACK_URL}/Client/checkAuth`, {
-      withCredentials: true // Include cookies in the request (for sessions)
-    }).subscribe({
-      next: (response) => {
-        // If the client is logged in, show confirmation and update isLoggedIn
-        console.log('Already logged in:', response);
-        this.isLoggedIn = true;
-        this.userName = response.client?.nom || 'User';
-        // Load cart count after confirming user is logged in
-        this.loadCartCount();
+    this.authService.checkAuthStatus().subscribe({
+      next: (isAuthenticated) => {
+        if (isAuthenticated) {
+          console.log('Already logged in');
+          this.isLoggedIn = true;
+          const user = this.authService.getCurrentUser();
+          this.userName = user?.nom || 'User';
+          // Load cart count after confirming user is logged in
+          this.loadCartCount();
+        } else {
+          console.log('Not logged in');
+          this.isLoggedIn = false;
+          this.cartItemCount = 0;
+          this.userName = '';
+        }
       },
       error: (error) => {
-        // Otherwise, indicate the user is not logged in
-        console.log('Not logged in:', error);
+        console.log('Auth check error:', error);
         this.isLoggedIn = false;
         this.cartItemCount = 0;
         this.userName = '';
@@ -96,21 +102,23 @@ export class HeaderComponent implements OnInit {
 
     // Function to log out the user
   logout(): void {
-    this.http.post(`${environment.BACK_URL}/Client/logout`, {}, {
-      withCredentials: true // Send session cookies too
-    }).subscribe(
-      () => {
-        // If logout is successful, show a message, update state and redirect to home
-        this.toastService.success('Logged out successfully!');
+    this.authService.logout().subscribe({
+      next: () => {
         this.isLoggedIn = false;
+        this.userName = '';
         this.cartItemCount = 0;
+        this.toastService.success('Logged out successfully');
         this.router.navigate(['/']);
       },
-      (error) => {
-        // On logout failure, log the error
-        console.log('Logout failed:', error);
+      error: (error) => {
+        console.error('Logout error:', error);
+        // Even if logout fails, clear local state
+        this.isLoggedIn = false;
+        this.userName = '';
+        this.cartItemCount = 0;
+        this.router.navigate(['/']);
       }
-    );
+    });
   }
 
   // User menu methods

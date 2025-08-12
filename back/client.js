@@ -108,21 +108,20 @@ clientRoutes.post('/loginClient', async (req, res) => {
             // Envoi du token dans un cookie sécurisé
             const cookieOptions = {
                 httpOnly: true,
-                secure: false, // Temporarily disable secure for debugging
-                sameSite: 'lax', // Protects against CSRF
+                secure: true, // Enable secure for HTTPS
+                sameSite: 'none', // Allow cross-site cookies
                 maxAge: rememberme ? 30 * 24 * 60 * 60 * 1000 : undefined,
                 path: '/'
             };
             
-            // Only set domain if it's explicitly configured
-            if (process.env.NODE_ENV === 'production' && process.env.COOKIE_DOMAIN) {
-                cookieOptions.domain = process.env.COOKIE_DOMAIN;
+            // Set domain to .vercel.app to allow sharing between subdomains
+            if (process.env.NODE_ENV === 'production') {
+                cookieOptions.domain = '.vercel.app';
             }
             
             console.log('=== LOGIN DEBUG ===');
             console.log('Setting cookie with options:', cookieOptions);
             console.log('NODE_ENV:', process.env.NODE_ENV);
-            console.log('COOKIE_DOMAIN:', process.env.COOKIE_DOMAIN);
             console.log('Request origin:', req.headers.origin);
             console.log('Request referer:', req.headers.referer);
             
@@ -131,8 +130,12 @@ clientRoutes.post('/loginClient', async (req, res) => {
             // Log the Set-Cookie header that will be sent
             console.log('Set-Cookie header will be:', res.getHeader('Set-Cookie'));
 
-                    // Success response
-        res.status(200).json({ message: 'Login successful', token: token });
+            // Success response - also return token in response body for localStorage fallback
+            res.status(200).json({ 
+                message: 'Login successful', 
+                token: token,
+                client: client 
+            });
         });
     } catch (error) {
         console.error('Error during login:', error);
@@ -333,18 +336,43 @@ clientRoutes.post('/changePassword', async (req, res) => {
     }
 });
 
+// Route to verify token from localStorage
+clientRoutes.post('/verifyToken', async (req, res) => {
+    const { token } = req.body;
+    
+    if (!token) {
+        return res.status(401).json({ error: 'No token provided.' });
+    }
+    
+    try {
+        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+            if (err) {
+                console.log('Token verification failed:', err.message);
+                return res.status(401).json({ error: 'Invalid or expired token.' });
+            }
+            
+            const client = decoded.client;
+            console.log('Token verified successfully for client:', client.clientID);
+            res.status(200).json({ message: 'Token verified', client });
+        });
+    } catch (error) {
+        console.error('Verification error:', error);
+        return res.status(500).json({ error: 'Error verifying token.' });
+    }
+});
+
 // Route for logout
 clientRoutes.post('/logout', async (req, res) => {
     const cookieOptions = {
         httpOnly: true,
-        secure: false, // Temporarily disable secure for debugging
-        sameSite: 'lax',
+        secure: true, // Enable secure for HTTPS
+        sameSite: 'none', // Allow cross-site cookies
         path: '/'
     };
     
-    // Only set domain if it's explicitly configured
-    if (process.env.NODE_ENV === 'production' && process.env.COOKIE_DOMAIN) {
-        cookieOptions.domain = process.env.COOKIE_DOMAIN;
+    // Set domain to .vercel.app to allow sharing between subdomains
+    if (process.env.NODE_ENV === 'production') {
+        cookieOptions.domain = '.vercel.app';
     }
     
     res.clearCookie('token', cookieOptions); // Suppression du cookie de session
@@ -495,14 +523,14 @@ clientRoutes.delete('/account', async (req, res) => {
                             // Clear the authentication cookie
                             const cookieOptions = {
                                 httpOnly: true,
-                                secure: false, // Temporarily disable secure for debugging
-                                sameSite: 'lax',
+                                secure: true, // Enable secure for HTTPS
+                                sameSite: 'none', // Allow cross-site cookies
                                 path: '/'
                             };
                             
-                            // Only set domain if it's explicitly configured
-                            if (process.env.NODE_ENV === 'production' && process.env.COOKIE_DOMAIN) {
-                                cookieOptions.domain = process.env.COOKIE_DOMAIN;
+                            // Set domain to .vercel.app to allow sharing between subdomains
+                            if (process.env.NODE_ENV === 'production') {
+                                cookieOptions.domain = '.vercel.app';
                             }
                             
                             res.clearCookie('token', cookieOptions);
