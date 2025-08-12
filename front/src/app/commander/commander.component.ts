@@ -91,8 +91,17 @@ export class CommanderComponent implements OnInit {
       }
     });
 
-    // Fetching cart content
-    this.http.get<CommandeResponse>(`${environment.BACK_URL}/Cart/fetch`, { withCredentials: true }).subscribe(
+    // Fetching cart content with Authorization header
+    const token = localStorage.getItem('authToken');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    this.http.get<CommandeResponse>(`${environment.BACK_URL}/Cart/fetch`, { 
+      withCredentials: true,
+      headers: headers
+    }).subscribe(
       (response) => {
         // Updating cart items and total price
         this.cartItems = response.produits;
@@ -102,6 +111,10 @@ export class CommanderComponent implements OnInit {
       (error) => {
         // Displaying an error if fetching the cart fails
         console.error('Error fetching cart:', error);
+        if (error.status === 401) {
+          this.toastService.error("Authentication error. Please log in again.");
+          this.router.navigate(['/login']);
+        }
         this.isLoading = false;
       }
     );
@@ -125,29 +138,53 @@ export class CommanderComponent implements OnInit {
     // Creating the object to send to update the client info
     var form2 = { nom, region, adresse, tel };
 
+    // Get token for Authorization header
+    const token = localStorage.getItem('authToken');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     // PUT request to update client info
-    this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, form2, { withCredentials: true }).subscribe({
+    this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, form2, { 
+      withCredentials: true,
+      headers: headers
+    }).subscribe({
       next: () => {
         // If the update is successful, place the order
-        this.http.post(`${environment.BACK_URL}/Cart/commander`, {}, { withCredentials: true }).subscribe({
+        this.http.post(`${environment.BACK_URL}/Cart/commander`, {}, { 
+          withCredentials: true,
+          headers: headers
+        }).subscribe({
           next: () => {
             // Displaying a toast if the order is placed successfully
             this.toastService.success('Your order has been placed successfully');
+            // Redirecting to the home page
+            this.router.navigate(['/home']);
           },
           error: (error) => {
             // Displaying an error if the order fails
-            this.toastService.error('Error placing the order: ' + error.error?.error || error.message);
+            console.error('Error placing order:', error);
+            if (error.status === 401) {
+              this.toastService.error("Authentication error. Please log in again.");
+              this.router.navigate(['/login']);
+            } else {
+              this.toastService.error('Error placing the order: ' + error.error?.error || error.message);
+            }
           }
         });
       },
       error: (error) => {
         // Displaying an error if updating client info fails
-        this.toastService.error('Error updating client information: ' + error.error?.error || error.message);
+        console.error('Error updating client info:', error);
+        if (error.status === 401) {
+          this.toastService.error("Authentication error. Please log in again.");
+          this.router.navigate(['/login']);
+        } else {
+          this.toastService.error('Error updating client information: ' + error.error?.error || error.message);
+        }
       }
     });
-
-    // Redirecting to the home page
-    this.router.navigate(['/home']);
   }
 
 }

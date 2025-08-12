@@ -188,10 +188,20 @@ export class ChangePasswordComponent implements OnInit {
 
       this.isChanging = true;
 
+      // Get token for Authorization header
+      const token = localStorage.getItem('authToken');
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       this.http.post(`${environment.BACK_URL}/Client/changePassword`, {
         currentPassword,
         newPassword
-      }, { withCredentials: true })
+      }, { 
+        withCredentials: true,
+        headers: headers
+      })
         .subscribe({
           next: () => {
             this.toastService.success('Password changed successfully!');

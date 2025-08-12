@@ -63,11 +63,21 @@ export class PostAdoptionComponent implements OnInit {
   isSubmitting: boolean = false;
 
   constructor(
-    private http: HttpClient, 
+    private http: HttpClient,
     private router: Router,
     private toastService: ToastService,
     private authService: AuthService
   ) {}
+
+  // Helper method to get Authorization headers
+  private getAuthHeaders(): Record<string, string> {
+    const token = localStorage.getItem('authToken');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  }
 
   ngOnInit(): void {
     this.fetchClient();
@@ -138,7 +148,10 @@ export class PostAdoptionComponent implements OnInit {
           };
   
           // Step 2: Send full updated client info
-          this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, updatedClientInfo, { withCredentials: true }).subscribe({
+          this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, updatedClientInfo, { 
+            withCredentials: true,
+            headers: this.getAuthHeaders()
+          }).subscribe({
             next: () => {
               // Step 3: Build FormData for adoption
               const formData = new FormData();
@@ -153,7 +166,10 @@ export class PostAdoptionComponent implements OnInit {
               }
   
               // Step 4: Post adoption data
-              this.http.post(`${environment.BACK_URL}/adoptPet/add`, formData, { withCredentials: true }).subscribe({
+              this.http.post(`${environment.BACK_URL}/adoptPet/add`, formData, { 
+                withCredentials: true,
+                headers: this.getAuthHeaders()
+              }).subscribe({
                 next: () => {
                   this.toastService.success('Pet adoption posted successfully!');
                   this.router.navigate(['/adoption']);

@@ -51,11 +51,21 @@ export class PostLostComponent implements OnInit {
   };
 
   constructor(
-    private http: HttpClient, 
+    private http: HttpClient,
     private router: Router,
     private toastService: ToastService,
     private authService: AuthService
   ) {}
+
+  // Helper method to get Authorization headers
+  private getAuthHeaders(): Record<string, string> {
+    const token = localStorage.getItem('authToken');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  }
 
   updateField<K extends keyof LostPetFormFields>(key: K, value: LostPetFormFields[K]) {
     this.formData[key] = value;
@@ -113,7 +123,10 @@ export class PostLostComponent implements OnInit {
           };
   
           // Step 2: Send full updated client info
-          this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, updatedClientInfo, { withCredentials: true }).subscribe({
+          this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, updatedClientInfo, { 
+            withCredentials: true,
+            headers: this.getAuthHeaders()
+          }).subscribe({
             next: () => {
               // Step 3: Prepare FormData for lost pet
               const lostPetData = new FormData();
@@ -125,7 +138,10 @@ export class PostLostComponent implements OnInit {
               }
   
               // Step 4: Post lost pet
-              this.http.post(`${environment.BACK_URL}/lostpet/add`, lostPetData, { withCredentials: true }).subscribe({
+              this.http.post(`${environment.BACK_URL}/lostpet/add`, lostPetData, { 
+                withCredentials: true,
+                headers: this.getAuthHeaders()
+              }).subscribe({
                 next: () => {
                   this.toastService.success('Lost pet posted successfully!');
                   this.router.navigate(['/lost']);

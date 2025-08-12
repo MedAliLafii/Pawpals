@@ -373,7 +373,17 @@ export class UserProfileComponent implements OnInit {
         tel: this.profileForm.value.tel
       };
 
-      this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, profileData, { withCredentials: true })
+      // Get token for Authorization header
+      const token = localStorage.getItem('authToken');
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, profileData, { 
+        withCredentials: true,
+        headers: headers
+      })
         .subscribe({
           next: () => {
             this.toastService.success('Profile updated successfully!');
@@ -381,7 +391,12 @@ export class UserProfileComponent implements OnInit {
           },
           error: (error) => {
             console.error('Error updating profile:', error);
-            this.toastService.error('Failed to update profile');
+            if (error.status === 401) {
+              this.toastService.error('Authentication error. Please log in again.');
+              this.router.navigate(['/login']);
+            } else {
+              this.toastService.error('Failed to update profile');
+            }
             this.isUpdating = false;
           }
         });
@@ -419,7 +434,17 @@ This action cannot be undone!`;
         deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
       }
 
-      this.http.delete(`${environment.BACK_URL}/Client/account`, { withCredentials: true })
+      // Get token for Authorization header
+      const token = localStorage.getItem('authToken');
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      this.http.delete(`${environment.BACK_URL}/Client/account`, { 
+        withCredentials: true,
+        headers: headers
+      })
         .subscribe({
           next: () => {
             this.toastService.success('Account deleted successfully. We\'re sorry to see you go!');
