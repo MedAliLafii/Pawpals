@@ -106,14 +106,24 @@ clientRoutes.post('/loginClient', async (req, res) => {
             const token = jwt.sign({ client: client }, process.env.JWT_SECRET, { expiresIn });
 
             // Envoi du token dans un cookie sécurisé
-            res.cookie('token', token, {
+            const cookieOptions = {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production', // Secure in production
                 sameSite: 'lax', // Protects against CSRF
                 maxAge: rememberme ? 30 * 24 * 60 * 60 * 1000 : undefined,
-                path: '/',
-                domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
-            });
+                path: '/'
+            };
+            
+            // Only set domain if it's explicitly configured
+            if (process.env.NODE_ENV === 'production' && process.env.COOKIE_DOMAIN) {
+                cookieOptions.domain = process.env.COOKIE_DOMAIN;
+            }
+            
+            console.log('Setting cookie with options:', cookieOptions);
+            console.log('NODE_ENV:', process.env.NODE_ENV);
+            console.log('COOKIE_DOMAIN:', process.env.COOKIE_DOMAIN);
+            
+            res.cookie('token', token, cookieOptions);
 
                     // Success response
         res.status(200).json({ message: 'Login successful', token: token });
@@ -285,9 +295,13 @@ clientRoutes.post('/changePassword', async (req, res) => {
 
 // Route pour vérifier si le client est authentifié
 clientRoutes.get('/checkAuth', async (req, res) => {
+    console.log('Cookies received:', req.cookies);
+    console.log('Headers received:', req.headers);
+    
     const token = req.cookies.token; // Récupération du token depuis les cookies
 
     if (!token) {
+        console.log('No token found in cookies');
         return res.status(401).json({ error: 'Aucun token fourni, authentification requise.' });
     }
 
@@ -295,10 +309,12 @@ clientRoutes.get('/checkAuth', async (req, res) => {
         // Vérification du token
         jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
             if (err) {
+                console.log('Token verification failed:', err.message);
                 return res.status(401).json({ error: 'Invalid or expired token.' });
             }
 
             const client = decoded.client;
+            console.log('Token verified successfully for client:', client.clientID);
             res.status(200).json({ message: 'Client authenticated', client });
         });
     } catch (error) {
@@ -309,13 +325,19 @@ clientRoutes.get('/checkAuth', async (req, res) => {
 
 // Route for logout
 clientRoutes.post('/logout', async (req, res) => {
-    res.clearCookie('token', {
+    const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        path: '/',
-        domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
-    }); // Suppression du cookie de session
+        path: '/'
+    };
+    
+    // Only set domain if it's explicitly configured
+    if (process.env.NODE_ENV === 'production' && process.env.COOKIE_DOMAIN) {
+        cookieOptions.domain = process.env.COOKIE_DOMAIN;
+    }
+    
+    res.clearCookie('token', cookieOptions); // Suppression du cookie de session
     res.status(200).json({ message: 'Logout successful' });
 });
 
@@ -461,13 +483,19 @@ clientRoutes.delete('/account', async (req, res) => {
                             });
 
                             // Clear the authentication cookie
-                            res.clearCookie('token', {
+                            const cookieOptions = {
                                 httpOnly: true,
                                 secure: process.env.NODE_ENV === 'production',
                                 sameSite: 'lax',
-                                path: '/',
-                                domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
-                            });
+                                path: '/'
+                            };
+                            
+                            // Only set domain if it's explicitly configured
+                            if (process.env.NODE_ENV === 'production' && process.env.COOKIE_DOMAIN) {
+                                cookieOptions.domain = process.env.COOKIE_DOMAIN;
+                            }
+                            
+                            res.clearCookie('token', cookieOptions);
                             
                             res.status(200).json({ message: 'Account deleted successfully' });
                         });

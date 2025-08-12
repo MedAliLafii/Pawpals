@@ -51,7 +51,7 @@ export class PetCardComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['filters'] && changes['filters'].currentValue) {
+    if (changes['filters'] && changes['filters'].currentValue && this.filters) {
       this.fetchPets(); // Fetch pets whenever filters change
     }
   }
