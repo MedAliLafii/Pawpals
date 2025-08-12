@@ -56,8 +56,15 @@ export class AuthService {
   // Check authentication status using both cookies and localStorage
   checkAuthStatus(): Observable<boolean> {
     // First try with cookies (preferred method)
+    const token = localStorage.getItem('authToken');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     return this.http.get<{ client: any }>(`${environment.BACK_URL}/Client/checkAuth`, { 
-      withCredentials: true 
+      withCredentials: true,
+      headers: headers
     }).pipe(
       tap((response) => {
         this.isAuthenticated = true;

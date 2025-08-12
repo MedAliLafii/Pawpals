@@ -4,6 +4,11 @@ const cartRoutes = express.Router();
 const jwt = require('jsonwebtoken');
 require('dotenv').config(); // Load environment variables (like JWT secret key)
 
+// Test route to verify cart routes are loaded
+cartRoutes.get('/', (req, res) => {
+    res.status(200).json({ message: 'Cart routes are working' });
+});
+
 //Récupérer le panier d'un client 
 cartRoutes.get('/fetch', async (req, res) => {
     const pool = req.pool; 
@@ -47,8 +52,13 @@ cartRoutes.get('/fetch', async (req, res) => {
             });
         });
 
+        console.log('Cart fetch - Cart products found:', cartProducts.length);
+        console.log('Cart fetch - Client ID:', clientID);
+
         // Calcul du total du panier
         const totalCart = cartProducts.reduce((sum, item) => sum + item.total_ligne, 0);
+
+        console.log('Cart fetch - Total cart:', totalCart);
 
         // Envoi des données du panier
         res.status(200).json({
@@ -111,6 +121,11 @@ cartRoutes.post('/add', async (req, res) => {
             );
         });
 
+        console.log('Cart add - Existing product rows:', existingProductRows);
+        console.log('Cart add - Product ID:', produitID);
+        console.log('Cart add - Quantity:', quantite);
+        console.log('Cart add - Cart ID:', panierID);
+
         if (existingProductRows.length > 0) {
             // Mise à jour de la quantité si le produit est déjà dans le panier
             await new Promise((resolve, reject) => {
@@ -137,6 +152,7 @@ cartRoutes.post('/add', async (req, res) => {
             });
         }
 
+        console.log('Cart add - Product successfully added/updated to cart');
         res.status(200).json({ message: "Product added to cart" });
     } catch (error) {
         console.error("Error adding to cart:", error);

@@ -295,9 +295,14 @@ clientRoutes.post('/changePassword', async (req, res) => {
 
     // Route pour vérifier si le client est authentifié
     clientRoutes.get('/checkAuth', async (req, res) => {
-        const token = req.cookies.token; // Récupération du token depuis les cookies
+        const token = req.cookies.token || req.headers.authorization?.split(' ')[1]; // Check both cookies and Authorization header
+
+        console.log('CheckAuth - Token from cookies:', req.cookies.token);
+        console.log('CheckAuth - Token from headers:', req.headers.authorization);
+        console.log('CheckAuth - Final token:', token);
 
     if (!token) {
+        console.log('CheckAuth - No token found');
         return res.status(401).json({ error: 'Aucun token fourni, authentification requise.' });
     }
 
@@ -305,14 +310,16 @@ clientRoutes.post('/changePassword', async (req, res) => {
         // Vérification du token
         jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
             if (err) {
+                console.log('CheckAuth - Token verification failed:', err.message);
                 return res.status(401).json({ error: 'Invalid or expired token.' });
             }
 
+            console.log('CheckAuth - Token verified successfully:', decoded);
             const client = decoded.client;
             res.status(200).json({ message: 'Client authenticated', client });
         });
     } catch (error) {
-        console.error('Verification error:', error);
+        console.error('CheckAuth - Verification error:', error);
         return res.status(500).json({ error: 'Error verifying token.' });
     }
 });
