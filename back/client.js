@@ -453,7 +453,7 @@ clientRoutes.put('/updateClientInfo', async (req, res) => {
                     return res.status(404).json({ error: 'Client not found or no changes made.' });
                 }
 
-                console.log('UpdateClientInfo - Client updated successfully');
+                console.log('UpdateClientInfo - Update successful for client ID:', clientID);
                 res.status(200).json({ message: 'Update successful.' });
             });
         });
