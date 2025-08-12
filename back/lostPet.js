@@ -40,7 +40,7 @@ router.post('/add', authenticateJWT, upload.single('image'), (req, res) => {
   const { name, breed, age, type, dateLost, location, description } = req.body;
   const imageURL = req.file ? 'uploads/' + req.file.filename : null;  // Save the relative path for the image
 
-  const sql = `INSERT INTO LostPet (clientID, petName, breed, age, type, imageURL, dateLost, location, description)
+  const sql = `INSERT INTO lostpet (clientID, petName, breed, age, type, imageURL, dateLost, location, description)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 req.pool.query(sql, [req.clientID, name, breed, age, type, imageURL, dateLost, location, description], (err, results) => {
   // Continue as normal
@@ -70,8 +70,8 @@ router.get('/all', (req, res) => {
                  c.tel AS ownerPhone,
                  c.email AS ownerEmail,
                  lp.clientID
-               FROM LostPet lp
-               JOIN Client c ON lp.clientID = c.clientID`; // Join LostPet with Client table
+               FROM lostpet lp
+               JOIN Client c ON lp.clientID = c.clientID`; // Join lostpet with Client table
 
   req.pool.query(sql, (err, results) => {
     if (err) {
@@ -139,7 +139,7 @@ router.delete('/delete/:id', authenticateJWT, (req, res) => {
   const clientID = req.clientID; // Retrieved from the JWT token
 
   // SQL query to delete the lost pet entry for the authenticated client
-  const sql = `DELETE FROM LostPet WHERE lostPetID = ? AND clientID = ?`;
+  const sql = `DELETE FROM lostpet WHERE lostPetID = ? AND clientID = ?`;
 
   req.pool.query(sql, [lostPetId, clientID], (err, results) => {
     if (err) {
