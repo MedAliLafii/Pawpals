@@ -57,27 +57,69 @@ export class ApiService {
 
   // Cart endpoints
   getCart(): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/Cart`, { withCredentials: true });
+    const token = localStorage.getItem('authToken');
+    const headers: any = {};
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return this.http.get<any>(`${this.baseUrl}/Cart`, { withCredentials: true, headers });
   }
 
   fetchCart(): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/Cart/fetch`, { withCredentials: true });
+    const token = localStorage.getItem('authToken');
+    const headers: any = {};
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return this.http.get<any>(`${this.baseUrl}/Cart/fetch`, { withCredentials: true, headers });
   }
 
   addToCart(data: any): Observable<any> {
-    return this.http.post(`${this.baseUrl}/Cart/add`, data, { withCredentials: true });
+    const token = localStorage.getItem('authToken');
+    const headers: any = {};
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return this.http.post(`${this.baseUrl}/Cart/add`, data, { withCredentials: true, headers });
   }
 
   updateCart(data: any): Observable<any> {
-    return this.http.put(`${this.baseUrl}/Cart/update`, data, { withCredentials: true });
+    const token = localStorage.getItem('authToken');
+    const headers: any = {};
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return this.http.put(`${this.baseUrl}/Cart/update`, data, { withCredentials: true, headers });
   }
 
   removeFromCart(data: any): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/Cart/remove`, { body: data, withCredentials: true });
+    const token = localStorage.getItem('authToken');
+    const headers: any = {};
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return this.http.delete(`${this.baseUrl}/Cart/remove`, { body: data, withCredentials: true, headers });
   }
 
   commander(): Observable<any> {
-    return this.http.post(`${this.baseUrl}/Cart/commander`, {}, { withCredentials: true });
+    const token = localStorage.getItem('authToken');
+    const headers: any = {};
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return this.http.post(`${this.baseUrl}/Cart/commander`, {}, { withCredentials: true, headers });
   }
 
   // Product endpoints

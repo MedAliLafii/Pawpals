@@ -68,12 +68,18 @@ cartRoutes.post('/add', async (req, res) => {
     const { produitID, quantite } = req.body; // Récupération des données envoyées dans le corps de la requête
     const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
 
+    console.log('Cart add - Token from cookies:', req.cookies.token);
+    console.log('Cart add - Token from headers:', req.headers.authorization);
+    console.log('Cart add - Final token:', token);
+
     if (!token) {
+        console.log('Cart add - No token found');
         return res.status(401).json({ error: "Access denied, missing token." });
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Cart add - Token decoded successfully:', decoded);
         const clientID = decoded.client.clientID;
 
         // Vérifie si le panier existe déjà pour ce client
@@ -84,7 +90,23 @@ cartRoutes.post('/add', async (req, res) => {
             });
         });
 
-        let panierID = cartRows[0].panierID;
+        let panierID;
+        
+        // Si le panier n'existe pas, le créer
+        if (cartRows.length === 0) {
+            console.log('Cart add - Creating new cart for client:', clientID);
+            const createCartResult = await new Promise((resolve, reject) => {
+                pool.query("INSERT INTO panier (clientID) VALUES (?)", [clientID], (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                });
+            });
+            panierID = createCartResult.insertId;
+            console.log('Cart add - New cart created with ID:', panierID);
+        } else {
+            panierID = cartRows[0].panierID;
+            console.log('Cart add - Using existing cart ID:', panierID);
+        }
 
         // Vérifie si le produit est déjà présent dans le panier
         const existingProductRows = await new Promise((resolve, reject) => {
@@ -158,11 +180,23 @@ cartRoutes.put('/update', async (req, res) => {
             });
         });
 
+        let panierID;
+        
+        // Si le panier n'existe pas, le créer
         if (cartRows.length === 0) {
-            return res.status(404).json({ error: "Cart not found." });
+            console.log('Cart update - Creating new cart for client:', clientID);
+            const createCartResult = await new Promise((resolve, reject) => {
+                pool.query("INSERT INTO panier (clientID) VALUES (?)", [clientID], (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                });
+            });
+            panierID = createCartResult.insertId;
+            console.log('Cart update - New cart created with ID:', panierID);
+        } else {
+            panierID = cartRows[0].panierID;
+            console.log('Cart update - Using existing cart ID:', panierID);
         }
-
-        const panierID = cartRows[0].panierID;
 
         // Vérifie la quantité actuelle dans le panier
         const currentQuantityQuery = "SELECT quantite FROM panier_produit WHERE panierID = ? AND produitID = ?";
@@ -248,6 +282,10 @@ cartRoutes.delete('/remove', async (req, res) => {
             });
         });
 
+        if (cartRows.length === 0) {
+            return res.status(404).json({ error: "Cart not found." });
+        }
+
         const panierID = cartRows[0].panierID;
 
         // Suppression du produit du panier
@@ -288,6 +326,10 @@ cartRoutes.post('/commander', async (req, res) => {
                 else resolve(rows);
             });
         });
+
+        if (cartRows.length === 0) {
+            return res.status(404).json({ error: "Cart not found." });
+        }
 
         const panierID = cartRows[0].panierID;
 
