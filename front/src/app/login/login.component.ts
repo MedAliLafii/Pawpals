@@ -131,25 +131,10 @@ export class LoginComponent {
         }
 
         // Automatically log in after registration
-        this.http.post(`${environment.BACK_URL}/Client/loginClient`, formData, { withCredentials: true }).subscribe({
+        this.authService.login(formData).subscribe({
           next: (response: any) => {
             this.toastService.success('Login successful! Welcome to PawPals!');
             
-            // Store token in localStorage as fallback for cross-domain issues
-            if (response.token) {
-              localStorage.setItem('authToken', response.token);
-              localStorage.setItem('userData', JSON.stringify(response.client));
-            }
-
-            // Update auth service state
-            this.authService['isAuthenticated'] = true;
-            this.authService['currentUser'] = response.client;
-            this.authService['authChecked'] = true;
-            this.authService['authStatusSubject'].next({
-              isAuthenticated: true,
-              user: response.client
-            });
-
             // Wait a moment for the auth service to update, then redirect
             setTimeout(() => {
               this.router.navigate(['/']); // Redirect to home page
@@ -218,25 +203,11 @@ export class LoginComponent {
       loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
     }
 
-    // Send login request to backend
-    this.http.post(`${environment.BACK_URL}/Client/loginClient`, loginData, { withCredentials: true }).subscribe({
+    // Use AuthService login method
+    this.authService.login(loginData).subscribe({
       next: (response: any) => {
+        console.log('Login successful, response:', response);
         this.toastService.success('Login successful! Welcome back!');
-
-        // Store token in localStorage as fallback for cross-domain issues
-        if (response.token) {
-          localStorage.setItem('authToken', response.token);
-          localStorage.setItem('userData', JSON.stringify(response.client));
-        }
-
-        // Update auth service state
-        this.authService['isAuthenticated'] = true;
-        this.authService['currentUser'] = response.client;
-        this.authService['authChecked'] = true;
-        this.authService['authStatusSubject'].next({
-          isAuthenticated: true,
-          user: response.client
-        });
 
         // Reset button state
         if (loginButton) {
@@ -246,12 +217,15 @@ export class LoginComponent {
 
         // Wait a moment for the auth service to update, then redirect
         setTimeout(() => {
+          console.log('About to redirect...');
           // Check if there's a redirect URL stored
           const redirectUrl = localStorage.getItem('redirectUrl');
           if (redirectUrl) {
+            console.log('Redirecting to stored URL:', redirectUrl);
             localStorage.removeItem('redirectUrl');
             this.router.navigate([redirectUrl]);
           } else {
+            console.log('Redirecting to home page');
             this.router.navigate(['/']); // Redirect to home page
           }
         }, 100);

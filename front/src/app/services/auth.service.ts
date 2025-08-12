@@ -21,6 +21,38 @@ export class AuthService {
     this.checkAuthStatus().subscribe();
   }
 
+  // Set authentication state after successful login
+  setAuthState(user: any, token?: string): void {
+    console.log('Setting auth state:', { user, token });
+    this.isAuthenticated = true;
+    this.currentUser = user;
+    this.authChecked = true;
+    
+    // Store token in localStorage if provided
+    if (token) {
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('userData', JSON.stringify(user));
+    }
+    
+    this.authStatusSubject.next({
+      isAuthenticated: true,
+      user: user
+    });
+    console.log('Auth state updated, isAuthenticated:', this.isAuthenticated);
+  }
+
+  // Login method
+  login(loginData: any): Observable<any> {
+    return this.http.post(`${environment.BACK_URL}/Client/loginClient`, loginData, { 
+      withCredentials: true 
+    }).pipe(
+      tap((response: any) => {
+        // Update auth state after successful login
+        this.setAuthState(response.client, response.token);
+      })
+    );
+  }
+
   // Check authentication status using both cookies and localStorage
   checkAuthStatus(): Observable<boolean> {
     // First try with cookies (preferred method)
