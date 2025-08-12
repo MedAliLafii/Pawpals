@@ -3,7 +3,6 @@ import { Component, OnInit } from '@angular/core'; // To define a component and 
 import { CommonModule } from '@angular/common'; // Core Angular module (ngIf, ngFor, etc.)
 import { HttpClient } from '@angular/common/http'; // To perform HTTP requests
 import { ActivatedRoute } from '@angular/router'; // To access route parameters
-import { environment } from '../../environments/environment';
 
 // Import custom components (header and footer)
 import { HeaderComponent } from '../components/header/header.component';
@@ -38,7 +37,7 @@ export class CartComponent implements OnInit {
   // Method to retrieve cart data from the backend
   fetchCart(): void {
     this.http.get<{produits: any[], total: number}>(
-      `${environment.apiUrl}/Cart/fetch`, // API URL to get cart items
+      `${import.meta.env.BACK_URL}/Cart/fetch`, // API URL to get cart items
       { withCredentials: true } // Sends cookies for authentication
     ).subscribe(
       (response) => {
@@ -72,7 +71,7 @@ export class CartComponent implements OnInit {
   // Method to send a request to the backend to update quantity
   updateQuantity(produitID: number, quantite: number): void {
     this.http.put(
-      `${environment.apiUrl}/Cart/update`, // Update URL
+      `${import.meta.env.BACK_URL}/Cart/update`, // Update URL
       { produitID, quantite }, // Data to send
       { withCredentials: true } // Sends cookies
     ).subscribe(
@@ -97,7 +96,7 @@ export class CartComponent implements OnInit {
   // Method to remove an item from the cart
   removeFromCart(produitID: number): void {
     this.http.delete(
-      `${environment.apiUrl}/Cart/remove`, // Deletion URL
+      `${import.meta.env.BACK_URL}/Cart/remove`, // Deletion URL
       {
         body: { produitID }, // Product ID to remove (sent in the body)
         withCredentials: true // Sends cookies

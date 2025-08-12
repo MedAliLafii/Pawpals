@@ -2,8 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router'; 
 import { CategoryService } from '../../services/categorie.service'; 
 import { HttpClient } from '@angular/common/http';
-import { CommonModule } from '@angular/common';
-import { environment } from '../../../environments/environment'; 
+import { CommonModule } from '@angular/common'; 
 
 @Component({
   selector: 'app-categories',
@@ -51,7 +50,7 @@ export class CategoriesComponent {
 
   // Vérifie si le client est connecté en appelant l'API côté backend
   checkAuthStatus(): void {
-    this.http.get<{ client: any }>(`${environment.apiUrl}/Client/checkAuth`, {
+    this.http.get<{ client: any }>(`${import.meta.env.BACK_URL}/Client/checkAuth`, {
       withCredentials: true // Inclut les cookies dans la requête (pour les sessions)
     }).subscribe(
       (response) => {
@@ -80,7 +79,7 @@ export class CategoriesComponent {
 
   // Fonction pour déconnecter l'utilisateur
   logout(): void {
-    this.http.post(`${environment.apiUrl}/Client/logout`, {}, {
+    this.http.post(`${import.meta.env.BACK_URL}/Client/logout`, {}, {
       withCredentials: true // Envoie aussi les cookies de session
     }).subscribe(
       () => {

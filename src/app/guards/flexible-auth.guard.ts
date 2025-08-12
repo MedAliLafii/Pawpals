@@ -3,7 +3,6 @@ import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +26,7 @@ export class FlexibleAuthGuard implements CanActivate {
     }
     
     // Route requires authentication, check if user is authenticated
-    return this.http.get(`${environment.apiUrl}/Client/checkAuth`, { withCredentials: true })
+    return this.http.get(`${import.meta.env.BACK_URL}/Client/checkAuth`, { withCredentials: true })
       .pipe(
         map(() => {
           // User is authenticated, allow access

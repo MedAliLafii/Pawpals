@@ -8,8 +8,8 @@ require('dotenv').config();
 // Set up multer for handling image uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Save images to the 'src/assets/uploadslost' directory
-    cb(null, path.join(__dirname, '..', 'src', 'assets', 'uploadslost'));  // Adjusted for 'src/assets/uploadslost'
+    // Save images to the 'src/assets/uploads' directory
+    cb(null, path.join(__dirname, '..', 'src', 'assets', 'uploads'));  // Adjusted for 'src/assets/uploads'
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));  // Add unique timestamp to file names
@@ -38,7 +38,7 @@ router.post('/add', authenticateJWT, upload.single('image'), (req, res) => {
   console.log("Received file:", req.file);  // Logs file details to the console
 
   const { name, breed, age, type, dateLost, location, description } = req.body;
-  const imageURL = req.file ? 'uploadslost/' + req.file.filename : null;  // Save the relative path for the image
+  const imageURL = req.file ? 'uploads/' + req.file.filename : null;  // Save the relative path for the image
 
   const sql = `INSERT INTO LostPet (clientID, petName, breed, age, type, imageURL, dateLost, location, description)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;

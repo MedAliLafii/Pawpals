@@ -10,6 +10,8 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+src/.env
+back/.env
 
 # Build outputs
 dist/
@@ -101,5 +103,5 @@ temp/
 # Uploaded files (keep structure but ignore content)
 src/assets/uploads/*
 !src/assets/uploads/.gitkeep
-src/assets/uploadslost/*
-!src/assets/uploadslost/.gitkeep
+src/assets/uploads/*
+!src/assets/uploads/.gitkeep

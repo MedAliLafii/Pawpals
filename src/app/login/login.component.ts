@@ -1,7 +1,6 @@
 import { Component } from '@angular/core'; 
 import { Router } from '@angular/router'; 
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment'; 
+import { HttpClient } from '@angular/common/http'; 
 
 @Component({
   selector: 'app-login', 
@@ -99,12 +98,12 @@ export class LoginComponent {
     };
 
     // Send data to backend to register client
-    this.http.post(`${environment.apiUrl}/Client/registerClient`, formData, { withCredentials: true }).subscribe({
+          this.http.post(`${import.meta.env.BACK_URL}/Client/registerClient`, formData, { withCredentials: true }).subscribe({
       next: (response: any) => {
         alert('Registration successful! Your account has been created.');
 
         // Automatically log in after registration
-        this.http.post(`${environment.apiUrl}/Client/loginClient`, formData, { withCredentials: true }).subscribe({
+        this.http.post(`${import.meta.env.BACK_URL}/Client/loginClient`, formData, { withCredentials: true }).subscribe({
           next: (response: any) => {
             alert('Login successful!');
             this.router.navigate(['/']); // Redirect to home page
@@ -144,7 +143,7 @@ export class LoginComponent {
     };
 
     // Send login request to backend
-    this.http.post(`${environment.apiUrl}/Client/loginClient`, loginData, { withCredentials: true }).subscribe({
+    this.http.post(`${import.meta.env.BACK_URL}/Client/loginClient`, loginData, { withCredentials: true }).subscribe({
       next: (response: any) => {
         alert('Login successful!');
         
@@ -165,7 +164,7 @@ export class LoginComponent {
 
   // Check if user is already logged in (active session on server side)
   checkAuthStatus(): void {
-    this.http.get<{ client: any }>(`${environment.apiUrl}/Client/checkAuth`, { withCredentials: true }).subscribe(
+    this.http.get<{ client: any }>(`${import.meta.env.BACK_URL}/Client/checkAuth`, { withCredentials: true }).subscribe(
       (response) => {
         console.log('Already logged in:', response); // Show info if user is authenticated
         this.router.navigate(['/']); // Redirect to home if authenticated

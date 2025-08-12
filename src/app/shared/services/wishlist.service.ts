@@ -3,14 +3,13 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { Product } from '../../models';
 import { ToastService } from './toast.service';
-import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WishlistService {
   private wishlistItems = new BehaviorSubject<Product[]>([]);
-  private readonly apiUrl = `${environment.apiUrl}/wishlist`;
+  private readonly apiUrl = `${import.meta.env.BACK_URL}/wishlist`;
 
   constructor(
     private http: HttpClient,
