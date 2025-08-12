@@ -15,200 +15,132 @@ const connection = mysql.createConnection(dbConfig);
 
 // Sample data
 const categories = [
-  { nom: 'Dog Food', description: 'High-quality food for dogs of all ages and sizes' },
-  { nom: 'Cat Food', description: 'Nutritious food for cats and kittens' },
-  { nom: 'Toys', description: 'Fun and engaging toys for pets' },
-  { nom: 'Accessories', description: 'Collars, leashes, and other pet accessories' },
-  { nom: 'Health & Care', description: 'Health supplements and grooming products' },
-  { nom: 'Beds & Furniture', description: 'Comfortable beds and furniture for pets' },
-  { nom: 'Training', description: 'Training tools and equipment' }
+  { nom: 'Chien', description: 'Tout pour l\'alimentation, la santé et le bien-être de votre chien.' },
+  { nom: 'Chat', description: 'Large choix de nourritures et accessoires pour chats heureux.' },
+  { nom: 'Oiseau', description: 'Alimentation adaptée pour oiseaux domestiques et exotiques.' }
 ];
 
 const products = [
-  // Dog Food
+  // Dog Food Products (using chien1-7.webp)
   {
-    nom: 'Premium Dog Food - Adult',
-    description: 'High-quality dry food for adult dogs with balanced nutrition',
-    prix: 29.99,
-    stock: 50,
-    imageURL: '/assets/images/dog-food-1.jpg',
-    categorieNom: 'Dog Food'
-  },
-  {
-    nom: 'Puppy Food - Growth Formula',
-    description: 'Specially formulated for puppies up to 12 months',
-    prix: 34.99,
-    stock: 30,
-    imageURL: '/assets/images/dog-food-2.jpg',
-    categorieNom: 'Dog Food'
-  },
-  {
-    nom: 'Senior Dog Food - Joint Health',
-    description: 'Formulated for senior dogs with joint support',
-    prix: 39.99,
-    stock: 25,
-    imageURL: '/assets/images/dog-food-3.jpg',
-    categorieNom: 'Dog Food'
-  },
-
-  // Cat Food
-  {
-    nom: 'Premium Cat Food - Indoor',
-    description: 'Specially formulated for indoor cats',
-    prix: 24.99,
-    stock: 40,
-    imageURL: '/assets/images/cat-food-1.jpg',
-    categorieNom: 'Cat Food'
-  },
-  {
-    nom: 'Kitten Food - Growth Formula',
-    description: 'Complete nutrition for kittens up to 12 months',
-    prix: 27.99,
-    stock: 35,
-    imageURL: '/assets/images/cat-food-2.jpg',
-    categorieNom: 'Cat Food'
-  },
-  {
-    nom: 'Cat Food - Weight Control',
-    description: 'Helps maintain healthy weight for adult cats',
-    prix: 26.99,
-    stock: 30,
-    imageURL: '/assets/images/cat-food-3.jpg',
-    categorieNom: 'Cat Food'
-  },
-
-  // Toys
-  {
-    nom: 'Interactive Dog Toy Ball',
-    description: 'Durable ball that dispenses treats as your dog plays',
-    prix: 19.99,
-    stock: 60,
-    imageURL: '/assets/images/dog-toy-1.jpg',
-    categorieNom: 'Toys'
-  },
-  {
-    nom: 'Cat Teaser Wand',
-    description: 'Interactive wand with feathers for engaging play',
-    prix: 12.99,
-    stock: 45,
-    imageURL: '/assets/images/cat-toy-1.jpg',
-    categorieNom: 'Toys'
-  },
-  {
-    nom: 'Chew Toy - Durable',
-    description: 'Long-lasting chew toy for aggressive chewers',
-    prix: 15.99,
-    stock: 40,
-    imageURL: '/assets/images/dog-toy-2.jpg',
-    categorieNom: 'Toys'
-  },
-
-  // Accessories
-  {
-    nom: 'Adjustable Dog Collar',
-    description: 'Comfortable nylon collar with quick-release buckle',
-    prix: 18.99,
-    stock: 70,
-    imageURL: '/assets/images/collar-1.jpg',
-    categorieNom: 'Accessories'
-  },
-  {
-    nom: 'Retractable Dog Leash',
-    description: '16ft retractable leash with ergonomic handle',
-    prix: 34.99,
-    stock: 25,
-    imageURL: '/assets/images/leash-1.jpg',
-    categorieNom: 'Accessories'
-  },
-  {
-    nom: 'Cat Harness & Leash Set',
-    description: 'Comfortable harness with matching leash for cats',
-    prix: 22.99,
-    stock: 30,
-    imageURL: '/assets/images/cat-harness.jpg',
-    categorieNom: 'Accessories'
-  },
-
-  // Health & Care
-  {
-    nom: 'Joint Health Supplement',
-    description: 'Glucosamine supplement for joint health',
-    prix: 28.99,
-    stock: 35,
-    imageURL: '/assets/images/supplement-1.jpg',
-    categorieNom: 'Health & Care'
-  },
-  {
-    nom: 'Pet Grooming Kit',
-    description: 'Complete grooming kit with brushes and combs',
-    prix: 45.99,
-    stock: 20,
-    imageURL: '/assets/images/grooming-kit.jpg',
-    categorieNom: 'Health & Care'
-  },
-  {
-    nom: 'Dental Care Kit',
-    description: 'Toothbrush and toothpaste for pets',
-    prix: 16.99,
-    stock: 40,
-    imageURL: '/assets/images/dental-kit.jpg',
-    categorieNom: 'Health & Care'
-  },
-
-  // Beds & Furniture
-  {
-    nom: 'Orthopedic Dog Bed',
-    description: 'Memory foam bed for joint support',
-    prix: 89.99,
-    stock: 15,
-    imageURL: '/assets/images/dog-bed-1.jpg',
-    categorieNom: 'Beds & Furniture'
-  },
-  {
-    nom: 'Cat Tree with Scratching Posts',
-    description: 'Multi-level cat tree with built-in scratching posts',
-    prix: 129.99,
-    stock: 10,
-    imageURL: '/assets/images/cat-tree.jpg',
-    categorieNom: 'Beds & Furniture'
-  },
-  {
-    nom: 'Pet Carrier - Travel',
-    description: 'Comfortable carrier for travel and vet visits',
+    nom: 'POULET, COURGE, MYRTILLE',
+    description: 'Voilà la recette mono-protéine idéale pour les chiens stérilisés qui veulent retrouver la ligne ! Elle contient 70% de poulet, une viande maigre, peu calorique et riche en protéines pour avoir la pêche, des fruits et des légumes pour faire le plein de vitamines et de fibres, des minéraux et des prébiotiques pour renforcer la santé intestinale. Et roule ma poule !',
     prix: 49.99,
-    stock: 25,
-    imageURL: '/assets/images/pet-carrier.jpg',
-    categorieNom: 'Beds & Furniture'
+    stock: 11,
+    imageURL: 'chien1.webp',
+    categorieNom: 'Chien'
+  },
+  {
+    nom: 'Croquettes Sans Céréales Chien Digestion Sensible',
+    description: 'Nos croquettes fabriquées sans céréales pour chien Digestion Sensible contiennent de l agneau qui est une excellente source de protéines. Elles sont adaptées à tous les chiens, notamment ceux présentant des sensibilités digestives.',
+    prix: 12.50,
+    stock: 150,
+    imageURL: 'chien2.webp',
+    categorieNom: 'Chien'
+  },
+  {
+    nom: 'DINDE, CANARD, COURGE',
+    description: 'Une délicieuse recette sans céréales avec 50% de canard et de dinde, accompagnée de super-aliments comme l\'huile de saumon ou les graines de lin riches en nutriments : des antioxydants pour l\'immunité, des prébiotiques pour la digestion et des oméga-3 pour la peau et le pelage.',
+    prix: 39.99,
+    stock: 80,
+    imageURL: 'chien3.webp',
+    categorieNom: 'Chien'
+  },
+  {
+    nom: 'POULET, FRAMBOISE, ORIGAN',
+    description: 'Plutôt laile ou la cuisse ? Peu importe ! Notre pâtée mono-protéine contient 70% de poulet pour faire plaisir aux fans de volailles ! Formulée avec des prébiotiques et de l origan, une herbe aromatique qui facilite le transit et lutte contre la constipation.',
+    prix: 9.99,
+    stock: 120,
+    imageURL: 'chien4.webp',
+    categorieNom: 'Chien'
+  },
+  {
+    nom: 'STICKS MENTHE, SAUGE',
+    description: 'Marre des léchouilles puantes de votre chien ? Découvrez nos sticks dentaires pour laider à retrouver une haleine à bisous ! La menthe est une plante riche en vitamines qui favorisent une meilleure haleine, tandis que la sauge améliore le confort digestif.',
+    prix: 34.50,
+    stock: 75,
+    imageURL: 'chien5.webp',
+    categorieNom: 'Chien'
+  },
+  {
+    nom: 'GUMMIES ARTICULATIONS',
+    description: 'Soulagez les douleurs articulaires de votre chien et aidez le à retrouver sa mobilité avec nos gummies Articulations ! Formulés par des vétérinaires et experts en nutrition, ils contiennent 12 principes actifs comme la glucosamine, le MSM et le sulfate de chondroïtine.',
+    prix: 31.50,
+    stock: 75,
+    imageURL: 'chien6.webp',
+    categorieNom: 'Chien'
+  },
+  {
+    nom: 'GUMMIES PROBIOTIQUES',
+    description: 'Améliorez la digestion de votre chien avec nos gummies aux 6 principes actifs parfaitement équilibrés entre probiotiques et prébiotiques ! Des délicieuses bouchées pour soutenir la flore intestinale et aider à une meilleure absorption des nutriments.',
+    prix: 30.50,
+    stock: 75,
+    imageURL: 'chien7.webp',
+    categorieNom: 'Chien'
   },
 
-  // Training
+  // Cat Food Products (using chat1-4.webp)
   {
-    nom: 'Clicker Training Kit',
-    description: 'Clicker with training guide for positive reinforcement',
-    prix: 14.99,
+    nom: 'POULET, THON, SAUMON',
+    description: 'Avis aux minets stérilisés ! Voilà la recette idéale pour les chats en quête d\'équilibre. Elle contient 70% poulet et de poisson, une parfaite combinaison entre une viande maigre et complète pour garder la ligne et du poisson pour faire le plein d oméga-3.',
+    prix: 35.50,
+    stock: 75,
+    imageURL: 'chat1.webp',
+    categorieNom: 'Chat'
+  },
+  {
+    nom: 'CANARD, VALÉRIANE',
+    description: 'Avis aux fins gourmets ! Cette délicieuse pâtée mono-protéine a été préparée avec 65% de canard, une viande peu allergène, savoureuse et riche en goût. De quoi combler le palais de votre chat stérilisé.',
+    prix: 20.50,
+    stock: 75,
+    imageURL: 'chat2.webp',
+    categorieNom: 'Chat'
+  },
+  {
+    nom: 'CANARD, POULET, POMME',
+    description: 'Voilà la recette idéale pour les amateurs de volaille en sauce ultra savoureuse ! Elle contient 85% de filets de poulet et de canard, pour varier les apports en protéines. De la pomme pour faire le plein de fibres et faciliter la digestion.',
+    prix: 20.50,
+    stock: 75,
+    imageURL: 'chat3.webp',
+    categorieNom: 'Chat'
+  },
+  {
+    nom: 'HUILE DE CHANVRE BIO',
+    description: 'Grâce à ses nombreux bienfaits, l huile de chanvre est le meilleur allié pour préserver la santé de votre chat. Elle permet de renforcer l immunité, de réduire les inflammations et de calmer son stress.',
+    prix: 25.50,
+    stock: 75,
+    imageURL: 'chat4.webp',
+    categorieNom: 'Chat'
+  },
+
+  // Bird Food Products (using bird4.jpg, bird5.jpg, oiseau.webp)
+  {
+    nom: 'Mélange Pigeon « Élevage Spécial 102 » 25kg',
+    description: 'Mélange élevage pour pigeons de qualité supérieure, riche en protéines et vitamines essentielles pour la santé et la reproduction.',
+    prix: 25.50,
+    stock: 75,
+    imageURL: 'oiseau.webp',
+    categorieNom: 'Oiseau'
+  },
+  {
+    nom: 'Graines Premium pour Oiseaux Exotiques',
+    description: 'Mélange spécialement formulé pour les oiseaux exotiques, contenant des graines de haute qualité et des fruits séchés.',
+    prix: 18.99,
     stock: 50,
-    imageURL: '/assets/images/clicker.jpg',
-    categorieNom: 'Training'
+    imageURL: 'bird4.jpg',
+    categorieNom: 'Oiseau'
   },
   {
-    nom: 'Training Treats - Small',
-    description: 'Soft training treats perfect for small dogs',
-    prix: 8.99,
-    stock: 80,
-    imageURL: '/assets/images/training-treats.jpg',
-    categorieNom: 'Training'
-  },
-  {
-    nom: 'Pet Training Pads',
-    description: 'Absorbent training pads for housebreaking',
-    prix: 19.99,
+    nom: 'Nourriture Complète pour Perruches',
+    description: 'Alimentation équilibrée pour perruches et petits oiseaux, enrichie en vitamines et minéraux essentiels.',
+    prix: 15.75,
     stock: 60,
-    imageURL: '/assets/images/training-pads.jpg',
-    categorieNom: 'Training'
+    imageURL: 'bird5.jpg',
+    categorieNom: 'Oiseau'
   }
 ];
 
-// Sample adoption pets
+// Sample adoption pets (using dog1-4.jpg, cat2-4.jpg, parrot1-3.png, mimi.jpg)
 const adoptionPets = [
   {
     clientID: 1,
@@ -217,10 +149,10 @@ const adoptionPets = [
     age: 3,
     type: 'Dog',
     gender: 'Male',
-    imageURL: '/assets/images/buddy.jpg',
+    imageURL: 'dog1.webp',
     location: 'Tunis',
     shelter: 'Happy Paws Shelter',
-    description: 'Friendly and energetic Golden Retriever looking for an active family',
+    description: 'Friendly and energetic Golden Retriever looking for an active family. Loves playing fetch and going for walks.',
     goodWithKids: 1,
     goodWithOtherPets: 1,
     houseTrained: 1,
@@ -233,10 +165,10 @@ const adoptionPets = [
     age: 2,
     type: 'Cat',
     gender: 'Female',
-    imageURL: '/assets/images/luna.jpg',
+    imageURL: 'cat2.jpg',
     location: 'Sfax',
     shelter: 'Feline Friends',
-    description: 'Beautiful Persian cat, calm and affectionate',
+    description: 'Beautiful Persian cat, calm and affectionate. Perfect for a quiet home environment.',
     goodWithKids: 1,
     goodWithOtherPets: 0,
     houseTrained: 1,
@@ -249,18 +181,50 @@ const adoptionPets = [
     age: 1,
     type: 'Dog',
     gender: 'Male',
-    imageURL: '/assets/images/max.jpg',
+    imageURL: 'dog2.jpg',
     location: 'Sousse',
     shelter: 'Second Chance Shelter',
-    description: 'Young and playful mixed breed dog, great with children',
+    description: 'Young and playful mixed breed dog, great with children. Very energetic and loves outdoor activities.',
     goodWithKids: 1,
     goodWithOtherPets: 1,
     houseTrained: 0,
     specialNeeds: 0
+  },
+  {
+    clientID: 1,
+    petName: 'Mimi',
+    breed: 'Domestic Shorthair',
+    age: 4,
+    type: 'Cat',
+    gender: 'Female',
+    imageURL: 'mimi.jpg',
+    location: 'Tunis',
+    shelter: 'Cat Care Center',
+    description: 'Sweet and gentle cat, loves cuddles and quiet time. Perfect companion for a calm household.',
+    goodWithKids: 1,
+    goodWithOtherPets: 1,
+    houseTrained: 1,
+    specialNeeds: 0
+  },
+  {
+    clientID: 1,
+    petName: 'Charlie',
+    breed: 'African Grey Parrot',
+    age: 5,
+    type: 'Bird',
+    gender: 'Male',
+    imageURL: 'parrot1.jpg',
+    location: 'Sfax',
+    shelter: 'Winged Friends',
+    description: 'Intelligent and talkative African Grey parrot. Loves interaction and can learn many words and phrases.',
+    goodWithKids: 1,
+    goodWithOtherPets: 0,
+    houseTrained: 1,
+    specialNeeds: 0
   }
 ];
 
-// Sample lost pets
+// Sample lost pets (using remaining images)
 const lostPets = [
   {
     clientID: 1,
@@ -268,10 +232,10 @@ const lostPets = [
     breed: 'Maine Coon',
     age: 4,
     type: 'Cat',
-    imageURL: '/assets/images/fluffy.jpg',
+    imageURL: 'cat3.jpg',
     dateLost: '2024-01-15',
     location: 'Tunis',
-    description: 'Large orange Maine Coon cat, very friendly, responds to "Fluffy"'
+    description: 'Large orange Maine Coon cat, very friendly, responds to "Fluffy". Wearing a red collar with bell.'
   },
   {
     clientID: 1,
@@ -279,10 +243,43 @@ const lostPets = [
     breed: 'German Shepherd',
     age: 5,
     type: 'Dog',
-    imageURL: '/assets/images/rocky.jpg',
+    imageURL: 'dog3.jpg',
     dateLost: '2024-01-20',
     location: 'Sfax',
-    description: 'Black and tan German Shepherd, wearing blue collar with ID tag'
+    description: 'Black and tan German Shepherd, wearing blue collar with ID tag. Very friendly and responds to commands.'
+  },
+  {
+    clientID: 1,
+    petName: 'Sky',
+    breed: 'Blue Parrot',
+    age: 3,
+    type: 'Bird',
+    imageURL: 'parrot2.jpg',
+    dateLost: '2024-01-25',
+    location: 'Sousse',
+    description: 'Beautiful blue parrot, very vocal and friendly. Responds to "Sky" and loves sunflower seeds.'
+  },
+  {
+    clientID: 1,
+    petName: 'Shadow',
+    breed: 'Domestic Shorthair',
+    age: 2,
+    type: 'Cat',
+    imageURL: 'cat4.jpg',
+    dateLost: '2024-01-30',
+    location: 'Tunis',
+    description: 'Black cat with white paws, very shy but friendly once comfortable. Responds to "Shadow".'
+  },
+  {
+    clientID: 1,
+    petName: 'Rex',
+    breed: 'Rottweiler',
+    age: 6,
+    type: 'Dog',
+    imageURL: 'dog4.jpg',
+    dateLost: '2024-02-01',
+    location: 'Sfax',
+    description: 'Large Rottweiler with brown markings, wearing a black collar. Very loyal and protective.'
   }
 ];
 
@@ -302,15 +299,15 @@ async function seedDatabase() {
     console.log('Clearing existing data...');
     await new Promise((resolve, reject) => {
       connection.query(`
-        DELETE FROM Commande_Produit;
-        DELETE FROM Commande;
-        DELETE FROM Panier_Produit;
-        DELETE FROM Panier;
-        DELETE FROM LostPet;
-        DELETE FROM AdoptionPet;
-        DELETE FROM Produit;
-        DELETE FROM Categorie;
-        DELETE FROM Client WHERE clientID > 1;
+        DELETE FROM commande_produit;
+        DELETE FROM commande;
+        DELETE FROM panier_produit;
+        DELETE FROM panier;
+        DELETE FROM lostpet;
+        DELETE FROM adoptionpet;
+        DELETE FROM produit;
+        DELETE FROM categorie;
+        DELETE FROM client WHERE clientID > 1;
       `, (err) => {
         if (err) reject(err);
         else resolve();
@@ -321,10 +318,10 @@ async function seedDatabase() {
     console.log('Resetting auto-increment counters...');
     await new Promise((resolve, reject) => {
       connection.query(`
-        ALTER TABLE Categorie AUTO_INCREMENT = 1;
-        ALTER TABLE Produit AUTO_INCREMENT = 1;
-        ALTER TABLE AdoptionPet AUTO_INCREMENT = 1;
-        ALTER TABLE LostPet AUTO_INCREMENT = 1;
+        ALTER TABLE categorie AUTO_INCREMENT = 1;
+        ALTER TABLE produit AUTO_INCREMENT = 1;
+        ALTER TABLE adoptionpet AUTO_INCREMENT = 1;
+        ALTER TABLE lostpet AUTO_INCREMENT = 1;
       `, (err) => {
         if (err) reject(err);
         else resolve();
@@ -336,7 +333,7 @@ async function seedDatabase() {
     for (const category of categories) {
       await new Promise((resolve, reject) => {
         connection.query(
-          'INSERT INTO Categorie (nom, description) VALUES (?, ?)',
+          'INSERT INTO categorie (nom, description) VALUES (?, ?)',
           [category.nom, category.description],
           (err) => {
             if (err) reject(err);
@@ -349,7 +346,7 @@ async function seedDatabase() {
     // Get category IDs
     console.log('Getting category IDs...');
     const categoryResults = await new Promise((resolve, reject) => {
-      connection.query('SELECT categorieID, nom FROM Categorie', (err, results) => {
+      connection.query('SELECT categorieID, nom FROM categorie', (err, results) => {
         if (err) reject(err);
         else resolve(results);
       });
@@ -371,7 +368,7 @@ async function seedDatabase() {
 
       await new Promise((resolve, reject) => {
         connection.query(
-          'INSERT INTO Produit (nom, description, prix, stock, imageURL, categorieID) VALUES (?, ?, ?, ?, ?, ?)',
+          'INSERT INTO produit (nom, description, prix, stock, imageURL, categorieID) VALUES (?, ?, ?, ?, ?, ?)',
           [product.nom, product.description, product.prix, product.stock, product.imageURL, categorieID],
           (err) => {
             if (err) reject(err);
@@ -386,7 +383,7 @@ async function seedDatabase() {
     for (const pet of adoptionPets) {
       await new Promise((resolve, reject) => {
         connection.query(
-          `INSERT INTO AdoptionPet (clientID, petName, breed, age, type, gender, imageURL, location, shelter, description, goodWithKids, goodWithOtherPets, houseTrained, specialNeeds) 
+          `INSERT INTO adoptionpet (clientID, petName, breed, age, type, gender, imageURL, location, shelter, description, goodWithKids, goodWithOtherPets, houseTrained, specialNeeds) 
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [pet.clientID, pet.petName, pet.breed, pet.age, pet.type, pet.gender, pet.imageURL, pet.location, pet.shelter, pet.description, pet.goodWithKids, pet.goodWithOtherPets, pet.houseTrained, pet.specialNeeds],
           (err) => {
@@ -402,7 +399,7 @@ async function seedDatabase() {
     for (const pet of lostPets) {
       await new Promise((resolve, reject) => {
         connection.query(
-          `INSERT INTO LostPet (clientID, petName, breed, age, type, imageURL, dateLost, location, description) 
+          `INSERT INTO lostpet (clientID, petName, breed, age, type, imageURL, dateLost, location, description) 
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [pet.clientID, pet.petName, pet.breed, pet.age, pet.type, pet.imageURL, pet.dateLost, pet.location, pet.description],
           (err) => {

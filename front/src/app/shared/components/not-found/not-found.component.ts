@@ -17,7 +17,7 @@ import { HeaderComponent } from '../../../components/header/header.component';
           The page you're looking for doesn't exist or has been moved.
         </p>
         <div class="error-actions">
-          <a routerLink="/homee" class="btn btn-primary me-3">
+          <a routerLink="/home" class="btn btn-primary me-3">
             <i class="fas fa-home"></i> Go Home
           </a>
           <button class="btn btn-outline-secondary" (click)="goBack()">

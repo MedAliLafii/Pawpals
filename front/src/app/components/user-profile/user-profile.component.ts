@@ -147,12 +147,7 @@ import { HeaderComponent } from '../header/header.component';
             <button class="btn btn-outline-primary" (click)="changePassword()">
               <i class="fas fa-key"></i> Change Password
             </button>
-            <button class="btn btn-outline-info" (click)="viewOrders()">
-              <i class="fas fa-shopping-bag"></i> My Orders
-            </button>
-            <button class="btn btn-outline-warning" (click)="viewWishlist()">
-              <i class="fas fa-heart"></i> My Wishlist
-            </button>
+
             <button class="btn btn-outline-danger" (click)="deleteAccount()">
               <i class="fas fa-trash"></i> Delete Account
             </button>
@@ -163,14 +158,7 @@ import { HeaderComponent } from '../header/header.component';
         <div class="profile-section" *ngIf="userStats">
           <h3><i class="fas fa-chart-bar"></i> My Activity</h3>
           <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-number">{{ userStats.totalOrders }}</div>
-              <div class="stat-label">Total Orders</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number">{{ userStats.wishlistItems }}</div>
-              <div class="stat-label">Wishlist Items</div>
-            </div>
+
             <div class="stat-card">
               <div class="stat-number">{{ userStats.adoptedPets }}</div>
               <div class="stat-label">Adopted Pets</div>
@@ -286,19 +274,33 @@ import { HeaderComponent } from '../header/header.component';
       font-size: 0.875rem;
     }
 
-    @media (max-width: 768px) {
-      .profile-container {
-        margin: 1rem auto;
-      }
-      
-      .action-buttons {
-        grid-template-columns: 1fr;
-      }
-      
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
+         @media (max-width: 768px) {
+       .profile-container {
+         margin: 1rem auto;
+       }
+       
+       .action-buttons {
+         grid-template-columns: 1fr;
+       }
+       
+       .stats-grid {
+         grid-template-columns: repeat(2, 1fr);
+       }
+     }
+
+     .btn:disabled {
+       opacity: 0.6;
+       cursor: not-allowed;
+     }
+
+     .fa-spinner {
+       animation: spin 1s linear infinite;
+     }
+
+     @keyframes spin {
+       0% { transform: rotate(0deg); }
+       100% { transform: rotate(360deg); }
+     }
   `]
 })
 export class UserProfileComponent implements OnInit {
@@ -348,8 +350,6 @@ export class UserProfileComponent implements OnInit {
   loadUserStats(): void {
     // For now, we'll use mock stats since the backend doesn't have a stats endpoint
     this.userStats = {
-      totalOrders: 0,
-      wishlistItems: 0,
       adoptedPets: 0,
       memberSince: '2024'
     };
@@ -389,24 +389,59 @@ export class UserProfileComponent implements OnInit {
     this.router.navigate(['/change-password']);
   }
 
-  viewOrders(): void {
-    this.router.navigate(['/orders']);
-  }
 
-  viewWishlist(): void {
-    this.router.navigate(['/wishlist']);
-  }
 
   deleteAccount(): void {
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+    // Create a more detailed confirmation dialog
+    const confirmMessage = `Are you absolutely sure you want to delete your account?
+
+This action will permanently:
+• Delete your profile and personal information
+• Remove all your cart items and order history
+• Delete all your pet adoption and lost pet posts
+• Cancel any pending orders
+
+This action cannot be undone!`;
+
+    if (confirm(confirmMessage)) {
+      // Show loading state
+      const deleteButton = document.querySelector('.btn-outline-danger') as HTMLButtonElement;
+      if (deleteButton) {
+        deleteButton.disabled = true;
+        deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+      }
+
       this.http.delete('http://localhost:5000/Client/account', { withCredentials: true })
         .subscribe({
           next: () => {
-            this.toastService.success('Account deleted successfully');
-            this.router.navigate(['/']);
+            this.toastService.success('Account deleted successfully. We\'re sorry to see you go!');
+            
+            // Clear any stored user data
+            localStorage.removeItem('user');
+            sessionStorage.clear();
+            
+            // Navigate to home page
+            setTimeout(() => {
+              this.router.navigate(['/']);
+            }, 2000);
           },
-          error: () => {
-            this.toastService.error('Failed to delete account');
+          error: (error) => {
+            // Reset button state
+            if (deleteButton) {
+              deleteButton.disabled = false;
+              deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete Account';
+            }
+
+            // Handle different error scenarios
+            if (error.status === 401) {
+              this.toastService.error('Authentication required. Please log in again.');
+            } else if (error.status === 404) {
+              this.toastService.error('Account not found.');
+            } else if (error.status === 500) {
+              this.toastService.error('Server error. Please try again later.');
+            } else {
+              this.toastService.error('Failed to delete account. Please try again.');
+            }
           }
         });
     }

@@ -3,6 +3,7 @@ import { Router, RouterModule } from '@angular/router';
 import { CategoryService } from '../../services/categorie.service'; 
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ToastContainerComponent } from '../../shared/components/toast-container/toast-container.component';
 import { ToastService } from '../../shared/services/toast.service'; 
 import { environment } from '../../../environments/environment';
@@ -10,7 +11,7 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-header', 
   standalone: true,
-  imports: [CommonModule, RouterModule, ToastContainerComponent], 
+  imports: [CommonModule, RouterModule, FormsModule, ToastContainerComponent], 
   templateUrl: './header.component.html', 
   styleUrl: './header.component.css' 
 })
@@ -23,6 +24,10 @@ export class HeaderComponent implements OnInit {
   cartItemCount = 0;
   showUserMenu = false;
   userName = '';
+
+  // Search functionality
+  searchQuery = '';
+  showSearchBar = false;
 
   // Inject required services through the constructor
   constructor(
@@ -123,6 +128,38 @@ export class HeaderComponent implements OnInit {
     const target = event.target as HTMLElement;
     if (!target.closest('.user-menu-container')) {
       this.showUserMenu = false;
+    }
+    if (!target.closest('.search-container')) {
+      this.showSearchBar = false;
+    }
+  }
+
+  // Search functionality
+  toggleSearch(): void {
+    this.showSearchBar = !this.showSearchBar;
+    if (this.showSearchBar) {
+      setTimeout(() => {
+        const searchInput = document.getElementById('search-input') as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }, 100);
+    }
+  }
+
+  performSearch(): void {
+    if (this.searchQuery.trim()) {
+      this.router.navigate(['/shop'], {
+        queryParams: { search: this.searchQuery.trim() }
+      });
+      this.showSearchBar = false;
+      this.searchQuery = '';
+    }
+  }
+
+  onSearchKeyPress(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      this.performSearch();
     }
   }
 

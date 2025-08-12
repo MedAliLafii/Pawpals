@@ -7,6 +7,8 @@ import { FooterComponent } from '../components/footer/footer.component';
 import { PetFiltersComponent } from '../components/pet-filters/pet-filters.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ScrollService } from '../services/scroll.service';
+import { ToastService } from '../shared/services/toast.service';
 
 @Component({
   selector: 'app-lost',
@@ -24,10 +26,14 @@ export class LostComponent implements OnInit, OnChanges {
 
   constructor(
     private http: HttpClient,
-    private router: Router // Inject Router service for navigation
+    private router: Router, // Inject Router service for navigation
+    private scrollService: ScrollService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
+    // Scroll to top when component initializes
+    this.scrollService.scrollToTop();
     this.checkAuthStatus();
   }
 
@@ -75,7 +81,7 @@ export class LostComponent implements OnInit, OnChanges {
     if (this.isLoggedIn) {
       this.router.navigate(['/plost']); // Navigate to the report lost pet page
     } else {
-      alert('You must be logged in to report a lost pet.');
+      this.toastService.error('You must be logged in to report a lost pet.');
       this.router.navigate(['/login']); // Redirect to login page if not logged in
     }
   }

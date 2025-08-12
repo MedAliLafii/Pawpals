@@ -7,6 +7,7 @@ import { ActivatedRoute } from '@angular/router'; // Importation du service Acti
 import { CommonModule } from '@angular/common'; // Importation de CommonModule pour utiliser des fonctionnalités Angular communes
 import { HttpClient, HttpHeaders } from '@angular/common/http'; // Importation d'HttpClient pour effectuer des requêtes HTTP
 import { FormsModule } from '@angular/forms'; // Importation de FormsModule pour gérer les formulaires
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-product-details', // Définition du sélecteur pour ce composant
@@ -20,30 +21,48 @@ export class ProductDetailsComponent implements OnInit { // Déclaration du comp
   specifications: any[] = []; // Déclaration de la variable pour stocker les spécifications du produit
   produitID!: number; // Déclaration de la variable pour stocker l'ID du produit
   selectedQuantity: number = 1; // Initialisation de la quantité sélectionnée à 1
+  isLoading: boolean = true; // Loading state
+  error: string | null = null; // Error state
 
   constructor(
     private route: ActivatedRoute, // Injection du service ActivatedRoute pour accéder aux paramètres de l'URL
     private productService: ProductService, // Injection du service ProductService pour gérer les produits
-    private http: HttpClient // Injection du service HttpClient pour effectuer des requêtes HTTP
+    private http: HttpClient, // Injection du service HttpClient pour effectuer des requêtes HTTP
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void { // Méthode appelée lors de l'initialisation du composant
+    this.loadProduct();
+  }
+
+  loadProduct(): void {
+    this.isLoading = true;
+    this.error = null;
     this.produitID = Number(this.route.snapshot.paramMap.get('id')); // Récupération de l'ID du produit depuis l'URL
 
     // Récupération des informations du produit à partir du service ProductService
-    this.productService.getProductById(this.produitID).subscribe(
-      (data) => {
+    this.productService.getProductById(this.produitID).subscribe({
+      next: (data) => {
         this.product = data;
         console.log(this.product); // Log to verify the product object
+        this.isLoading = false;
       },
-              (error) => console.error('Error fetching product:', error) // In case of error, display a message in the console
-    );
+      error: (error) => {
+        console.error('Error fetching product:', error);
+        this.error = 'Failed to load product details. Please try again.';
+        this.isLoading = false;
+      }
+    });
     
     // Récupération des spécifications du produit à partir du service ProductService
-    this.productService.getProductSpecifications(this.produitID).subscribe(
-              (data) => this.specifications = data, // If the request succeeds, assign the retrieved specifications to the 'specifications' variable
-              (error) => console.error('Error fetching specifications:', error) // In case of error, display a message in the console
-    );
+    this.productService.getProductSpecifications(this.produitID).subscribe({
+      next: (data) => this.specifications = data, // If the request succeeds, assign the retrieved specifications to the 'specifications' variable
+      error: (error) => console.error('Error fetching specifications:', error) // In case of error, display a message in the console
+    });
+  }
+
+  retryLoad(): void {
+    this.loadProduct();
   } 
 
   // Méthode pour ajouter un produit au panier en envoyant une requête POST
@@ -54,16 +73,16 @@ export class ProductDetailsComponent implements OnInit { // Déclaration du comp
       { withCredentials: true } // Indication que les informations d'authentification (cookies, session) doivent être envoyées avec la requête
     ).subscribe(
       () => {
-        alert('Product added to cart!'); // Success message if the request is successful
+        this.toastService.success('Product added to cart!'); // Success message if the request is successful
       },
       (error) => {
         console.error('Error updating quantity:', error); // Display error in console in case of failure
         if (error.status === 400) { // If the error is due to incorrect quantity
-          alert("The requested quantity exceeds available stock."); // Display a specific error message
+          this.toastService.error("The requested quantity exceeds available stock."); // Display a specific error message
         } else if (error.status === 401) { // If the error is related to authentication
-            alert("Please authenticate"); // Ask user to log in
+            this.toastService.error("Please authenticate"); // Ask user to log in
         } else {
-          alert("An error occurred while updating the quantity."); // Generic error message for other issues
+          this.toastService.error("An error occurred while updating the quantity."); // Generic error message for other issues
         }
       }
     );

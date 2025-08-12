@@ -144,8 +144,5 @@ export class ApiService {
     return this.http.get<any[]>(`${this.baseUrl}/reviews/${productId}`);
   }
 
-  // Wishlist endpoints
-  getWishlist(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/wishlist`);
-  }
+
 }

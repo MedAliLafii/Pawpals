@@ -1,32 +1,47 @@
 <app-header></app-header>
-<div class="container mx-auto py-8 px-4">
+<div class="container mx-auto py-8 px-4" *ngIf="!isLoading">
   <div class="products-breadcrumbs">
       <nav class="text-sm text-green-500">
         <a href="" class="hover:text-green-600 shop-title-breadcumbs">Home</a>
         <span class="mx-2">/</span>
         <a href="shop" class="hover:text-green-600 shop-title-breadcumbs">Shop</a>
         <span class="mx-2">/</span>
-        <span class="text-gray-700 shop-title-breadcumbs">{{ product.nom }}</span>
+        <span class="text-gray-700 shop-title-breadcumbs">{{ product?.nom }}</span>
       </nav>
   </div>
 
   <div class="product-details-container">
     <div>
-      <img [src]="'assets/uploads/' + product.imageURL" alt="Product Image" class="product-main-img rounded-lg shadow">
+      <img [src]="'assets/uploads/' + product?.imageURL" alt="Product Image" class="product-main-img rounded-lg shadow">
     </div>
     <div class="product-info">
-      <h1 class="text-2xl font-semibold">{{ product.nom }}</h1>
-      <p class="text-red-500 font-semibold my-2 price-text">{{ product.prix }} DT</p>
-      <p class="text-gray-600">{{ product.description }}</p>
+      <h1 class="text-2xl font-semibold">{{ product?.nom }}</h1>
+      <p class="text-red-500 font-semibold my-2 price-text">{{ product?.prix }} DT</p>
+      <p class="text-gray-600">{{ product?.description }}</p>
       <hr />
       <div class="mt-4 flex add-to-cart-container">
         <input type="number" [(ngModel)]="selectedQuantity" min="1" class="border rounded w-20 text-center">
         <button (click)="addToCart()" class="bg-green-500 text-white px-10 py-3 rounded hover:bg-green-700">Add to cart</button>
       </div>
       <hr />
-      <p class="mt-4 text-gray-500">Categories : {{ product.nomCat }}</p>
+      <p class="mt-4 text-gray-500">Categories : {{ product?.nomCat }}</p>
       <p class="text-gray-500">Ticket: Blouse</p>
     </div>
   </div>
 </div>
+
+<!-- Loading state -->
+<div class="container mx-auto py-8 px-4 text-center" *ngIf="isLoading">
+  <div class="loading-spinner">Loading...</div>
+</div>
+
+<!-- Error state -->
+<div class="container mx-auto py-8 px-4 text-center" *ngIf="error">
+  <div class="error-message">
+    <h2>Error loading product</h2>
+    <p>{{ error }}</p>
+    <button (click)="retryLoad()" class="bg-green-500 text-white px-4 py-2 rounded">Retry</button>
+  </div>
+</div>
+
 <app-footer></app-footer>

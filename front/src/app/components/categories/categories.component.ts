@@ -4,6 +4,7 @@ import { CategoryService } from '../../services/categorie.service';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common'; 
 import { environment } from '../../../environments/environment';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-categories',
@@ -23,7 +24,8 @@ export class CategoriesComponent {
   constructor(
     private categoryService: CategoryService, 
     private router: Router,                   
-    private http: HttpClient                  
+    private http: HttpClient,
+    private toastService: ToastService                  
   ) {}
 
   ngOnInit(): void {
@@ -85,7 +87,7 @@ export class CategoriesComponent {
     }).subscribe(
       () => {
         // If logout succeeds, display a message, update the state and redirect to home
-        alert('Logout successful');
+        this.toastService.success('Logout successful');
         this.isLoggedIn = false;
         this.router.navigate(['/']);
       },

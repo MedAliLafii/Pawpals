@@ -177,6 +177,68 @@
   .cart-icon i {
     font-size: 1.15rem;
   }
+
+  /* Search functionality styles */
+  .search-container {
+    position: relative;
+  }
+
+  .search-bar {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 2px solid var(--pawgreen-500);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 300px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+  }
+
+  .search-bar.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    background: transparent;
+  }
+
+  .search-input::placeholder {
+    color: var(--gray-400);
+  }
+
+  .search-submit-btn {
+    background: var(--pawgreen-500);
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .search-submit-btn:hover {
+    background: var(--pawgreen-600);
+  }
+
+  .search-submit-btn i {
+    font-size: 0.9rem;
+  }
   
   .header-section-1-buttons button:has(.fa-user) {
     display: flex;

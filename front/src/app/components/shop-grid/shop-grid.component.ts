@@ -25,6 +25,9 @@ export class ShopGridComponent implements OnInit {
   // Prix maximal sélectionné pour le filtre
   selectedPrice: number = 50;
 
+  // Search query
+  searchQuery: string = '';
+
   // Injection des services nécessaires via le constructeur
   constructor(
     private productService: ProductService, // Service pour récupérer les produits depuis l'API
@@ -37,6 +40,10 @@ export class ShopGridComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       const categoryIdParam = params['categoryID']; // Récupère le paramètre de catégorie
       this.currentCategoryId = categoryIdParam ? +categoryIdParam : null; // Convertit en nombre ou null
+      
+      // Get search query from URL parameters
+      this.searchQuery = params['search'] || '';
+      
       this.fetchProducts(); // Récupère les produits filtrés
     });
   }
@@ -49,7 +56,7 @@ export class ShopGridComponent implements OnInit {
       return;
     }
 
-            // If a category is selected, include it in the request, otherwise undefined
+    // If a category is selected, include it in the request, otherwise undefined
     const categoryID = this.currentCategoryId !== null ? this.currentCategoryId : undefined;
 
     // Si un prix est sélectionné (> 0), on l'utilise comme filtre
@@ -60,6 +67,14 @@ export class ShopGridComponent implements OnInit {
       (data) => {
         // If the request succeeds, store the received products
         this.products = data;
+        
+        // Apply search filter if search query exists
+        if (this.searchQuery.trim()) {
+          this.products = this.products.filter(product => 
+            product.nom.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+            product.description.toLowerCase().includes(this.searchQuery.toLowerCase())
+          );
+        }
       },
       (error) => {
         // In case of error, display it in the console

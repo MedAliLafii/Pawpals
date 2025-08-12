@@ -64,6 +64,26 @@ button:focus {
 	outline: none;
 }
 
+button:disabled {
+	background-color: #9ca3af;
+	border-color: #9ca3af;
+	cursor: not-allowed;
+	transform: none;
+}
+
+button:disabled:active {
+	transform: none;
+}
+
+.fa-spinner {
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
 button.ghost {
 	background-color: transparent;
 	border-color: #FFFFFF;

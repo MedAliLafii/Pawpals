@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common'; // Core Angular module (ngIf, ng
 import { HttpClient } from '@angular/common/http'; // To perform HTTP requests
 import { ActivatedRoute } from '@angular/router'; // To access route parameters
 import { environment } from '../../environments/environment';
+import { ScrollService } from '../services/scroll.service';
+import { ToastService } from '../shared/services/toast.service';
 
 // Import custom components (header and footer)
 import { HeaderComponent } from '../components/header/header.component';
@@ -27,10 +29,17 @@ export class CartComponent implements OnInit {
   totalPrice: number = 0;
 
   // Injecting HttpClient (for HTTP requests) and ActivatedRoute (for route access)
-  constructor(private http: HttpClient, private route: ActivatedRoute) {}
+  constructor(
+    private http: HttpClient, 
+    private route: ActivatedRoute,
+    private scrollService: ScrollService,
+    private toastService: ToastService
+  ) {}
 
   // Method automatically called when the component initializes
   ngOnInit(): void {
+    // Scroll to top when component initializes
+    this.scrollService.scrollToTop();
     // Call the method to fetch cart items
     this.fetchCart();
   }
@@ -85,10 +94,10 @@ export class CartComponent implements OnInit {
 
         // If the error is due to stock limits
         if (error.status === 400 && error.error?.error === "Requested quantity exceeds available stock.") {
-          alert("Requested quantity exceeds available stock.");
+          this.toastService.error("Requested quantity exceeds available stock.");
         } else {
           // Other types of errors
-          alert("An error occurred while updating quantity.");
+          this.toastService.error("An error occurred while updating quantity.");
         }
       }
     );

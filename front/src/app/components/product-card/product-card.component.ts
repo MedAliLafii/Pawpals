@@ -4,7 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { Product } from '../../models';
 import { RouterModule } from '@angular/router';
 import { ToastService } from '../../shared/services/toast.service';
-import { WishlistService } from '../../shared/services/wishlist.service';
 import { GuestCartService } from '../../services/guest-cart.service'; 
 
 @Component({
@@ -17,12 +16,10 @@ import { GuestCartService } from '../../services/guest-cart.service';
 export class ProductCardComponent implements OnInit {
   @Input() product!: Product;
   selectedQuantity: number = 1;
-  isInWishlist: boolean = false;
 
   constructor(
     private http: HttpClient,
     private toastService: ToastService,
-    private wishlistService: WishlistService,
     private guestCartService: GuestCartService
   ) {}
 
@@ -40,20 +37,7 @@ export class ProductCardComponent implements OnInit {
   }  
 
   ngOnInit(): void {
-    this.checkWishlistStatus();
-  }
-
-  checkWishlistStatus(): void {
-    this.isInWishlist = this.wishlistService.isInWishlist(this.product.produitID);
-  }
-
-  toggleWishlist(): void {
-    if (this.isInWishlist) {
-      this.wishlistService.removeFromWishlist(this.product.produitID);
-    } else {
-      this.wishlistService.addToWishlist(this.product);
-    }
-    this.isInWishlist = !this.isInWishlist;
+    // Component initialization
   }
 
   addToCart(): void {

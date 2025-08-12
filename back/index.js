@@ -61,7 +61,7 @@ app.get("/", (req, res) => {
 // GET route to fetch all categories with enhanced error logging
 app.get("/categorie", (req, res) => {
   console.log("Attempting to fetch categories...");
-  pool.query(`SELECT * FROM Categorie`, (err, results) => {
+  pool.query(`SELECT * FROM categorie`, (err, results) => {
     if (err) {
       console.error("Error fetching categories:", err);
       console.error("Error code:", err.code);
@@ -87,10 +87,9 @@ app.get("/produit/:id", (req, res) => {
   const productId = req.params.id; // Get product ID from URL parameters
 
   // SQL query to fetch product info and its category name
-  const sql = `SELECT produit.*, Categorie.nom AS nomCat
+  const sql = `SELECT produit.*, categorie.nom AS nomCat
              FROM produit
-          app.use('/assets/uploadslost', express.static(path.join(__dirname, 'assets', 'uploadslost')));  // Serve static files from back/assets/uploadslost
-   LEFT JOIN Categorie ON produit.categorieID = Categorie.categorieID
+             LEFT JOIN categorie ON produit.categorieID = categorie.categorieID
              WHERE produitID = ?`;
 
 

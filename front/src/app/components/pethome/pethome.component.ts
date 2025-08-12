@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { PetFilters } from '../pet-filters/pet-filters.component'; // Import PetFilters interface
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../../environments/environment';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-pethome',
@@ -23,7 +24,10 @@ export class PethomeComponent implements OnInit, OnChanges {
   selectedPet: any = null;
   isLoading: boolean = false; // Add the isLoading property here
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit() {
     this.checkAuthStatus();
@@ -106,7 +110,7 @@ export class PethomeComponent implements OnInit, OnChanges {
       withCredentials: true
     }).subscribe(
       (res) => {
-        alert('Adoption post deleted successfully.');
+        this.toastService.success('Adoption post deleted successfully.');
         location.reload();
       },      (err) => console.error('Error deleting post', err)
     );

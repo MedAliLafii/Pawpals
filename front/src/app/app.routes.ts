@@ -2,12 +2,12 @@ import { Routes } from '@angular/router';
 import { FlexibleAuthGuard } from './guards/flexible-auth.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'homee', pathMatch: 'full' },
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
   
   // Public routes
   { 
-    path: 'homee', 
-    loadComponent: () => import('./pages/homee/homee.component').then(m => m.HomeeComponent),
+    path: 'home', 
+    loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent),
     title: 'PawPals - Home'
   },
   { 

@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { PetFilters } from '../pet-filters/pet-filters.component';
 import { environment } from '../../../environments/environment';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-petcard',
@@ -23,7 +24,10 @@ export class PetCardComponent implements OnInit, OnChanges {
   selectedPet: any = null;
   isLoading: boolean = false; // Add the isLoading property here
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit() {
     this.checkAuthStatus();
@@ -130,12 +134,12 @@ export class PetCardComponent implements OnInit, OnChanges {
         withCredentials: true
       }).subscribe(
       (res) => {
-        alert('Lost pet post deleted successfully.');
+        this.toastService.success('Lost pet post deleted successfully.');
         this.fetchLostPets(); // Refresh the list after deletion
       },
       (err) => {
         console.error('Error deleting lost pet post:', err);
-        alert('Failed to delete lost pet post. You may not be the owner.');
+        this.toastService.error('Failed to delete lost pet post. You may not be the owner.');
       }
     );
   }

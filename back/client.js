@@ -37,6 +37,12 @@ clientRoutes.post('/registerClient', async (req, res) => {
         pool.query(sql, values, (error, result) => {
             if (error) {
                 console.error('Error during client registration: ' + error);
+                
+                // Check if it's a duplicate email error
+                if (error.code === 'ER_DUP_ENTRY' && error.message.includes('email')) {
+                    return res.status(409).json({ error: 'An account with this email already exists.' });
+                }
+                
                 return res.status(500).json({ error: 'An error occurred during your signup' });
             }
 
@@ -84,7 +90,7 @@ clientRoutes.post('/loginClient', async (req, res) => {
 
             // Check if the client exists
             if (results.length === 0) {
-                return res.status(404).json({ error: 'Client not found.' });
+                return res.status(404).json({ error: 'Account not found. Please check your email or register a new account.' });
             }
 
             const client = results[0];
@@ -92,7 +98,7 @@ clientRoutes.post('/loginClient', async (req, res) => {
             // Compare hashed password
             const passwordMatch = await bcrypt.compare(password, client.motdepasse);
             if (!passwordMatch) {
-                return res.status(401).json({ error: 'Invalid password.' });
+                return res.status(401).json({ error: 'Incorrect password. Please try again.' });
             }
 
             // Création d’un token JWT
@@ -376,6 +382,86 @@ clientRoutes.put('/updateClientInfo', async (req, res) => {
     } catch (error) {
         console.error('Global error', error);
         return res.status(500).json({ error: 'Error during update.' });
+    }
+});
+
+// Route pour supprimer le compte client
+clientRoutes.delete('/account', async (req, res) => {
+    const pool = req.pool;
+    const token = req.cookies.token;
+
+    if (!token) {
+        return res.status(401).json({ error: 'Token required to delete account.' });
+    }
+
+    try {
+        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+            if (err) {
+                return res.status(401).json({ error: 'Invalid or expired token.' });
+            }
+
+            const clientID = decoded.client.clientID;
+            const email = decoded.client.email;
+
+            // First, delete related data (cart items, orders, etc.)
+            const deleteQueries = [
+                'DELETE FROM panier_produit WHERE panierID IN (SELECT panierID FROM panier WHERE clientID = ?)',
+                'DELETE FROM panier WHERE clientID = ?',
+                'DELETE FROM commande_produit WHERE commandeID IN (SELECT commandeID FROM commande WHERE clientID = ?)',
+                'DELETE FROM commande WHERE clientID = ?',
+                'DELETE FROM adoptionpet WHERE clientID = ?',
+                'DELETE FROM lostpet WHERE clientID = ?'
+            ];
+
+            // Execute delete queries in sequence
+            let completedQueries = 0;
+            const totalQueries = deleteQueries.length;
+
+            deleteQueries.forEach((query, index) => {
+                pool.query(query, [clientID], (error, result) => {
+                    if (error) {
+                        console.error(`Error deleting related data (query ${index + 1}):`, error);
+                    }
+                    
+                    completedQueries++;
+                    
+                    // When all related data is deleted, delete the client
+                    if (completedQueries === totalQueries) {
+                        // Delete the client
+                        const deleteClientQuery = 'DELETE FROM Client WHERE clientID = ?';
+                        pool.query(deleteClientQuery, [clientID], (error, result) => {
+                            if (error) {
+                                console.error('Error deleting client:', error);
+                                return res.status(500).json({ error: 'Error deleting account.' });
+                            }
+
+                            if (result.affectedRows === 0) {
+                                return res.status(404).json({ error: 'Client not found.' });
+                            }
+
+                            // Send confirmation email
+                            transporter.sendMail({
+                                from: process.env.JWT_MAIL,
+                                to: email,
+                                subject: 'Your PawPals account has been deleted',
+                                text: 'Your account has been successfully deleted. We\'re sorry to see you go!'
+                            }, (error, info) => {
+                                if (error) console.error('Error sending email:', error);
+                                else console.log('Account deletion email sent:', info.response);
+                            });
+
+                            // Clear the authentication cookie
+                            res.clearCookie('token');
+                            
+                            res.status(200).json({ message: 'Account deleted successfully' });
+                        });
+                    }
+                });
+            });
+        });
+    } catch (error) {
+        console.error('Global error during account deletion:', error);
+        return res.status(500).json({ error: 'Error during account deletion.' });
     }
 });
 

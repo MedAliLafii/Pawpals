@@ -10,10 +10,7 @@
       </div>
     </a>
     
-    <!-- Wishlist button -->
-    <button class="wishlist-btn" (click)="toggleWishlist()" [class.active]="isInWishlist">
-      <i class="fas fa-heart"></i>
-    </button>
+
     
     <!-- Stock indicator -->
     <div class="stock-indicator" *ngIf="product.stock <= 5 && product.stock > 0">

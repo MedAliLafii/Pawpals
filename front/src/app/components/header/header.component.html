@@ -9,7 +9,7 @@
         <div class="header-inner-section-1">
             <!-- Logo -->
             <div class="logo-container">
-                <a class="logo-text" routerLink="/homee">
+                <a class="logo-text" routerLink="/home">
                     <i class="fa-solid fa-paw fa-rotate-by" style="--fa-rotate-angle: 45deg;color: #22c55e;"></i>
                     PawPals
                 </a>
@@ -30,9 +30,25 @@
 
             <!-- Right side: search icon, cart, login/logout -->
             <div class="header-section-1-buttons">
-                <button class="search-icon-btn" title="Search">
-                    <i class="fas fa-search"></i>
-                </button>
+                <!-- Search functionality -->
+                <div class="search-container">
+                    <button class="search-icon-btn" (click)="toggleSearch()" title="Search">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <div class="search-bar" [class.show]="showSearchBar">
+                        <input 
+                            type="text" 
+                            id="search-input"
+                            [(ngModel)]="searchQuery" 
+                            (keypress)="onSearchKeyPress($event)"
+                            placeholder="Search products..."
+                            class="search-input"
+                        >
+                        <button class="search-submit-btn" (click)="performSearch()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
                 <a routerLink="/cart" class="cart-icon" title="Shopping Cart">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-badge" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
@@ -55,12 +71,7 @@
                         <a routerLink="/profile" class="dropdown-item" (click)="closeUserMenu()">
                             <i class="fas fa-user"></i> My Profile
                         </a>
-                        <a routerLink="/orders" class="dropdown-item" (click)="closeUserMenu()">
-                            <i class="fas fa-shopping-bag"></i> My Orders
-                        </a>
-                        <a routerLink="/wishlist" class="dropdown-item" (click)="closeUserMenu()">
-                            <i class="fas fa-heart"></i> Wishlist
-                        </a>
+                        
                         <div class="dropdown-divider"></div>
                         <button class="dropdown-item logout-btn" (click)="logout()">
                             <i class="fas fa-sign-out-alt"></i> Logout

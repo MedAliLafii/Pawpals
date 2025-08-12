@@ -2,19 +2,29 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
+import { ScrollService } from '../services/scroll.service';
+import { ToastService } from '../shared/services/toast.service';
+import { ToastContainerComponent } from '../shared/components/toast-container/toast-container.component';
 
 @Component({
   selector: 'app-login',
-  imports: [],
+  imports: [ToastContainerComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
   // Component constructor: inject HttpClient and Router services
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient, 
+    private router: Router,
+    private scrollService: ScrollService,
+    private toastService: ToastService
+  ) {}
 
   // Method called when the component loads
   ngOnInit(): void {
+    // Scroll to top when component initializes
+    this.scrollService.scrollToTop();
     this.checkAuthStatus(); // Check if the user is already logged in
 
     // Get HTML elements
@@ -71,20 +81,20 @@ export class LoginComponent {
     if (!nameInput.value || !emailInput.value || !passwordInput.value ||
         !confirmPasswordInput.value || !telInput.value || !addressInput.value ||
         !regionSelect.value || !termsCheckbox.checked) {
-      alert('Please fill out all fields and accept the terms and conditions.');
+      this.toastService.error('Please fill out all fields and accept the terms and conditions.');
       return;
     }
 
     // Check that phone number has exactly 8 digits
     const phoneRegex = /^\d{8}$/;
     if (!phoneRegex.test(telInput.value)) {
-      alert('Phone number must contain exactly 8 digits.');
+      this.toastService.error('Phone number must contain exactly 8 digits.');
       return;
     }
 
     // Check that passwords match
     if (passwordInput.value !== confirmPasswordInput.value) {
-      alert('Passwords do not match.');
+      this.toastService.error('Passwords do not match.');
       return;
     }
 
@@ -98,19 +108,33 @@ export class LoginComponent {
       region: regionSelect.value
     };
 
+    // Show loading state for registration
+    const registerForm = document.querySelector('.sign-up-container form') as HTMLFormElement;
+    const submitButton = registerForm?.querySelector('button[type="submit"]') as HTMLButtonElement;
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+    }
+
     // Send data to backend to register client
-          this.http.post(`${environment.BACK_URL}/Client/registerClient`, formData, { withCredentials: true }).subscribe({
+    this.http.post(`${environment.BACK_URL}/Client/registerClient`, formData, { withCredentials: true }).subscribe({
       next: (response: any) => {
-        alert('Registration successful! Your account has been created.');
+        this.toastService.success('Registration successful! Your account has been created.');
+
+        // Reset button state
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.innerHTML = 'Sign Up';
+        }
 
         // Automatically log in after registration
         this.http.post(`${environment.BACK_URL}/Client/loginClient`, formData, { withCredentials: true }).subscribe({
           next: (response: any) => {
-            alert('Login successful!');
+            this.toastService.success('Login successful! Welcome to PawPals!');
             this.router.navigate(['/']); // Redirect to home page
           },
           error: (error) => {
-            alert('Login error: ' + (error.error?.error || 'Invalid credentials.'));
+            this.toastService.error('Auto-login failed. Please log in manually.');
           }
         });
 
@@ -118,7 +142,22 @@ export class LoginComponent {
         (document.querySelector('form') as HTMLFormElement).reset();
       },
       error: (error) => {
-        alert('Registration error: ' + (error.error?.error || 'An error occurred.'));
+        // Reset button state
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.innerHTML = 'Sign Up';
+        }
+
+        // Handle different registration error scenarios
+        if (error.status === 409 || error.error?.error?.includes('duplicate')) {
+          this.toastService.error('An account with this email already exists. Please use a different email or try logging in.');
+        } else if (error.status === 400) {
+          this.toastService.error('Invalid registration data. Please check your information and try again.');
+        } else if (error.status === 500) {
+          this.toastService.error('Server error during registration. Please try again later.');
+        } else {
+          this.toastService.error('Registration failed. Please try again.');
+        }
       }
     });
   }
@@ -132,7 +171,14 @@ export class LoginComponent {
 
     // Check fields are not empty
     if (!emailInput.value || !passwordInput.value) {
-      alert('Please enter your email and password.');
+      this.toastService.error('Please enter your email and password.');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailInput.value)) {
+      this.toastService.error('Please enter a valid email address.');
       return;
     }
 
@@ -143,10 +189,23 @@ export class LoginComponent {
       rememberme: rememberMeCheckbox.checked
     };
 
+    // Show loading state
+    const loginButton = document.getElementById('loginBtn') as HTMLButtonElement;
+    if (loginButton) {
+      loginButton.disabled = true;
+      loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+    }
+
     // Send login request to backend
     this.http.post(`${environment.BACK_URL}/Client/loginClient`, loginData, { withCredentials: true }).subscribe({
       next: (response: any) => {
-        alert('Login successful!');
+        this.toastService.success('Login successful! Welcome back!');
+
+        // Reset button state
+        if (loginButton) {
+          loginButton.disabled = false;
+          loginButton.innerHTML = 'Sign In';
+        }
 
         // Check if there's a redirect URL stored
         const redirectUrl = localStorage.getItem('redirectUrl');
@@ -158,7 +217,28 @@ export class LoginComponent {
         }
       },
       error: (error) => {
-        alert('Login error: ' + (error.error?.error || 'Invalid credentials.'));
+        // Reset button state
+        if (loginButton) {
+          loginButton.disabled = false;
+          loginButton.innerHTML = 'Sign In';
+        }
+
+        // Handle different error scenarios
+        if (error.status === 404) {
+          this.toastService.error('Account not found. Please check your email or register a new account.');
+        } else if (error.status === 401) {
+          this.toastService.error('Incorrect password. Please try again.');
+        } else if (error.status === 500) {
+          this.toastService.error('Server error. Please try again later.');
+        } else {
+          this.toastService.error('Login failed. Please check your credentials and try again.');
+        }
+
+        // Clear password field for security
+        if (passwordInput) {
+          passwordInput.value = '';
+          passwordInput.focus();
+        }
       }
     });
   }

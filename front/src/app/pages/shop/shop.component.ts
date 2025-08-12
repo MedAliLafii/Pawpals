@@ -5,10 +5,12 @@ import { FilterComponent } from "../../components/filter/filter.component";
 import { ShopGridComponent } from "../../components/shop-grid/shop-grid.component";
 import { HeaderComponent } from "../../components/header/header.component";
 import { FooterComponent } from "../../components/footer/footer.component";
-import { Router } from '@angular/router'; 
+import { Router, ActivatedRoute } from '@angular/router'; 
 import { CategoryService } from '../../services/categorie.service'; 
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { ScrollService } from '../../services/scroll.service';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-shop',
@@ -27,11 +29,17 @@ export class ShopComponent {
   // Injection des services nécessaires via le constructeur
   constructor(
     private categoryService: CategoryService, 
-    private router: Router,                   
-    private http: HttpClient                  
+    private router: Router,
+    private route: ActivatedRoute,                   
+    private http: HttpClient,
+    private scrollService: ScrollService,
+    private toastService: ToastService                  
   ) {}
 
   ngOnInit(): void {
+    // Scroll to top when component initializes
+    this.scrollService.scrollToTop();
+
     // Appel au service pour récupérer les catégories depuis l'API
     this.categoryService.getCategories().subscribe(
       (data) => {
@@ -44,6 +52,20 @@ export class ShopComponent {
 
     // Vérifie si l'utilisateur est connecté
     this.checkAuthStatus();
+
+    // Listen for query parameter changes (search, categoryID)
+    this.route.queryParams.subscribe(params => {
+      if (params['search'] || params['categoryID']) {
+        // Pass search parameters to shop grid component
+        this.handleSearchParams(params);
+      }
+    });
+  }
+
+  handleSearchParams(params: any): void {
+    // This will be handled by the shop grid component
+    // The search and category filters will be applied there
+    console.log('Search params received:', params);
   }
 
   // Fonction pour naviguer vers une catégorie spécifique
@@ -90,7 +112,7 @@ export class ShopComponent {
     }).subscribe(
       () => {
         // If logout succeeds, display a message, update the state and redirect to home
-        alert('Logout successful');
+        this.toastService.success('Logout successful');
         this.isLoggedIn = false;
         this.router.navigate(['/']);
       },

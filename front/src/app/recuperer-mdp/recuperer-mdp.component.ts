@@ -2,7 +2,8 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms'; 
 import { CommonModule } from '@angular/common'; 
 import { HttpClient } from '@angular/common/http'; 
-import { Router } from '@angular/router'; 
+import { Router } from '@angular/router';
+import { ToastService } from '../shared/services/toast.service'; 
 
 @Component({
   selector: 'app-recuperer-mdp', 
@@ -23,13 +24,17 @@ export class RecupererMdpComponent {
   
   serverCode: string = ''; 
   
-  constructor(private http: HttpClient, private router: Router) {} // Injecting HttpClient and Router services in the constructor
+  constructor(
+    private http: HttpClient, 
+    private router: Router,
+    private toastService: ToastService
+  ) {} // Injecting HttpClient and Router services in the constructor
   
   // Method to send the verification code
   sendCode(): void {    
     // Validate the email address
     if (!this.email || !this.validateEmail(this.email)) {
-      alert('Please enter a valid email address.');
+      this.toastService.error('Please enter a valid email address.');
       return; // Return if the email address is invalid
     }
 
@@ -44,9 +49,9 @@ export class RecupererMdpComponent {
         error: (error) => {
           console.error('Error sending verification code:', error); // Log error if it occurs
           if (error.status === 404) {
-            alert('Email address not found.'); // Error message if email is not found
+            this.toastService.error('Email address not found.'); // Error message if email is not found
           } else {
-            alert('An error occurred. Please try again.'); // General error message
+            this.toastService.error('An error occurred. Please try again.'); // General error message
           }
         }
       });
@@ -58,25 +63,25 @@ export class RecupererMdpComponent {
     
     // Validate the verification code
     if (!this.verificationCode) {
-      alert('Please enter the verification code.');
+      this.toastService.error('Please enter the verification code.');
       return; // Return if the verification code is empty
     }
     
     // Check if the code matches the one received from the server
     if (this.serverCode && String(this.verificationCode) !== String(this.serverCode)) {
-      alert('Incorrect verification code.'+ this.serverCode + ' ' + this.verificationCode);
+      this.toastService.error('Incorrect verification code.');
       return; // Return if the codes do not match
     }
     
     // Validate the new password
     if (!this.newPassword) {
-      alert('Please enter a new password.');
+      this.toastService.error('Please enter a new password.');
       return; // Return if the password is empty
     }
     
     // Check if the password and confirmation match
     if (this.newPassword !== this.confirmPassword) {
-      alert('Passwords do not match.');
+      this.toastService.error('Passwords do not match.');
       return; // Return if the passwords do not match
     }
     
@@ -87,12 +92,12 @@ export class RecupererMdpComponent {
     }, { withCredentials: true }).subscribe({
       next: (response) => {
         console.log('Password changed successfully:', response); // Log success message
-        alert('Your password has been successfully changed!'); // Success message
+        this.toastService.success('Your password has been successfully changed!'); // Success message
         this.router.navigate(['/login']); // Redirect to the login page
       },
       error: (error) => {
         console.error('Error changing password:', error); // Log error if it occurs
-        alert('An error occurred while changing the password.'); // Error message if the change fails
+        this.toastService.error('An error occurred while changing the password.'); // Error message if the change fails
       }
     });
   }

@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../components/header/header.component';
 import { FooterComponent } from '../components/footer/footer.component';
+import { ToastService } from '../shared/services/toast.service';
 
 interface PostAdoptionForm {
   petName: string;
@@ -58,7 +59,11 @@ export class PostAdoptionComponent implements OnInit {
   imagePreview: string | null = null;
   isSubmitting: boolean = false;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient, 
+    private router: Router,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.fetchClient();
@@ -137,27 +142,27 @@ export class PostAdoptionComponent implements OnInit {
             // Step 5: Post adoption data
             this.http.post('http://localhost:5000/adoptPet/add', formData, { withCredentials: true }).subscribe({
               next: () => {
-                alert('Pet adoption posted successfully!');
+                this.toastService.success('Pet adoption posted successfully!');
                 this.router.navigate(['/adoption']);
                 this.isSubmitting = false;
               },
               error: (error) => {
                 console.error('Error posting adoption:', error);
-                alert('Error posting adoption: ' + (error.error?.error || error.message));
+                this.toastService.error('Error posting adoption: ' + (error.error?.error || error.message));
                 this.isSubmitting = false;
               }
             });
           },
           error: (error) => {
             console.error('Error updating client info:', error);
-            alert('Error updating contact info: ' + (error.error?.error || error.message));
+            this.toastService.error('Error updating contact info: ' + (error.error?.error || error.message));
             this.isSubmitting = false;
           }
         });
       },
       error: (error) => {
         console.error('Error fetching client info before update:', error);
-        alert('Failed to fetch your full profile. Try again.');
+        this.toastService.error('Failed to fetch your full profile. Try again.');
         this.isSubmitting = false;
       }
     });

@@ -8,27 +8,34 @@ import { ProductCardComponent } from '../../components/product-card/product-card
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models';
 import { CommonModule } from '@angular/common';
+import { ScrollService } from '../../services/scroll.service';
 
 
 @Component({
-  selector: 'app-homee',
+  selector: 'app-home',
   imports: [HeaderComponent, FooterComponent,PetCardComponent,PethomeComponent, RouterModule,
     ProductCardComponent, CommonModule],
-  templateUrl: './homee.component.html',
-  styleUrl: './homee.component.css'
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.css'
   
 })
-export class HomeeComponent implements OnInit, AfterViewInit, OnDestroy {
+export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   products: any[] = [];
   @ViewChild('carousel', { static: false }) carouselRef!: ElementRef;
 
   private autoScrollInterval: any;
   private scrollDirection: number = 1; // 1 = droite, -1 = gauche
   // Le constructeur injecte le service ProductService pour récupérer les produits
-  constructor(private productService: ProductService) {}
+  constructor(
+    private productService: ProductService,
+    private scrollService: ScrollService
+  ) {}
 
   // Méthode appelée automatiquement à l'initialisation du composant
   ngOnInit(): void {
+    // Scroll to top when component initializes
+    this.scrollService.scrollToTop();
+    
     // Appelle la méthode getProducts du service pour obtenir les produits depuis l'API
     this.productService.getProducts().subscribe(
       (data) => {

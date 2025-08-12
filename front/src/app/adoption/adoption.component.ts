@@ -7,6 +7,8 @@ import { PetFiltersComponent } from '../components/pet-filters/pet-filters.compo
 import { PethomeComponent } from '../components/pethome/pethome.component';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { ScrollService } from '../services/scroll.service';
+import { ToastService } from '../shared/services/toast.service';
 
 @Component({
   selector: 'app-adoption',
@@ -24,10 +26,14 @@ export class AdoptionComponent implements OnInit, OnChanges {
 
   constructor(
     private http: HttpClient,
-    private router: Router // Inject Router service for navigation
+    private router: Router, // Inject Router service for navigation
+    private scrollService: ScrollService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
+    // Scroll to top when component initializes
+    this.scrollService.scrollToTop();
     this.checkAuthStatus();
   }
 
@@ -69,7 +75,7 @@ export class AdoptionComponent implements OnInit, OnChanges {
     if (this.isLoggedIn) {
       this.router.navigate(['/post']); // Navigate to post page
     } else {
-      alert('You must be logged in to post a pet for adoption.');
+      this.toastService.error('You must be logged in to post a pet for adoption.');
       this.router.navigate(['/login']);
     }
   }

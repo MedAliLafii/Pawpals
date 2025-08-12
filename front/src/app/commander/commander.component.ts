@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms'; // Manages forms
 import { Router } from '@angular/router'; // Handles page navigation
 import { HeaderComponent } from '../components/header/header.component'; // Importing the header component
 import { FooterComponent } from '../components/footer/footer.component'; // Importing the footer component
+import { ToastService } from '../shared/services/toast.service';
 
 // Defining the interface representing a cart item
 interface CartItem {
@@ -50,7 +51,11 @@ export class CommanderComponent implements OnInit {
   };
 
   // Injecting HttpClient for HTTP requests and Router for navigation
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient, 
+    private router: Router,
+    private toastService: ToastService
+  ) {}
 
   // Method automatically called when the component loads
   ngOnInit(): void {
@@ -117,23 +122,23 @@ export class CommanderComponent implements OnInit {
         // If the update is successful, place the order
         this.http.post('http://localhost:5000/Cart/commander', {}, { withCredentials: true }).subscribe({
           next: () => {
-            // Displaying an alert if the order is placed successfully
-            alert('Your order has been placed successfully');
+            // Displaying a toast if the order is placed successfully
+            this.toastService.success('Your order has been placed successfully');
           },
           error: (error) => {
             // Displaying an error if the order fails
-            alert('Error placing the order: ' + error.error?.error || error.message);
+            this.toastService.error('Error placing the order: ' + error.error?.error || error.message);
           }
         });
       },
       error: (error) => {
         // Displaying an error if updating client info fails
-        alert('Error updating client information: ' + error.error?.error || error.message);
+        this.toastService.error('Error updating client information: ' + error.error?.error || error.message);
       }
     });
 
     // Redirecting to the home page
-    this.router.navigate(['/homee']);
+    this.router.navigate(['/home']);
   }
 
 }
