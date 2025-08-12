@@ -40,6 +40,11 @@
   height: 8rem;
   border-radius: 0.5rem;
   overflow: hidden;
+  cursor: pointer; /* Ensure cursor pointer is applied */
+}
+
+.category-card-wrapper:hover {
+  cursor: pointer; /* Ensure cursor pointer on hover */
 }
 
 .category-card-image {
