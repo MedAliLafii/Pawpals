@@ -20,11 +20,12 @@ import { filter, take } from 'rxjs/operators';
   styleUrls: ['./adoption.component.css']
 })
 export class AdoptionComponent implements OnInit, OnChanges {
-  @Input() filters!: { location: string; types: string[]; ages: number };
+  @Input() filters: { location: string; types: string[]; ages: number } = { location: '', types: [], ages: 0 };
   filteredPets: any[] = [];
   allPets: any[] = [];
   isLoggedIn: boolean = false;
   clientId: number = 0;
+  selectedCategory: string = 'all-pets'; // Track selected category
 
   constructor(
     private http: HttpClient,
@@ -89,5 +90,27 @@ export class AdoptionComponent implements OnInit, OnChanges {
   onFiltersChanged(filters: { location: string, types: string[], ages: number }): void {
     this.filters = filters;
     console.log('Filters updated:', this.filters);
+  }
+
+  // Handle category card clicks
+  onCategoryClick(category: string): void {
+    console.log('Category clicked:', category);
+    this.selectedCategory = category;
+    
+    if (category === 'all-pets') {
+      // Show all pets
+      this.filters = { ...this.filters, types: [] };
+    } else if (category === 'dogs') {
+      // Show only dogs
+      this.filters = { ...this.filters, types: ['dog'] };
+    } else if (category === 'cats') {
+      // Show only cats
+      this.filters = { ...this.filters, types: ['cat'] };
+    } else if (category === 'other-pets') {
+      // Show other pets (birds, etc.)
+      this.filters = { ...this.filters, types: ['bird', 'other-pets'] };
+    }
+    
+    console.log('Filters after category click:', this.filters);
   }
 }

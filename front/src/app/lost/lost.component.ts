@@ -21,7 +21,7 @@ import { filter, take } from 'rxjs/operators';
   imports: [CommonModule, FormsModule, PetCardComponent, HeaderComponent, FooterComponent, PetFiltersComponent]
 })
 export class LostComponent implements OnInit, OnChanges {
-  @Input() filters!: { location: string; types: string[]; ages: number };
+  @Input() filters: { location: string; types: string[]; ages: number } = { location: '', types: [], ages: 0 };
   filteredPets: any[] = [];
   allPets: any[] = [];
   isLoggedIn: boolean = false;
