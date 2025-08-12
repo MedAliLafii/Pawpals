@@ -7,6 +7,8 @@ import { HeaderComponent } from '../components/header/header.component';
 import { FooterComponent } from '../components/footer/footer.component';
 import { ToastService } from '../shared/services/toast.service';
 import { environment } from '../../environments/environment';
+import { AuthService } from '../services/auth.service';
+import { filter, take } from 'rxjs/operators';
 
 interface PostAdoptionForm {
   petName: string;
@@ -63,7 +65,8 @@ export class PostAdoptionComponent implements OnInit {
   constructor(
     private http: HttpClient, 
     private router: Router,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -72,17 +75,22 @@ export class PostAdoptionComponent implements OnInit {
   
 
   fetchClient(): void {
-    this.http.get<any>(`${environment.BACK_URL}/Client/getClientInfo`, { withCredentials: true }).subscribe(
-      (response) => {
-        // Fill in the form with client information
-        this.formData.contactName = response.nom;
-        this.formData.contactPhone = response.tel;
-        this.formData.contactEmail = response.email;
+    this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()),
+      take(1)
+    ).subscribe({
+      next: (authStatus) => {
+        if (authStatus.isAuthenticated && authStatus.user) {
+          // Fill in the form with client information from auth service
+          this.formData.contactName = authStatus.user.nom;
+          this.formData.contactPhone = authStatus.user.tel;
+          this.formData.contactEmail = authStatus.user.email;
+        }
       },
-      (error) => {
-        console.error('Error fetching client info:', error);
+      error: (error) => {
+        console.error('Error getting auth status:', error);
       }
-    );
+    });
   }
 
   handleImageChange(event: any): void {
@@ -114,56 +122,64 @@ export class PostAdoptionComponent implements OnInit {
   handleSubmit(): void {
     this.isSubmitting = true;
   
-    // Step 1: Fetch full client info first
-    this.http.get<any>(`${environment.BACK_URL}/Client/getClientInfo`, { withCredentials: true }).subscribe({
-      next: (existingClientInfo) => {
-        // Step 2: Merge with updated fields
-        const updatedClientInfo = {
-          ...existingClientInfo,
-          nom: this.formData.contactName,
-          tel: this.formData.contactPhone,
-          email: this.formData.contactEmail
-        };
+    // Get current user info from auth service
+    this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()),
+      take(1)
+    ).subscribe({
+      next: (authStatus) => {
+        if (authStatus.isAuthenticated && authStatus.user) {
+          // Step 1: Merge with updated fields
+          const updatedClientInfo = {
+            ...authStatus.user,
+            nom: this.formData.contactName,
+            tel: this.formData.contactPhone,
+            email: this.formData.contactEmail
+          };
   
-        // Step 3: Send full updated client info
-        this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, updatedClientInfo, { withCredentials: true }).subscribe({
-          next: () => {
-            // Step 4: Build FormData for adoption
-            const formData = new FormData();
-            for (const key in this.formData) {
-              if (this.formData[key] !== undefined && this.formData[key] !== null) {
-                if (typeof this.formData[key] === 'boolean') {
-                  formData.append(key, this.formData[key].toString());
-                } else {
-                  formData.append(key, this.formData[key] as string | Blob);
+          // Step 2: Send full updated client info
+          this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, updatedClientInfo, { withCredentials: true }).subscribe({
+            next: () => {
+              // Step 3: Build FormData for adoption
+              const formData = new FormData();
+              for (const key in this.formData) {
+                if (this.formData[key] !== undefined && this.formData[key] !== null) {
+                  if (typeof this.formData[key] === 'boolean') {
+                    formData.append(key, this.formData[key].toString());
+                  } else {
+                    formData.append(key, this.formData[key] as string | Blob);
+                  }
                 }
               }
-            }
   
-            // Step 5: Post adoption data
-            this.http.post(`${environment.BACK_URL}/adoptPet/add`, formData, { withCredentials: true }).subscribe({
-              next: () => {
-                this.toastService.success('Pet adoption posted successfully!');
-                this.router.navigate(['/adoption']);
-                this.isSubmitting = false;
-              },
-              error: (error) => {
-                console.error('Error posting adoption:', error);
-                this.toastService.error('Error posting adoption: ' + (error.error?.error || error.message));
-                this.isSubmitting = false;
-              }
-            });
-          },
-          error: (error) => {
-            console.error('Error updating client info:', error);
-            this.toastService.error('Error updating contact info: ' + (error.error?.error || error.message));
-            this.isSubmitting = false;
-          }
-        });
+              // Step 4: Post adoption data
+              this.http.post(`${environment.BACK_URL}/adoptPet/add`, formData, { withCredentials: true }).subscribe({
+                next: () => {
+                  this.toastService.success('Pet adoption posted successfully!');
+                  this.router.navigate(['/adoption']);
+                  this.isSubmitting = false;
+                },
+                error: (error) => {
+                  console.error('Error posting adoption:', error);
+                  this.toastService.error('Error posting adoption: ' + (error.error?.error || error.message));
+                  this.isSubmitting = false;
+                }
+              });
+            },
+            error: (error) => {
+              console.error('Error updating client info:', error);
+              this.toastService.error('Error updating contact info: ' + (error.error?.error || error.message));
+              this.isSubmitting = false;
+            }
+          });
+        } else {
+          this.toastService.error('You must be logged in to post an adoption.');
+          this.isSubmitting = false;
+        }
       },
       error: (error) => {
-        console.error('Error fetching client info before update:', error);
-        this.toastService.error('Failed to fetch your full profile. Try again.');
+        console.error('Error getting auth status:', error);
+        this.toastService.error('Authentication error. Please try again.');
         this.isSubmitting = false;
       }
     });

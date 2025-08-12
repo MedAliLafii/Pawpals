@@ -7,6 +7,8 @@ import { HeaderComponent } from '../components/header/header.component';
 import { FooterComponent } from '../components/footer/footer.component';
 import { ToastService } from '../shared/services/toast.service';
 import { environment } from '../../environments/environment';
+import { AuthService } from '../services/auth.service';
+import { filter, take } from 'rxjs/operators';
 
 type LostPetFormFields = {
   name: string;
@@ -51,7 +53,8 @@ export class PostLostComponent implements OnInit {
   constructor(
     private http: HttpClient, 
     private router: Router,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {}
 
   updateField<K extends keyof LostPetFormFields>(key: K, value: LostPetFormFields[K]) {
@@ -94,53 +97,61 @@ export class PostLostComponent implements OnInit {
       }
     }
   
-    // Step 1: Fetch existing client info first
-    this.http.get<any>(`${environment.BACK_URL}/Client/getClientInfo`, { withCredentials: true }).subscribe({
-      next: (existingClientInfo) => {
-        // Merge existing info with updated fields
-        const updatedClientInfo = {
-          ...existingClientInfo,
-          nom: this.formData.contactName,
-          tel: this.formData.contactPhone,
-          email: this.formData.contactEmail
-        };
+    // Get current user info from auth service
+    this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()),
+      take(1)
+    ).subscribe({
+      next: (authStatus) => {
+        if (authStatus.isAuthenticated && authStatus.user) {
+          // Step 1: Merge existing info with updated fields
+          const updatedClientInfo = {
+            ...authStatus.user,
+            nom: this.formData.contactName,
+            tel: this.formData.contactPhone,
+            email: this.formData.contactEmail
+          };
   
-        // Step 2: Send full updated client info
-        this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, updatedClientInfo, { withCredentials: true }).subscribe({
-          next: () => {
-            // Step 3: Prepare FormData for lost pet
-            const lostPetData = new FormData();
-            for (const key in this.formData) {
-              const value = this.formData[key as keyof LostPetFormFields];
-              if (value !== null && value !== undefined) {
-                lostPetData.append(key, value instanceof File ? value : value.toString());
+          // Step 2: Send full updated client info
+          this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, updatedClientInfo, { withCredentials: true }).subscribe({
+            next: () => {
+              // Step 3: Prepare FormData for lost pet
+              const lostPetData = new FormData();
+              for (const key in this.formData) {
+                const value = this.formData[key as keyof LostPetFormFields];
+                if (value !== null && value !== undefined) {
+                  lostPetData.append(key, value instanceof File ? value : value.toString());
+                }
               }
+  
+              // Step 4: Post lost pet
+              this.http.post(`${environment.BACK_URL}/lostpet/add`, lostPetData, { withCredentials: true }).subscribe({
+                next: () => {
+                  this.toastService.success('Lost pet posted successfully!');
+                  this.router.navigate(['/lost']);
+                  this.isSubmitting = false;
+                },
+                error: (error) => {
+                  console.error('Error posting lost pet:', error);
+                  this.toastService.error('Error posting lost pet: ' + (error.error?.error || error.message));
+                  this.isSubmitting = false;
+                }
+              });
+            },
+            error: (error) => {
+              console.error('Error updating client info:', error);
+              this.toastService.error('Error updating contact info: ' + (error.error?.error || error.message));
+              this.isSubmitting = false;
             }
-  
-            // Step 4: Post lost pet
-            this.http.post(`${environment.BACK_URL}/lostpet/add`, lostPetData, { withCredentials: true }).subscribe({
-              next: () => {
-                this.toastService.success('Lost pet posted successfully!');
-                this.router.navigate(['/lost']);
-                this.isSubmitting = false;
-              },
-              error: (error) => {
-                console.error('Error posting lost pet:', error);
-                this.toastService.error('Error posting lost pet: ' + (error.error?.error || error.message));
-                this.isSubmitting = false;
-              }
-            });
-          },
-          error: (error) => {
-            console.error('Error updating client info:', error);
-            this.toastService.error('Error updating contact info: ' + (error.error?.error || error.message));
-            this.isSubmitting = false;
-          }
-        });
+          });
+        } else {
+          this.toastService.error('You must be logged in to post a lost pet.');
+          this.isSubmitting = false;
+        }
       },
       error: (error) => {
-        console.error('Error fetching client info before update:', error);
-        this.toastService.error('Failed to fetch your full profile. Try again.');
+        console.error('Error getting auth status:', error);
+        this.toastService.error('Authentication error. Please try again.');
         this.isSubmitting = false;
       }
     });
@@ -166,16 +177,21 @@ export class PostLostComponent implements OnInit {
   }
 
   fetchClient(): void {
-    this.http.get<any>(`${environment.BACK_URL}/Client/getClientInfo`, { withCredentials: true }).subscribe(
-      (response) => {
-        // Fill in the form with client information
-        this.formData.contactName = response.nom;
-        this.formData.contactPhone = response.tel;
-        this.formData.contactEmail = response.email;
+    this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()),
+      take(1)
+    ).subscribe({
+      next: (authStatus) => {
+        if (authStatus.isAuthenticated && authStatus.user) {
+          // Fill in the form with client information from auth service
+          this.formData.contactName = authStatus.user.nom;
+          this.formData.contactPhone = authStatus.user.tel;
+          this.formData.contactEmail = authStatus.user.email;
+        }
       },
-      (error) => {
-        console.error('Error fetching client info:', error);
+      error: (error) => {
+        console.error('Error getting auth status:', error);
       }
-    );
+    });
   }
 }

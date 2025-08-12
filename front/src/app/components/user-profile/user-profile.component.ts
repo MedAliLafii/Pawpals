@@ -6,6 +6,8 @@ import { Router } from '@angular/router';
 import { ToastService } from '../../shared/services/toast.service';
 import { HeaderComponent } from '../header/header.component';
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../../services/auth.service';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-user-profile',
@@ -313,7 +315,8 @@ export class UserProfileComponent implements OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     private router: Router,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {
     this.profileForm = this.fb.group({
       nom: ['', [Validators.required, Validators.minLength(2)]],
@@ -330,22 +333,26 @@ export class UserProfileComponent implements OnInit {
   }
 
   loadUserProfile(): void {
-    this.http.get<any>(`${environment.BACK_URL}/Client/getClientInfo`, { withCredentials: true })
-      .subscribe({
-        next: (profile) => {
+    this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()),
+      take(1)
+    ).subscribe({
+      next: (authStatus) => {
+        if (authStatus.isAuthenticated && authStatus.user) {
           this.profileForm.patchValue({
-            nom: profile.nom || '',
-            email: profile.email || '',
-            tel: profile.tel || '',
-            region: profile.region || '',
-            adresse: profile.adresse || ''
+            nom: authStatus.user.nom || '',
+            email: authStatus.user.email || '',
+            tel: authStatus.user.tel || '',
+            region: authStatus.user.region || '',
+            adresse: authStatus.user.adresse || ''
           });
-        },
-        error: (error) => {
-          console.error('Error loading profile:', error);
-          this.toastService.error('Failed to load profile');
         }
-      });
+      },
+      error: (error) => {
+        console.error('Error loading profile:', error);
+        this.toastService.error('Failed to load profile');
+      }
+    });
   }
 
   loadUserStats(): void {

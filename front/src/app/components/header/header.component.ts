@@ -159,23 +159,32 @@ export class HeaderComponent implements OnInit {
 
   // Load cart item count
   loadCartCount(): void {
-    if (this.isLoggedIn) {
-      this.http.get<any>(`${environment.BACK_URL}/Cart`, { withCredentials: true })
-        .subscribe({
-          next: (cart) => {
-            // Handle different possible response formats
-            if (cart && Array.isArray(cart)) {
-              this.cartItemCount = cart.length;
-            } else if (cart && cart.items && Array.isArray(cart.items)) {
-              this.cartItemCount = cart.items.length;
-            } else {
-              this.cartItemCount = 0;
-            }
-          },
-          error: () => {
-            this.cartItemCount = 0;
-          }
-        });
-    }
+    this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()),
+      take(1)
+    ).subscribe({
+      next: (authStatus) => {
+        if (authStatus.isAuthenticated) {
+          this.http.get<any>(`${environment.BACK_URL}/Cart`, { withCredentials: true })
+            .subscribe({
+              next: (cart) => {
+                // Handle different possible response formats
+                if (cart && Array.isArray(cart)) {
+                  this.cartItemCount = cart.length;
+                } else if (cart && cart.items && Array.isArray(cart.items)) {
+                  this.cartItemCount = cart.items.length;
+                } else {
+                  this.cartItemCount = 0;
+                }
+              },
+              error: () => {
+                this.cartItemCount = 0;
+              }
+            });
+        } else {
+          this.cartItemCount = 0;
+        }
+      }
+    });
   }
 }

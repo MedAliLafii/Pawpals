@@ -8,6 +8,8 @@ import { HeaderComponent } from '../components/header/header.component'; // Impo
 import { FooterComponent } from '../components/footer/footer.component'; // Importing the footer component
 import { ToastService } from '../shared/services/toast.service';
 import { environment } from '../../environments/environment';
+import { AuthService } from '../services/auth.service';
+import { filter, take } from 'rxjs/operators';
 
 // Defining the interface representing a cart item
 interface CartItem {
@@ -55,7 +57,8 @@ export class CommanderComponent implements OnInit {
   constructor(
     private http: HttpClient, 
     private router: Router,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {}
 
   // Method automatically called when the component loads
@@ -67,21 +70,26 @@ export class CommanderComponent implements OnInit {
   fetchClient(): void {
     this.isLoading = true; // Activating the loading state
 
-    // Fetching client information through a GET request
-    this.http.get<any>(`${environment.BACK_URL}/Client/getClientInfo`, { withCredentials: true }).subscribe(
-      (response) => {
-        // Filling the form fields with retrieved data
-        this.form.lname = response.nom;
-        this.form.region = response.region;
-        this.form.houseadd = response.adresse;
-        this.form.phone = response.tel;
+    // Get client information from auth service
+    this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()),
+      take(1)
+    ).subscribe({
+      next: (authStatus) => {
+        if (authStatus.isAuthenticated && authStatus.user) {
+          // Filling the form fields with retrieved data
+          this.form.lname = authStatus.user.nom;
+          this.form.region = authStatus.user.region;
+          this.form.houseadd = authStatus.user.adresse;
+          this.form.phone = authStatus.user.tel;
+        }
       },
-      (error) => {
+      error: (error) => {
         // Displaying an error if the request fails
         console.error('Error fetching client info:', error);
         this.isLoading = false;
       }
-    );
+    });
 
     // Fetching cart content
     this.http.get<CommandeResponse>(`${environment.BACK_URL}/Cart/fetch`, { withCredentials: true }).subscribe(
