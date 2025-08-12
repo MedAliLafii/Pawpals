@@ -7,6 +7,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class ApiService {
+  // Updated to use Angular environment configuration
   private readonly baseUrl = environment.BACK_URL;
 
   constructor(private http: HttpClient) {
