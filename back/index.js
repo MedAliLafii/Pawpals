@@ -33,8 +33,17 @@ app.use((req, res, next) => {
   next(); // Continue to the next middleware
 });
 
-// Root route handler
+// Root route handler with environment debugging
 app.get("/", (req, res) => {
+  console.log("Environment variables check:");
+  console.log("DB_HOST:", process.env.DB_HOST);
+  console.log("DB_PORT:", process.env.DB_PORT);
+  console.log("DB_USER:", process.env.DB_USER);
+  console.log("DB_PASSWORD:", process.env.DB_PASSWORD);
+  console.log("DB_NAME:", process.env.DB_NAME);
+  console.log("JWT_SECRET:", process.env.JWT_SECRET);
+  console.log("CORS_ORIGIN:", process.env.CORS_ORIGIN);
+  
   res.status(200).json({ 
     message: "Pawpals API is running", 
     version: "1.0.0",
@@ -45,17 +54,38 @@ app.get("/", (req, res) => {
       cart: "/Cart",
       adoption: "/adoptPet",
       lostPets: "/lostPet"
+    },
+    envCheck: {
+      dbHost: process.env.DB_HOST,
+      dbPort: process.env.DB_PORT,
+      dbUser: process.env.DB_USER,
+      dbPassword: process.env.DB_PASSWORD,
+      dbName: process.env.DB_NAME,
+      jwtSecret: process.env.JWT_SECRET,
+      corsOrigin: process.env.CORS_ORIGIN
     }
   });
 });
 
-// GET route to fetch all categories
+// GET route to fetch all categories with enhanced error logging
 app.get("/categorie", (req, res) => {
+  console.log("Attempting to fetch categories...");
   pool.query(`SELECT * FROM Categorie`, (err, results) => {
     if (err) {
       console.error("Error fetching categories:", err);
-      return res.status(500).json({ error: "Database request failed" });
+      console.error("Error code:", err.code);
+      console.error("Error message:", err.message);
+      console.error("Error sqlMessage:", err.sqlMessage);
+      return res.status(500).json({ 
+        error: "Database request failed",
+        details: {
+          code: err.code,
+          message: err.message,
+          sqlMessage: err.sqlMessage
+        }
+      });
     } else {
+      console.log("Categories fetched successfully, count:", results.length);
       res.status(200).json(results); // Return the list of categories
     }
   });
