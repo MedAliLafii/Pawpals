@@ -33,6 +33,22 @@ app.use((req, res, next) => {
   next(); // Continue to the next middleware
 });
 
+// Root route handler
+app.get("/", (req, res) => {
+  res.status(200).json({ 
+    message: "Pawpals API is running", 
+    version: "1.0.0",
+    endpoints: {
+      categories: "/categorie",
+      products: "/produit",
+      clients: "/Client",
+      cart: "/Cart",
+      adoption: "/adoptPet",
+      lostPets: "/lostPet"
+    }
+  });
+});
+
 // GET route to fetch all categories
 app.get("/categorie", (req, res) => {
   pool.query(`SELECT * FROM Categorie`, (err, results) => {
