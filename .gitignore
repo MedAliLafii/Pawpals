@@ -99,9 +99,3 @@ temp/
 
 # Angular specific
 .angular/
-
-# Uploaded files (keep structure but ignore content)
-front/src/assets/uploads/*
-!front/src/assets/uploads/.gitkeep
-front/src/assets/uploads/*
-!front/src/assets/uploads/.gitkeep
