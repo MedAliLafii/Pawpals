@@ -8,6 +8,7 @@ import { ToastContainerComponent } from '../../shared/components/toast-container
 import { ToastService } from '../../shared/services/toast.service'; 
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../services/auth.service';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-header', 
