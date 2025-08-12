@@ -24,7 +24,6 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production",
-    "BACK_URL": "https://pawpalsback.vercel.app"
+    "NODE_ENV": "production"
   }
 }

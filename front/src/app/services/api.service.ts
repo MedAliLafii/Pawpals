@@ -1,14 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private readonly baseUrl = import.meta.env.BACK_URL;
+  private readonly baseUrl = environment.BACK_URL;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    console.log('API Service initialized with baseUrl:', this.baseUrl);
+  }
 
   // Client endpoints
   checkAuth(): Observable<{client: any}> {
