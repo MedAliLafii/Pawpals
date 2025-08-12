@@ -46,9 +46,18 @@ export class CartComponent implements OnInit {
 
   // Method to retrieve cart data from the backend
   fetchCart(): void {
+    const token = localStorage.getItem('authToken');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     this.http.get<{produits: any[], total: number}>(
       `${environment.BACK_URL}/Cart/fetch`, // API URL to get cart items
-      { withCredentials: true } // Sends cookies for authentication
+      { 
+        withCredentials: true, // Sends cookies for authentication
+        headers: headers
+      }
     ).subscribe(
       (response) => {
         // On success: store products and total price
@@ -59,6 +68,9 @@ export class CartComponent implements OnInit {
       (error) => {
         // On request error
         console.error('Error fetching cart', error);
+        if (error.status === 401) {
+          this.toastService.error("Authentication error. Please log in again.");
+        }
       }
     );
   }
@@ -80,10 +92,19 @@ export class CartComponent implements OnInit {
 
   // Method to send a request to the backend to update quantity
   updateQuantity(produitID: number, quantite: number): void {
+    const token = localStorage.getItem('authToken');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     this.http.put(
       `${environment.BACK_URL}/Cart/update`, // Update URL
       { produitID, quantite }, // Data to send
-      { withCredentials: true } // Sends cookies
+      { 
+        withCredentials: true, // Sends cookies
+        headers: headers
+      }
     ).subscribe(
       () => {
         console.log('Quantity has been updated');
@@ -95,6 +116,8 @@ export class CartComponent implements OnInit {
         // If the error is due to stock limits
         if (error.status === 400 && error.error?.error === "Requested quantity exceeds available stock.") {
           this.toastService.error("Requested quantity exceeds available stock.");
+        } else if (error.status === 401) {
+          this.toastService.error("Authentication error. Please log in again.");
         } else {
           // Other types of errors
           this.toastService.error("An error occurred while updating quantity.");
@@ -105,11 +128,18 @@ export class CartComponent implements OnInit {
 
   // Method to remove an item from the cart
   removeFromCart(produitID: number): void {
+    const token = localStorage.getItem('authToken');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     this.http.delete(
       `${environment.BACK_URL}/Cart/remove`, // Deletion URL
       {
         body: { produitID }, // Product ID to remove (sent in the body)
-        withCredentials: true // Sends cookies
+        withCredentials: true, // Sends cookies
+        headers: headers
       }
     ).subscribe(
       () => {
@@ -118,6 +148,9 @@ export class CartComponent implements OnInit {
       },
       (error) => {
         console.error('Error while removing item from cart:', error);
+        if (error.status === 401) {
+          this.toastService.error("Authentication error. Please log in again.");
+        }
       }
     );
   }

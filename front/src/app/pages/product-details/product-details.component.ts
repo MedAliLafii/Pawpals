@@ -69,21 +69,10 @@ export class ProductDetailsComponent implements OnInit { // Déclaration du comp
 
   // Méthode pour ajouter un produit au panier en envoyant une requête POST
   addToCart(): void {
-    // Get token from localStorage as fallback
-    const token = localStorage.getItem('authToken');
-    const headers: any = {};
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
     this.http.post(
       `${environment.BACK_URL}/Cart/add`, // URL de l'API pour ajouter un produit au panier
       { produitID: this.produitID, quantite: this.selectedQuantity }, // Données envoyées dans la requête (ID du produit et quantité)
-      { 
-        withCredentials: true, // Indication que les informations d'authentification (cookies, session) doivent être envoyées avec la requête
-        headers: headers
-      }
+      { withCredentials: true } // Indication que les informations d'authentification (cookies, session) doivent être envoyées avec la requête
     ).subscribe(
       () => {
         this.toastService.success('Product added to cart!'); // Success message if the request is successful

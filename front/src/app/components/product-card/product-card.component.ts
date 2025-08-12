@@ -58,15 +58,13 @@ export class ProductCardComponent implements OnInit {
     ).subscribe({
       next: (authStatus) => {
         if (authStatus.isAuthenticated) {
-          // Get token from localStorage as fallback
+          // User is logged in, add to server cart
           const token = localStorage.getItem('authToken');
-          const headers: any = {};
-          
+          const headers: Record<string, string> = {};
           if (token) {
             headers['Authorization'] = `Bearer ${token}`;
           }
-
-          // User is logged in, add to server cart
+          
           this.http.post(
             `${environment.BACK_URL}/Cart/add`,
             { produitID: this.produitID, quantite: this.selectedQuantity },
@@ -84,6 +82,7 @@ export class ProductCardComponent implements OnInit {
                 this.toastService.error("The quantity surpasses our available stock!");
               } else if (error.status === 401) {
                 this.toastService.error("Authentication error. Please log in again.");
+                this.authService.clearAuth();
                 this.router.navigate(['/login']);
               } else {
                 this.toastService.error("Error adding to cart");

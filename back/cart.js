@@ -8,14 +8,21 @@ require('dotenv').config(); // Load environment variables (like JWT secret key)
 cartRoutes.get('/fetch', async (req, res) => {
     const pool = req.pool; 
     const token = req.cookies.token || req.headers.authorization?.split(' ')[1]; 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET); 
-    const clientID = decoded.client.clientID; 
+    
+    console.log('Cart fetch - Token from cookies:', req.cookies.token);
+    console.log('Cart fetch - Token from headers:', req.headers.authorization);
+    console.log('Cart fetch - Final token:', token);
 
     if (!token) {
+        console.log('Cart fetch - No token found');
         return res.status(401).json({ error: "Access denied, missing token." }); 
     }
 
     try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); 
+        console.log('Cart fetch - Token decoded successfully:', decoded);
+        const clientID = decoded.client.clientID; 
+
         // Vérifie que l'utilisateur accède bien à son propre panier
         if (decoded.client.clientID !== parseInt(clientID)) {
             return res.status(403).json({ error: "Access denied." });
@@ -90,23 +97,7 @@ cartRoutes.post('/add', async (req, res) => {
             });
         });
 
-        let panierID;
-        
-        // Si le panier n'existe pas, le créer
-        if (cartRows.length === 0) {
-            console.log('Cart add - Creating new cart for client:', clientID);
-            const createCartResult = await new Promise((resolve, reject) => {
-                pool.query("INSERT INTO panier (clientID) VALUES (?)", [clientID], (error, result) => {
-                    if (error) reject(error);
-                    else resolve(result);
-                });
-            });
-            panierID = createCartResult.insertId;
-            console.log('Cart add - New cart created with ID:', panierID);
-        } else {
-            panierID = cartRows[0].panierID;
-            console.log('Cart add - Using existing cart ID:', panierID);
-        }
+        let panierID = cartRows[0].panierID;
 
         // Vérifie si le produit est déjà présent dans le panier
         const existingProductRows = await new Promise((resolve, reject) => {
@@ -180,23 +171,11 @@ cartRoutes.put('/update', async (req, res) => {
             });
         });
 
-        let panierID;
-        
-        // Si le panier n'existe pas, le créer
         if (cartRows.length === 0) {
-            console.log('Cart update - Creating new cart for client:', clientID);
-            const createCartResult = await new Promise((resolve, reject) => {
-                pool.query("INSERT INTO panier (clientID) VALUES (?)", [clientID], (error, result) => {
-                    if (error) reject(error);
-                    else resolve(result);
-                });
-            });
-            panierID = createCartResult.insertId;
-            console.log('Cart update - New cart created with ID:', panierID);
-        } else {
-            panierID = cartRows[0].panierID;
-            console.log('Cart update - Using existing cart ID:', panierID);
+            return res.status(404).json({ error: "Cart not found." });
         }
+
+        const panierID = cartRows[0].panierID;
 
         // Vérifie la quantité actuelle dans le panier
         const currentQuantityQuery = "SELECT quantite FROM panier_produit WHERE panierID = ? AND produitID = ?";
@@ -282,10 +261,6 @@ cartRoutes.delete('/remove', async (req, res) => {
             });
         });
 
-        if (cartRows.length === 0) {
-            return res.status(404).json({ error: "Cart not found." });
-        }
-
         const panierID = cartRows[0].panierID;
 
         // Suppression du produit du panier
@@ -326,10 +301,6 @@ cartRoutes.post('/commander', async (req, res) => {
                 else resolve(rows);
             });
         });
-
-        if (cartRows.length === 0) {
-            return res.status(404).json({ error: "Cart not found." });
-        }
 
         const panierID = cartRows[0].panierID;
 
