@@ -10,7 +10,7 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
-src/.env
+front/src/.env
 back/.env
 
 # Build outputs
@@ -101,7 +101,7 @@ temp/
 .angular/
 
 # Uploaded files (keep structure but ignore content)
-src/assets/uploads/*
-!src/assets/uploads/.gitkeep
-src/assets/uploads/*
-!src/assets/uploads/.gitkeep
+front/src/assets/uploads/*
+!front/src/assets/uploads/.gitkeep
+front/src/assets/uploads/*
+!front/src/assets/uploads/.gitkeep
