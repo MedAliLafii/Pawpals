@@ -304,10 +304,20 @@ cartRoutes.delete('/remove', async (req, res) => {
 // Passer commande 
 cartRoutes.post('/commander', async (req, res) => {
     const pool = req.pool;
-    const token = req.cookies.token; // Récupère le token depuis les cookies
+    const token = req.cookies.token || req.headers.authorization?.split(' ')[1]; // Check both cookies and Authorization header
+
+    console.log('Commander - Token from cookies:', req.cookies.token);
+    console.log('Commander - Token from headers:', req.headers.authorization);
+    console.log('Commander - Final token:', token);
+
+    if (!token) {
+        console.log('Commander - No token found');
+        return res.status(401).json({ error: "Access denied, missing token." });
+    }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Commander - Token decoded successfully:', decoded);
         const clientID = decoded.client.clientID;
 
         // Vérifie si le client a un panier

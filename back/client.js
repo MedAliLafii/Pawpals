@@ -227,19 +227,26 @@ clientRoutes.post('/changepass', async (req, res) => {
 // Route pour changer le mot de passe (pour utilisateurs connectés)
 clientRoutes.post('/changePassword', async (req, res) => {
     const pool = req.pool;
-    const token = req.cookies.token;
+    const token = req.cookies.token || req.headers.authorization?.split(' ')[1]; // Check both cookies and Authorization header
     const { currentPassword, newPassword } = req.body;
 
+    console.log('ChangePassword - Token from cookies:', req.cookies.token);
+    console.log('ChangePassword - Token from headers:', req.headers.authorization);
+    console.log('ChangePassword - Final token:', token);
+
     if (!token) {
+        console.log('ChangePassword - No token found');
         return res.status(401).json({ error: 'Token required to change password.' });
     }
 
     try {
         jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
             if (err) {
+                console.log('ChangePassword - Token verification failed:', err.message);
                 return res.status(401).json({ error: 'Invalid or expired token.' });
             }
 
+            console.log('ChangePassword - Token verified successfully:', decoded);
             const clientID = decoded.client.clientID;
             const email = decoded.client.email;
 
@@ -368,18 +375,25 @@ clientRoutes.post('/logout', async (req, res) => {
 // Route pour récupérer les infos du client
 clientRoutes.get('/getClientInfo', async (req, res) => {
     const pool = req.pool;
-    const token = req.cookies.token;
+    const token = req.cookies.token || req.headers.authorization?.split(' ')[1]; // Check both cookies and Authorization header
+
+    console.log('GetClientInfo - Token from cookies:', req.cookies.token);
+    console.log('GetClientInfo - Token from headers:', req.headers.authorization);
+    console.log('GetClientInfo - Final token:', token);
 
     if (!token) {
+        console.log('GetClientInfo - No token found');
         return res.status(401).json({ error: 'Token required to access this data.' });
     }
 
     try {
         jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
             if (err) {
+                console.log('GetClientInfo - Token verification failed:', err.message);
                 return res.status(401).json({ error: 'Invalid or expired token.' });
             }
 
+            console.log('GetClientInfo - Token verified successfully:', decoded);
             const clientID = decoded.client.clientID;
             const query = 'SELECT nom, region, adresse, tel, email FROM client WHERE clientID = ?';
 
@@ -406,19 +420,26 @@ clientRoutes.get('/getClientInfo', async (req, res) => {
 // Route pour mettre à jour les infos du client
 clientRoutes.put('/updateClientInfo', async (req, res) => {
     const pool = req.pool;
-    const token = req.cookies.token;
+    const token = req.cookies.token || req.headers.authorization?.split(' ')[1]; // Check both cookies and Authorization header
     const { nom, region, adresse, tel } = req.body;
 
+    console.log('UpdateClientInfo - Token from cookies:', req.cookies.token);
+    console.log('UpdateClientInfo - Token from headers:', req.headers.authorization);
+    console.log('UpdateClientInfo - Final token:', token);
+
     if (!token) {
+        console.log('UpdateClientInfo - No token found');
         return res.status(401).json({ error: 'Token required for update.' });
     }
 
     try {
         jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
             if (err) {
+                console.log('UpdateClientInfo - Token verification failed:', err.message);
                 return res.status(401).json({ error: 'Invalid or expired token.' });
             }
 
+            console.log('UpdateClientInfo - Token verified successfully:', decoded);
             const clientID = decoded.client.clientID;
             const query = 'UPDATE client SET nom = ?, region = ?, adresse = ?, tel = ? WHERE clientID = ?';
 
@@ -432,11 +453,12 @@ clientRoutes.put('/updateClientInfo', async (req, res) => {
                     return res.status(404).json({ error: 'Client not found or no changes made.' });
                 }
 
+                console.log('UpdateClientInfo - Client updated successfully');
                 res.status(200).json({ message: 'Update successful.' });
             });
         });
     } catch (error) {
-        console.error('Global error', error);
+        console.error('UpdateClientInfo - Global error:', error);
         return res.status(500).json({ error: 'Error during update.' });
     }
 });
@@ -444,18 +466,25 @@ clientRoutes.put('/updateClientInfo', async (req, res) => {
 // Route pour supprimer le compte client
 clientRoutes.delete('/account', async (req, res) => {
     const pool = req.pool;
-    const token = req.cookies.token;
+    const token = req.cookies.token || req.headers.authorization?.split(' ')[1]; // Check both cookies and Authorization header
+
+    console.log('DeleteAccount - Token from cookies:', req.cookies.token);
+    console.log('DeleteAccount - Token from headers:', req.headers.authorization);
+    console.log('DeleteAccount - Final token:', token);
 
     if (!token) {
+        console.log('DeleteAccount - No token found');
         return res.status(401).json({ error: 'Token required to delete account.' });
     }
 
     try {
         jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
             if (err) {
+                console.log('DeleteAccount - Token verification failed:', err.message);
                 return res.status(401).json({ error: 'Invalid or expired token.' });
             }
 
+            console.log('DeleteAccount - Token verified successfully:', decoded);
             const clientID = decoded.client.clientID;
             const email = decoded.client.email;
 
