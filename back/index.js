@@ -105,7 +105,6 @@ app.use("/Cart", cartRoutes);
 app.use('/adoptPet', adoptPetRoutes);
 app.use('/lostPet', lostPetRoutes);
 app.use('/assets/uploads', express.static(path.join(__dirname, 'assets', 'uploads')));  // Serve static files from back/assets/uploads
-app.use('/assets/uploads', express.static(path.join(__dirname, 'assets', 'uploads')));  // Serve static files from back/assets/uploads
 
 // Start the server
 const PORT = config.port;
