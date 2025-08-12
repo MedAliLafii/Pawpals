@@ -4,8 +4,7 @@ A comprehensive web application that combines pet adoption services with e-comme
 
 ## 🚀 Live Demo
 
-- **Frontend**: https://pawpals.vercel.app
-- **Backend API**: https://pawpalsback.vercel.app
+- pawpals-nine.vercel.app
 
 ## ✨ Features
 
