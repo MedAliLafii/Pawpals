@@ -21,6 +21,17 @@ const app = express();
 // Enable middleware to read cookies
 app.use(cookieParser());
 
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+  console.log('=== REQUEST DEBUG ===');
+  console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  console.log('Cookies:', req.cookies);
+  console.log('Cookie header:', req.headers.cookie);
+  console.log('Origin:', req.headers.origin);
+  next();
+});
+
 // Enable middleware to read JSON from requests
 app.use(bodyParser.json());
 

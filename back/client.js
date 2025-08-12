@@ -108,7 +108,7 @@ clientRoutes.post('/loginClient', async (req, res) => {
             // Envoi du token dans un cookie sécurisé
             const cookieOptions = {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production', // Secure in production
+                secure: false, // Temporarily disable secure for debugging
                 sameSite: 'lax', // Protects against CSRF
                 maxAge: rememberme ? 30 * 24 * 60 * 60 * 1000 : undefined,
                 path: '/'
@@ -119,11 +119,17 @@ clientRoutes.post('/loginClient', async (req, res) => {
                 cookieOptions.domain = process.env.COOKIE_DOMAIN;
             }
             
+            console.log('=== LOGIN DEBUG ===');
             console.log('Setting cookie with options:', cookieOptions);
             console.log('NODE_ENV:', process.env.NODE_ENV);
             console.log('COOKIE_DOMAIN:', process.env.COOKIE_DOMAIN);
+            console.log('Request origin:', req.headers.origin);
+            console.log('Request referer:', req.headers.referer);
             
             res.cookie('token', token, cookieOptions);
+            
+            // Log the Set-Cookie header that will be sent
+            console.log('Set-Cookie header will be:', res.getHeader('Set-Cookie'));
 
                     // Success response
         res.status(200).json({ message: 'Login successful', token: token });
@@ -293,12 +299,16 @@ clientRoutes.post('/changePassword', async (req, res) => {
     }
 });
 
-// Route pour vérifier si le client est authentifié
-clientRoutes.get('/checkAuth', async (req, res) => {
-    console.log('Cookies received:', req.cookies);
-    console.log('Headers received:', req.headers);
-    
-    const token = req.cookies.token; // Récupération du token depuis les cookies
+    // Route pour vérifier si le client est authentifié
+    clientRoutes.get('/checkAuth', async (req, res) => {
+        console.log('=== CHECK AUTH DEBUG ===');
+        console.log('Cookies received:', req.cookies);
+        console.log('Cookie header:', req.headers.cookie);
+        console.log('All headers:', Object.keys(req.headers));
+        console.log('Origin:', req.headers.origin);
+        console.log('Referer:', req.headers.referer);
+        
+        const token = req.cookies.token; // Récupération du token depuis les cookies
 
     if (!token) {
         console.log('No token found in cookies');
@@ -327,7 +337,7 @@ clientRoutes.get('/checkAuth', async (req, res) => {
 clientRoutes.post('/logout', async (req, res) => {
     const cookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: false, // Temporarily disable secure for debugging
         sameSite: 'lax',
         path: '/'
     };
@@ -485,7 +495,7 @@ clientRoutes.delete('/account', async (req, res) => {
                             // Clear the authentication cookie
                             const cookieOptions = {
                                 httpOnly: true,
-                                secure: process.env.NODE_ENV === 'production',
+                                secure: false, // Temporarily disable secure for debugging
                                 sameSite: 'lax',
                                 path: '/'
                             };
