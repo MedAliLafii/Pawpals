@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http'; 
 import { Router } from '@angular/router';
 import { ToastService } from '../shared/services/toast.service'; 
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-recuperer-mdp', 
@@ -39,7 +40,7 @@ export class RecupererMdpComponent {
     }
 
     // Call API to send the verification code
-    this.http.post<any>('http://localhost:5000/Client/forgotpassword', { email: this.email }, { withCredentials: true })
+    this.http.post<any>(`${environment.BACK_URL}/Client/forgotpassword`, { email: this.email }, { withCredentials: true })
       .subscribe({
         next: (response) => {
           console.log('Response received:', response); // Log the server response
@@ -86,7 +87,7 @@ export class RecupererMdpComponent {
     }
     
     // Call API to change the password
-    this.http.post<any>('http://localhost:5000/Client/changepass', { 
+    this.http.post<any>(`${environment.BACK_URL}/Client/changepass`, { 
       email: this.email, // The user's email address
       newPassword: this.newPassword // The new password
     }, { withCredentials: true }).subscribe({

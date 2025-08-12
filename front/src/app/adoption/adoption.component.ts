@@ -9,7 +9,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { ScrollService } from '../services/scroll.service';
 import { ToastService } from '../shared/services/toast.service';
-
+import { environment } from '../../environments/environment';
 @Component({
   selector: 'app-adoption',
   standalone: true,
@@ -55,7 +55,7 @@ export class AdoptionComponent implements OnInit, OnChanges {
   }
 
   checkAuthStatus(): void {
-    this.http.get<{ client: any }>('http://localhost:5000/Client/checkAuth', {
+    this.http.get<{ client: any }>(`${environment.BACK_URL}/Client/checkAuth`, {
       withCredentials: true // Include cookies in request
     }).subscribe(
       (response) => {

@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../components/header/header.component';
 import { FooterComponent } from '../components/footer/footer.component';
 import { ToastService } from '../shared/services/toast.service';
+import { environment } from '../../environments/environment';
 
 interface PostAdoptionForm {
   petName: string;
@@ -71,7 +72,7 @@ export class PostAdoptionComponent implements OnInit {
   
 
   fetchClient(): void {
-    this.http.get<any>('http://localhost:5000/Client/getClientInfo', { withCredentials: true }).subscribe(
+    this.http.get<any>(`${environment.BACK_URL}/Client/getClientInfo`, { withCredentials: true }).subscribe(
       (response) => {
         // Fill in the form with client information
         this.formData.contactName = response.nom;
@@ -114,7 +115,7 @@ export class PostAdoptionComponent implements OnInit {
     this.isSubmitting = true;
   
     // Step 1: Fetch full client info first
-    this.http.get<any>('http://localhost:5000/Client/getClientInfo', { withCredentials: true }).subscribe({
+    this.http.get<any>(`${environment.BACK_URL}/Client/getClientInfo`, { withCredentials: true }).subscribe({
       next: (existingClientInfo) => {
         // Step 2: Merge with updated fields
         const updatedClientInfo = {
@@ -125,7 +126,7 @@ export class PostAdoptionComponent implements OnInit {
         };
   
         // Step 3: Send full updated client info
-        this.http.put('http://localhost:5000/Client/updateClientInfo', updatedClientInfo, { withCredentials: true }).subscribe({
+        this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, updatedClientInfo, { withCredentials: true }).subscribe({
           next: () => {
             // Step 4: Build FormData for adoption
             const formData = new FormData();
@@ -140,7 +141,7 @@ export class PostAdoptionComponent implements OnInit {
             }
   
             // Step 5: Post adoption data
-            this.http.post('http://localhost:5000/adoptPet/add', formData, { withCredentials: true }).subscribe({
+            this.http.post(`${environment.BACK_URL}/adoptPet/add`, formData, { withCredentials: true }).subscribe({
               next: () => {
                 this.toastService.success('Pet adoption posted successfully!');
                 this.router.navigate(['/adoption']);

@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { ToastService } from '../../shared/services/toast.service';
 import { HeaderComponent } from '../header/header.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-change-password',
@@ -160,7 +161,7 @@ export class ChangePasswordComponent implements OnInit {
   }
 
   checkAuthStatus(): void {
-    this.http.get<any>('http://localhost:5000/Client/checkAuth', { withCredentials: true })
+    this.http.get<any>(`${environment.BACK_URL}/Client/checkAuth`, { withCredentials: true })
       .subscribe({
         error: () => {
           this.toastService.error('Please log in to change your password');
@@ -180,7 +181,7 @@ export class ChangePasswordComponent implements OnInit {
 
       this.isChanging = true;
 
-      this.http.post('http://localhost:5000/Client/changePassword', {
+      this.http.post(`${environment.BACK_URL}/Client/changePassword`, {
         currentPassword,
         newPassword
       }, { withCredentials: true })

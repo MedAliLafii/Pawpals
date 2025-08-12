@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ScrollService } from '../services/scroll.service';
 import { ToastService } from '../shared/services/toast.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-lost',
@@ -61,7 +62,7 @@ export class LostComponent implements OnInit, OnChanges {
 
   // Vérifie si l'utilisateur est connecté
   checkAuthStatus(): void {
-    this.http.get<{ client: any }>('http://localhost:5000/Client/checkAuth', {
+    this.http.get<{ client: any }>(`${environment.BACK_URL}/Client/checkAuth`, {
       withCredentials: true // Inclut les cookies dans la requête
     }).subscribe(
       (response) => {

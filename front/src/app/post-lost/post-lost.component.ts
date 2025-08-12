@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { HeaderComponent } from '../components/header/header.component';
 import { FooterComponent } from '../components/footer/footer.component';
 import { ToastService } from '../shared/services/toast.service';
+import { environment } from '../../environments/environment';
 
 type LostPetFormFields = {
   name: string;
@@ -94,7 +95,7 @@ export class PostLostComponent implements OnInit {
     }
   
     // Step 1: Fetch existing client info first
-    this.http.get<any>('http://localhost:5000/Client/getClientInfo', { withCredentials: true }).subscribe({
+    this.http.get<any>(`${environment.BACK_URL}/Client/getClientInfo`, { withCredentials: true }).subscribe({
       next: (existingClientInfo) => {
         // Merge existing info with updated fields
         const updatedClientInfo = {
@@ -105,7 +106,7 @@ export class PostLostComponent implements OnInit {
         };
   
         // Step 2: Send full updated client info
-        this.http.put('http://localhost:5000/Client/updateClientInfo', updatedClientInfo, { withCredentials: true }).subscribe({
+        this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, updatedClientInfo, { withCredentials: true }).subscribe({
           next: () => {
             // Step 3: Prepare FormData for lost pet
             const lostPetData = new FormData();
@@ -117,7 +118,7 @@ export class PostLostComponent implements OnInit {
             }
   
             // Step 4: Post lost pet
-            this.http.post('http://localhost:5000/lostpet/add', lostPetData, { withCredentials: true }).subscribe({
+            this.http.post(`${environment.BACK_URL}/lostpet/add`, lostPetData, { withCredentials: true }).subscribe({
               next: () => {
                 this.toastService.success('Lost pet posted successfully!');
                 this.router.navigate(['/lost']);
@@ -165,7 +166,7 @@ export class PostLostComponent implements OnInit {
   }
 
   fetchClient(): void {
-    this.http.get<any>('http://localhost:5000/Client/getClientInfo', { withCredentials: true }).subscribe(
+    this.http.get<any>(`${environment.BACK_URL}/Client/getClientInfo`, { withCredentials: true }).subscribe(
       (response) => {
         // Fill in the form with client information
         this.formData.contactName = response.nom;

@@ -3,11 +3,12 @@ import { HeaderComponent } from "../../components/header/header.component"; // I
 import { FooterComponent } from "../../components/footer/footer.component"; // Importation du composant Footer
 import { ProductService } from '../../services/product.service'; // Importation des services pour gérer les produits
 import { Product } from '../../models'; // Importation des types
-import { ActivatedRoute } from '@angular/router'; // Importation du service ActivatedRoute pour récupérer les paramètres de l'URL
+import { ActivatedRoute, Router } from '@angular/router'; // Importation du service ActivatedRoute pour récupérer les paramètres de l'URL
 import { CommonModule } from '@angular/common'; // Importation de CommonModule pour utiliser des fonctionnalités Angular communes
 import { HttpClient, HttpHeaders } from '@angular/common/http'; // Importation d'HttpClient pour effectuer des requêtes HTTP
 import { FormsModule } from '@angular/forms'; // Importation de FormsModule pour gérer les formulaires
 import { ToastService } from '../../shared/services/toast.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-product-details', // Définition du sélecteur pour ce composant
@@ -28,7 +29,8 @@ export class ProductDetailsComponent implements OnInit { // Déclaration du comp
     private route: ActivatedRoute, // Injection du service ActivatedRoute pour accéder aux paramètres de l'URL
     private productService: ProductService, // Injection du service ProductService pour gérer les produits
     private http: HttpClient, // Injection du service HttpClient pour effectuer des requêtes HTTP
-    private toastService: ToastService
+    private toastService: ToastService,
+    private router: Router
   ) {}
 
   ngOnInit(): void { // Méthode appelée lors de l'initialisation du composant
@@ -68,7 +70,7 @@ export class ProductDetailsComponent implements OnInit { // Déclaration du comp
   // Méthode pour ajouter un produit au panier en envoyant une requête POST
   addToCart(): void {
     this.http.post(
-      `http://localhost:5000/Cart/add`, // URL de l'API pour ajouter un produit au panier
+      `${environment.BACK_URL}/Cart/add`, // URL de l'API pour ajouter un produit au panier
       { produitID: this.produitID, quantite: this.selectedQuantity }, // Données envoyées dans la requête (ID du produit et quantité)
       { withCredentials: true } // Indication que les informations d'authentification (cookies, session) doivent être envoyées avec la requête
     ).subscribe(
@@ -80,7 +82,11 @@ export class ProductDetailsComponent implements OnInit { // Déclaration du comp
         if (error.status === 400) { // If the error is due to incorrect quantity
           this.toastService.error("The requested quantity exceeds available stock."); // Display a specific error message
         } else if (error.status === 401) { // If the error is related to authentication
-            this.toastService.error("Please authenticate"); // Ask user to log in
+            this.toastService.warning("Please log in to add items to your cart."); // Ask user to log in
+            // Store the current URL to redirect back after login
+            localStorage.setItem('redirectUrl', window.location.pathname);
+            // Navigate to login page
+            this.router.navigate(['/login']);
         } else {
           this.toastService.error("An error occurred while updating the quantity."); // Generic error message for other issues
         }

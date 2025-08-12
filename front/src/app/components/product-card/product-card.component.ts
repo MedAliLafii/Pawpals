@@ -2,9 +2,10 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Product } from '../../models';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { ToastService } from '../../shared/services/toast.service';
-import { GuestCartService } from '../../services/guest-cart.service'; 
+import { GuestCartService } from '../../services/guest-cart.service';
+import { environment } from '../../../environments/environment'; 
 
 @Component({
   selector: 'app-product-card',
@@ -20,7 +21,8 @@ export class ProductCardComponent implements OnInit {
   constructor(
     private http: HttpClient,
     private toastService: ToastService,
-    private guestCartService: GuestCartService
+    private guestCartService: GuestCartService,
+    private router: Router
   ) {}
 
   get produitID(): string {
@@ -47,12 +49,12 @@ export class ProductCardComponent implements OnInit {
     }
 
     // Check if user is logged in
-    this.http.get('http://localhost:5000/Client/checkAuth', { withCredentials: true })
+    this.http.get(`${environment.BACK_URL}/Client/checkAuth`, { withCredentials: true })
       .subscribe({
         next: () => {
           // User is logged in, add to server cart
           this.http.post(
-            `http://localhost:5000/Cart/add`,
+            `${environment.BACK_URL}/Cart/add`,
             { produitID: this.produitID, quantite: this.selectedQuantity },
             { withCredentials: true }
           ).subscribe({
@@ -70,9 +72,12 @@ export class ProductCardComponent implements OnInit {
           });
         },
         error: () => {
-          // User is not logged in, add to guest cart
-          this.guestCartService.addToCart(this.product, this.selectedQuantity);
-          this.toastService.success(`${this.product.nom} added to guest cart! Login to save your cart.`);
+          // User is not logged in, redirect to login
+          this.toastService.warning('Please log in to add items to your cart.');
+          // Store the current URL to redirect back after login
+          localStorage.setItem('redirectUrl', window.location.pathname);
+          // Navigate to login page
+          this.router.navigate(['/login']);
         }
       });
   }

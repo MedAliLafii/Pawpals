@@ -108,7 +108,11 @@ clientRoutes.post('/loginClient', async (req, res) => {
             // Envoi du token dans un cookie sécurisé
             res.cookie('token', token, {
                 httpOnly: true,
-                maxAge: rememberme ? 30 * 24 * 60 * 60 * 1000 : undefined
+                secure: process.env.NODE_ENV === 'production', // Secure in production
+                sameSite: 'lax', // Protects against CSRF
+                maxAge: rememberme ? 30 * 24 * 60 * 60 * 1000 : undefined,
+                path: '/',
+                domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
             });
 
                     // Success response
@@ -305,7 +309,13 @@ clientRoutes.get('/checkAuth', async (req, res) => {
 
 // Route for logout
 clientRoutes.post('/logout', async (req, res) => {
-    res.clearCookie('token'); // Suppression du cookie de session
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
+    }); // Suppression du cookie de session
     res.status(200).json({ message: 'Logout successful' });
 });
 
@@ -451,7 +461,13 @@ clientRoutes.delete('/account', async (req, res) => {
                             });
 
                             // Clear the authentication cookie
-                            res.clearCookie('token');
+                            res.clearCookie('token', {
+                                httpOnly: true,
+                                secure: process.env.NODE_ENV === 'production',
+                                sameSite: 'lax',
+                                path: '/',
+                                domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
+                            });
                             
                             res.status(200).json({ message: 'Account deleted successfully' });
                         });

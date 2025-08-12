@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { ToastService } from '../../shared/services/toast.service';
 import { HeaderComponent } from '../header/header.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-user-profile',
@@ -329,7 +330,7 @@ export class UserProfileComponent implements OnInit {
   }
 
   loadUserProfile(): void {
-    this.http.get<any>('http://localhost:5000/Client/getClientInfo', { withCredentials: true })
+    this.http.get<any>(`${environment.BACK_URL}/Client/getClientInfo`, { withCredentials: true })
       .subscribe({
         next: (profile) => {
           this.profileForm.patchValue({
@@ -365,7 +366,7 @@ export class UserProfileComponent implements OnInit {
         tel: this.profileForm.value.tel
       };
 
-      this.http.put('http://localhost:5000/Client/updateClientInfo', profileData, { withCredentials: true })
+      this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, profileData, { withCredentials: true })
         .subscribe({
           next: () => {
             this.toastService.success('Profile updated successfully!');
@@ -411,7 +412,7 @@ This action cannot be undone!`;
         deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
       }
 
-      this.http.delete('http://localhost:5000/Client/account', { withCredentials: true })
+      this.http.delete(`${environment.BACK_URL}/Client/account`, { withCredentials: true })
         .subscribe({
           next: () => {
             this.toastService.success('Account deleted successfully. We\'re sorry to see you go!');

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../services/toast.service';
+import { environment } from '../../../../environments/environment';
 
 export interface Review {
   reviewID: number;
@@ -183,7 +184,7 @@ export class ProductReviewsComponent implements OnInit {
         comment: this.reviewForm.get('comment')?.value
       };
 
-      this.http.post('http://localhost:5000/reviews', reviewData, { withCredentials: true })
+      this.http.post(`${environment.BACK_URL}/reviews`, reviewData, { withCredentials: true })
         .subscribe({
           next: () => {
             this.toastService.success('Review submitted successfully!');
@@ -203,7 +204,7 @@ export class ProductReviewsComponent implements OnInit {
   }
 
   private loadReviews(): void {
-    this.http.get<Review[]>(`http://localhost:5000/reviews/${this.productId}`)
+    this.http.get<Review[]>(`${environment.BACK_URL}/reviews/${this.productId}`)
       .subscribe({
         next: (reviews) => {
           this.reviews = reviews;
@@ -215,7 +216,7 @@ export class ProductReviewsComponent implements OnInit {
   }
 
   private checkAuthStatus(): void {
-    this.http.get('http://localhost:5000/Client/checkAuth', { withCredentials: true })
+    this.http.get(`${environment.BACK_URL}/Client/checkAuth`, { withCredentials: true })
       .subscribe({
         next: () => {
           this.isLoggedIn = true;

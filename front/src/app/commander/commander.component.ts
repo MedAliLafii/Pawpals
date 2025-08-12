@@ -7,6 +7,7 @@ import { Router } from '@angular/router'; // Handles page navigation
 import { HeaderComponent } from '../components/header/header.component'; // Importing the header component
 import { FooterComponent } from '../components/footer/footer.component'; // Importing the footer component
 import { ToastService } from '../shared/services/toast.service';
+import { environment } from '../../environments/environment';
 
 // Defining the interface representing a cart item
 interface CartItem {
@@ -67,7 +68,7 @@ export class CommanderComponent implements OnInit {
     this.isLoading = true; // Activating the loading state
 
     // Fetching client information through a GET request
-    this.http.get<any>('http://localhost:5000/Client/getClientInfo', { withCredentials: true }).subscribe(
+    this.http.get<any>(`${environment.BACK_URL}/Client/getClientInfo`, { withCredentials: true }).subscribe(
       (response) => {
         // Filling the form fields with retrieved data
         this.form.lname = response.nom;
@@ -83,7 +84,7 @@ export class CommanderComponent implements OnInit {
     );
 
     // Fetching cart content
-    this.http.get<CommandeResponse>('http://localhost:5000/Cart/fetch', { withCredentials: true }).subscribe(
+    this.http.get<CommandeResponse>(`${environment.BACK_URL}/Cart/fetch`, { withCredentials: true }).subscribe(
       (response) => {
         // Updating cart items and total price
         this.cartItems = response.produits;
@@ -117,10 +118,10 @@ export class CommanderComponent implements OnInit {
     var form2 = { nom, region, adresse, tel };
 
     // PUT request to update client info
-    this.http.put('http://localhost:5000/Client/updateClientInfo', form2, { withCredentials: true }).subscribe({
+    this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, form2, { withCredentials: true }).subscribe({
       next: () => {
         // If the update is successful, place the order
-        this.http.post('http://localhost:5000/Cart/commander', {}, { withCredentials: true }).subscribe({
+        this.http.post(`${environment.BACK_URL}/Cart/commander`, {}, { withCredentials: true }).subscribe({
           next: () => {
             // Displaying a toast if the order is placed successfully
             this.toastService.success('Your order has been placed successfully');
