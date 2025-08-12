@@ -51,7 +51,7 @@ export class PetCardComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['filters']) {
+    if (changes['filters'] && changes['filters'].currentValue) {
       this.fetchPets(); // Fetch pets whenever filters change
     }
   }
@@ -75,15 +75,21 @@ export class PetCardComponent implements OnInit, OnChanges {
   }
 
   fetchPets(): void {
+    // Add null check for filters
+    if (!this.filters) {
+      console.warn('Filters not initialized, skipping fetchPets');
+      return;
+    }
+
     let queryParams = '';
   
     if (this.filters.location) {
       queryParams += `location=${this.filters.location}&`;
     }
-    if (this.filters.types.length > 0) {
+    if (this.filters.types && this.filters.types.length > 0) {
       queryParams += `types=${this.filters.types.join(',')}&`;
     }
-    if (this.filters.ages > 0) {
+    if (this.filters.ages && this.filters.ages > 0) {
       queryParams += `ages=${this.filters.ages}&`; // 'ages_lt' for "less than"
     }
   
@@ -105,7 +111,7 @@ export class PetCardComponent implements OnInit, OnChanges {
   }
   loadLostPets() {
     this.isLoading = true;
-    this.http.get<any[]>(`${environment.BACK_URL}/lostPet/lost`)
+    this.http.get<any[]>(`${environment.BACK_URL}/lostPet/all`)
       .subscribe({
         next: (data) => {
           this.pets = this.limit ? data.slice(0, this.limit) : data;

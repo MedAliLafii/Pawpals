@@ -26,9 +26,9 @@ cartRoutes.get('/fetch', async (req, res) => {
             SELECT pp.produitID, p.nom, p.prix, pp.quantite, 
                    (p.prix * pp.quantite) as total_ligne,
                    p.imageUrl
-            FROM Panier_Produit pp
-            JOIN Produit p ON pp.produitID = p.produitID
-            JOIN Panier pa ON pp.panierID = pa.panierID
+            FROM panier_produit pp
+            JOIN produit p ON pp.produitID = p.produitID
+            JOIN panier pa ON pp.panierID = pa.panierID
             WHERE pa.clientID = ?
         `;
 
@@ -78,7 +78,7 @@ cartRoutes.post('/add', async (req, res) => {
 
         // Vérifie si le panier existe déjà pour ce client
         const cartRows = await new Promise((resolve, reject) => {
-            pool.query("SELECT panierID FROM Panier WHERE clientID = ?", [clientID], (error, rows) => {
+            pool.query("SELECT panierID FROM panier WHERE clientID = ?", [clientID], (error, rows) => {
                 if (error) reject(error);
                 else resolve(rows);
             });
@@ -89,7 +89,7 @@ cartRoutes.post('/add', async (req, res) => {
         // Vérifie si le produit est déjà présent dans le panier
         const existingProductRows = await new Promise((resolve, reject) => {
             pool.query(
-                "SELECT quantite FROM Panier_Produit WHERE panierID = ? AND produitID = ?",
+                "SELECT quantite FROM panier_produit WHERE panierID = ? AND produitID = ?",
                 [panierID, produitID],
                 (error, rows) => {
                     if (error) reject(error);
@@ -102,7 +102,7 @@ cartRoutes.post('/add', async (req, res) => {
             // Mise à jour de la quantité si le produit est déjà dans le panier
             await new Promise((resolve, reject) => {
                 pool.query(
-                    "UPDATE Panier_Produit SET quantite = quantite + ? WHERE panierID = ? AND produitID = ?",
+                    "UPDATE panier_produit SET quantite = quantite + ? WHERE panierID = ? AND produitID = ?",
                     [quantite, panierID, produitID],
                     (error, result) => {
                         if (error) reject(error);
@@ -114,7 +114,7 @@ cartRoutes.post('/add', async (req, res) => {
             // Insertion du produit s'il n'existe pas encore dans le panier
             await new Promise((resolve, reject) => {
                 pool.query(
-                    "INSERT INTO Panier_Produit (panierID, produitID, quantite) VALUES (?, ?, ?)",
+                    "INSERT INTO panier_produit (panierID, produitID, quantite) VALUES (?, ?, ?)",
                     [panierID, produitID, quantite],
                     (error, result) => {
                         if (error) reject(error);
@@ -152,7 +152,7 @@ cartRoutes.put('/update', async (req, res) => {
 
         // Récupération du panier lié au client
         const cartRows = await new Promise((resolve, reject) => {
-            pool.query("SELECT panierID FROM Panier WHERE clientID = ?", [clientID], (error, rows) => {
+            pool.query("SELECT panierID FROM panier WHERE clientID = ?", [clientID], (error, rows) => {
                 if (error) reject(error);
                 else resolve(rows);
             });
@@ -165,7 +165,7 @@ cartRoutes.put('/update', async (req, res) => {
         const panierID = cartRows[0].panierID;
 
         // Vérifie la quantité actuelle dans le panier
-        const currentQuantityQuery = "SELECT quantite FROM Panier_Produit WHERE panierID = ? AND produitID = ?";
+        const currentQuantityQuery = "SELECT quantite FROM panier_produit WHERE panierID = ? AND produitID = ?";
         const currentQuantityResult = await new Promise((resolve, reject) => {
             pool.query(currentQuantityQuery, [panierID, produitID], (error, rows) => {
                 if (error) reject(error);
@@ -177,8 +177,8 @@ cartRoutes.put('/update', async (req, res) => {
         // Si la quantité est la même, ne rien changer
         if (quantite === currentQuantityResult) {
             await new Promise((resolve, reject) => {
-                pool.query(
-                    "UPDATE Panier_Produit SET quantite = ? WHERE panierID = ? AND produitID = ?",
+                            pool.query(
+                "UPDATE panier_produit SET quantite = ? WHERE panierID = ? AND produitID = ?",
                     [quantite, panierID, produitID],
                     (error, result) => {
                         if (error) reject(error);
@@ -190,7 +190,7 @@ cartRoutes.put('/update', async (req, res) => {
         }
 
         // Vérifie le stock disponible pour ce produit
-        const stockQuery = "SELECT stock FROM Produit WHERE produitID = ?";
+        const stockQuery = "SELECT stock FROM produit WHERE produitID = ?";
         const stockResult = await new Promise((resolve, reject) => {
             pool.query(stockQuery, [produitID], (error, rows) => {
                 if (error) reject(error);
@@ -205,7 +205,7 @@ cartRoutes.put('/update', async (req, res) => {
         // Mise à jour de la quantité dans le panier
         await new Promise((resolve, reject) => {
             pool.query(
-                "UPDATE Panier_Produit SET quantite = ? WHERE panierID = ? AND produitID = ?",
+                "UPDATE panier_produit SET quantite = ? WHERE panierID = ? AND produitID = ?",
                 [quantite, panierID, produitID],
                 (error, result) => {
                     if (error) reject(error);
@@ -242,7 +242,7 @@ cartRoutes.delete('/remove', async (req, res) => {
 
         // Récupère le panier du client
         const cartRows = await new Promise((resolve, reject) => {
-            pool.query("SELECT panierID FROM Panier WHERE clientID = ?", [clientID], (error, rows) => {
+            pool.query("SELECT panierID FROM panier WHERE clientID = ?", [clientID], (error, rows) => {
                 if (error) reject(error);
                 else resolve(rows);
             });
@@ -253,7 +253,7 @@ cartRoutes.delete('/remove', async (req, res) => {
         // Suppression du produit du panier
         await new Promise((resolve, reject) => {
             pool.query(
-                "DELETE FROM Panier_Produit WHERE panierID = ? AND produitID = ?",
+                "DELETE FROM panier_produit WHERE panierID = ? AND produitID = ?",
                 [panierID, produitID],
                 (error, result) => {
                     if (error) reject(error);
@@ -283,7 +283,7 @@ cartRoutes.post('/commander', async (req, res) => {
 
         // Vérifie si le client a un panier
         const cartRows = await new Promise((resolve, reject) => {
-            pool.query("SELECT panierID FROM Panier WHERE clientID = ?", [clientID], (error, rows) => {
+            pool.query("SELECT panierID FROM panier WHERE clientID = ?", [clientID], (error, rows) => {
                 if (error) reject(error);
                 else resolve(rows);
             });
@@ -294,7 +294,7 @@ cartRoutes.post('/commander', async (req, res) => {
         // Récupère les produits dans le panier
         const cartProducts = await new Promise((resolve, reject) => {
             pool.query(
-                "SELECT produitID, quantite FROM Panier_Produit WHERE panierID = ?",
+                "SELECT produitID, quantite FROM panier_produit WHERE panierID = ?",
                 [panierID],
                 (error, rows) => {
                     if (error) reject(error);
@@ -311,8 +311,8 @@ cartRoutes.post('/commander', async (req, res) => {
         const totalCommande = await new Promise((resolve, reject) => {
             pool.query(
                 `SELECT SUM(p.prix * pp.quantite) AS total 
-                 FROM Panier_Produit pp 
-                 JOIN Produit p ON pp.produitID = p.produitID 
+                 FROM panier_produit pp 
+                 JOIN produit p ON pp.produitID = p.produitID 
                  WHERE pp.panierID = ?`,
                 [panierID],
                 (error, results) => {
@@ -325,7 +325,7 @@ cartRoutes.post('/commander', async (req, res) => {
         // Insertion de la commande
         const commandeResult = await new Promise((resolve, reject) => {
             pool.query(
-                "INSERT INTO Commande (clientID, dateCommande, statut, total) VALUES (?, NOW(), 'En attente', ?)",
+                "INSERT INTO commande (clientID, dateCommande, statut, total) VALUES (?, NOW(), 'En attente', ?)",
                 [clientID, totalCommande],
                 (error, result) => {
                     if (error) reject(error);
@@ -340,7 +340,7 @@ cartRoutes.post('/commander', async (req, res) => {
         for (const item of cartProducts) {
             await new Promise((resolve, reject) => {
                 pool.query(
-                    "INSERT INTO Commande_Produit (commandeID, produitID, quantite) VALUES (?, ?, ?)",
+                    "INSERT INTO commande_produit (commandeID, produitID, quantite) VALUES (?, ?, ?)",
                     [commandeID, item.produitID, item.quantite],
                     (error, result) => {
                         if (error) reject(error);
@@ -351,7 +351,7 @@ cartRoutes.post('/commander', async (req, res) => {
 
             await new Promise((resolve, reject) => {
                 pool.query(
-                    "UPDATE Produit SET stock = stock - ? WHERE produitID = ?",
+                    "UPDATE produit SET stock = stock - ? WHERE produitID = ?",
                     [item.quantite, item.produitID],
                     (error, result) => {
                         if (error) reject(error);
@@ -364,7 +364,7 @@ cartRoutes.post('/commander', async (req, res) => {
         // Vider le panier
         await new Promise((resolve, reject) => {
             pool.query(
-                "DELETE FROM Panier_Produit WHERE panierID = ?",
+                "DELETE FROM panier_produit WHERE panierID = ?",
                 [panierID],
                 (error, result) => {
                     if (error) reject(error);

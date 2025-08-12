@@ -52,7 +52,7 @@ router.post('/add', authenticateJWT, upload.single('image'), (req, res) => {
   const clientID = req.clientID;  // Get the clientID from the JWT payload
   const imageURL = req.file ? 'uploads/' + req.file.filename : null;
 
-  const sql = `INSERT INTO AdoptionPet 
+  const sql = `INSERT INTO adoptionpet 
     (clientID, petName, breed, age, type, gender, imageURL, location, shelter, description, 
     goodWithKids, goodWithOtherPets, houseTrained, specialNeeds)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -74,7 +74,7 @@ router.delete('/delete/:id', authenticateJWT, (req, res) => {
   const adoptionId = req.params.id;
   const clientID = req.clientID; // Retrieved from the JWT token
 
-  const sql = `DELETE FROM AdoptionPet WHERE adoptionPetID = ? AND clientID = ?`;
+  const sql = `DELETE FROM adoptionpet WHERE adoptionPetID = ? AND clientID = ?`;
 
   req.pool.query(sql, [adoptionId, clientID], (err, results) => {
     if (err) {
@@ -101,9 +101,9 @@ router.get('/', (req, res) => {
       c.tel AS ownerPhone,
       ap.location AS petLocation
     FROM 
-      AdoptionPet ap
+      adoptionpet ap
     INNER JOIN 
-      Client c ON ap.clientID = c.clientID
+      client c ON ap.clientID = c.clientID
   `;
 
   req.pool.query(sql, (err, results) => {
@@ -126,9 +126,9 @@ router.get('/pets', (req, res) => {
       c.tel AS ownerPhone,
       ap.location AS petLocation
     FROM 
-      AdoptionPet ap
+      adoptionpet ap
     INNER JOIN 
-      Client c ON ap.clientID = c.clientID
+      client c ON ap.clientID = c.clientID
     WHERE 1=1
   `;
   const params = [];
@@ -165,7 +165,7 @@ router.delete('/delete/:id', authenticateJWT, (req, res) => {
   const petId = req.params.id;
   const clientID = req.clientID; // Extract clientID from the JWT token
 
-  const sql = 'SELECT * FROM AdoptionPet WHERE petID = ? AND clientID = ?';
+  const sql = 'SELECT * FROM adoptionpet WHERE petID = ? AND clientID = ?';
   req.pool.query(sql, [petId, clientID], (err, results) => {
     if (err) {
       console.error('Error checking pet ownership:', err);
@@ -176,7 +176,7 @@ router.delete('/delete/:id', authenticateJWT, (req, res) => {
       return res.status(403).json({ error: 'You can only delete your own pets' });
     }
 
-    const deleteSql = 'DELETE FROM AdoptionPet WHERE petID = ?';
+    const deleteSql = 'DELETE FROM adoptionpet WHERE petID = ?';
     req.pool.query(deleteSql, [petId], (err) => {
       if (err) {
         console.error('Error deleting pet:', err);

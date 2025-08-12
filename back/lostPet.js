@@ -71,13 +71,14 @@ router.get('/all', (req, res) => {
                  c.email AS ownerEmail,
                  lp.clientID
                FROM lostpet lp
-               JOIN Client c ON lp.clientID = c.clientID`; // Join lostpet with Client table
+               LEFT JOIN client c ON lp.clientID = c.clientID`; // Use LEFT JOIN to handle missing clients
 
   req.pool.query(sql, (err, results) => {
     if (err) {
-              console.error('Error while retrieving lost pets:', err);
-        return res.status(500).json({ error: 'Database error' });
+      console.error('Error while retrieving lost pets:', err);
+      return res.status(500).json({ error: 'Database error' });
     }
+    console.log('Retrieved lost pets:', results.length, 'pets found');
     res.status(200).json(results); // Return the list of lost pets along with owner details
   });
 });
@@ -101,10 +102,10 @@ router.get('/pets', (req, res) => {
       c.email AS ownerEmail, 
       lp.location,
       lp.clientID
-    FROM 
-      lostpet lp
-    INNER JOIN 
-      Client c ON lp.clientID = c.clientID
+         FROM 
+       lostpet lp
+     INNER JOIN 
+       client c ON lp.clientID = c.clientID
     WHERE 1=1
   `;
   const params = [];
