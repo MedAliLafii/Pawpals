@@ -50,8 +50,19 @@ export class HeaderComponent implements OnInit {
       }
     );
 
-    // Check if the user is logged in
-    this.checkAuthStatus();
+    // Subscribe to auth status changes
+    this.authService.getAuthStatusObservable().subscribe(
+      (authStatus) => {
+        this.isLoggedIn = authStatus.isAuthenticated;
+        if (authStatus.isAuthenticated) {
+          this.userName = authStatus.user?.nom || 'User';
+          this.loadCartCount();
+        } else {
+          this.userName = '';
+          this.cartItemCount = 0;
+        }
+      }
+    );
   }
 
   // Function to navigate to a specific category
@@ -62,32 +73,7 @@ export class HeaderComponent implements OnInit {
     });
   }
 
-  // Check if the client is logged in by calling the backend API
-  checkAuthStatus(): void {
-    this.authService.checkAuthStatus().subscribe({
-      next: (isAuthenticated) => {
-        if (isAuthenticated) {
-          console.log('Already logged in');
-          this.isLoggedIn = true;
-          const user = this.authService.getCurrentUser();
-          this.userName = user?.nom || 'User';
-          // Load cart count after confirming user is logged in
-          this.loadCartCount();
-        } else {
-          console.log('Not logged in');
-          this.isLoggedIn = false;
-          this.cartItemCount = 0;
-          this.userName = '';
-        }
-      },
-      error: (error) => {
-        console.log('Auth check error:', error);
-        this.isLoggedIn = false;
-        this.cartItemCount = 0;
-        this.userName = '';
-      }
-    });
-  }
+
 
   // Redirect user based on login status
   goToPage(): void {

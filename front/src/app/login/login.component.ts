@@ -6,6 +6,7 @@ import { ScrollService } from '../services/scroll.service';
 import { ToastService } from '../shared/services/toast.service';
 import { ToastContainerComponent } from '../shared/components/toast-container/toast-container.component';
 import { AuthService } from '../services/auth.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
@@ -133,7 +134,26 @@ export class LoginComponent {
         this.http.post(`${environment.BACK_URL}/Client/loginClient`, formData, { withCredentials: true }).subscribe({
           next: (response: any) => {
             this.toastService.success('Login successful! Welcome to PawPals!');
-            this.router.navigate(['/']); // Redirect to home page
+            
+            // Store token in localStorage as fallback for cross-domain issues
+            if (response.token) {
+              localStorage.setItem('authToken', response.token);
+              localStorage.setItem('userData', JSON.stringify(response.client));
+            }
+
+            // Update auth service state
+            this.authService['isAuthenticated'] = true;
+            this.authService['currentUser'] = response.client;
+            this.authService['authChecked'] = true;
+            this.authService['authStatusSubject'].next({
+              isAuthenticated: true,
+              user: response.client
+            });
+
+            // Wait a moment for the auth service to update, then redirect
+            setTimeout(() => {
+              this.router.navigate(['/']); // Redirect to home page
+            }, 100);
           },
           error: (error) => {
             this.toastService.error('Auto-login failed. Please log in manually.');
@@ -209,20 +229,32 @@ export class LoginComponent {
           localStorage.setItem('userData', JSON.stringify(response.client));
         }
 
+        // Update auth service state
+        this.authService['isAuthenticated'] = true;
+        this.authService['currentUser'] = response.client;
+        this.authService['authChecked'] = true;
+        this.authService['authStatusSubject'].next({
+          isAuthenticated: true,
+          user: response.client
+        });
+
         // Reset button state
         if (loginButton) {
           loginButton.disabled = false;
           loginButton.innerHTML = 'Sign In';
         }
 
-        // Check if there's a redirect URL stored
-        const redirectUrl = localStorage.getItem('redirectUrl');
-        if (redirectUrl) {
-          localStorage.removeItem('redirectUrl');
-          this.router.navigate([redirectUrl]);
-        } else {
-          this.router.navigate(['/']); // Redirect to home page
-        }
+        // Wait a moment for the auth service to update, then redirect
+        setTimeout(() => {
+          // Check if there's a redirect URL stored
+          const redirectUrl = localStorage.getItem('redirectUrl');
+          if (redirectUrl) {
+            localStorage.removeItem('redirectUrl');
+            this.router.navigate([redirectUrl]);
+          } else {
+            this.router.navigate(['/']); // Redirect to home page
+          }
+        }, 100);
       },
       error: (error) => {
         // Reset button state
@@ -253,17 +285,16 @@ export class LoginComponent {
 
   // Check if user is already logged in (active session on server side)
   checkAuthStatus(): void {
-    this.authService.checkAuthStatus().subscribe(
-      (isAuthenticated) => {
-        if (isAuthenticated) {
+    this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()) // Wait until auth has been checked
+    ).subscribe(
+      (authStatus) => {
+        if (authStatus.isAuthenticated) {
           console.log('Already logged in'); // Show info if user is authenticated
           this.router.navigate(['/']); // Redirect to home if authenticated
         } else {
           console.log('Not logged in'); // Log error if not authenticated
         }
-      },
-      (error) => {
-        console.log('Auth check error:', error); // Log error if not authenticated
       }
     );
   }

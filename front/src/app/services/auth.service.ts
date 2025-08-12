@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { Observable, of, throwError, BehaviorSubject } from 'rxjs';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -10,10 +10,15 @@ import { environment } from '../../environments/environment';
 export class AuthService {
   private isAuthenticated = false;
   private currentUser: any = null;
+  private authChecked = false;
+  private authStatusSubject = new BehaviorSubject<{isAuthenticated: boolean, user: any}>({
+    isAuthenticated: false,
+    user: null
+  });
 
   constructor(private http: HttpClient) {
     // Check if user is already authenticated on service initialization
-    this.checkAuthStatus();
+    this.checkAuthStatus().subscribe();
   }
 
   // Check authentication status using both cookies and localStorage
@@ -22,9 +27,16 @@ export class AuthService {
     return this.http.get<{ client: any }>(`${environment.BACK_URL}/Client/checkAuth`, { 
       withCredentials: true 
     }).pipe(
-      map((response) => {
+      tap((response) => {
         this.isAuthenticated = true;
         this.currentUser = response.client;
+        this.authChecked = true;
+        this.authStatusSubject.next({
+          isAuthenticated: true,
+          user: response.client
+        });
+      }),
+      map((response) => {
         return true;
       }),
       catchError((error) => {
@@ -33,9 +45,16 @@ export class AuthService {
         if (token) {
           // Verify token with backend
           return this.verifyToken(token).pipe(
-            map((response) => {
+            tap((response) => {
               this.isAuthenticated = true;
               this.currentUser = response.client;
+              this.authChecked = true;
+              this.authStatusSubject.next({
+                isAuthenticated: true,
+                user: response.client
+              });
+            }),
+            map((response) => {
               return true;
             }),
             catchError(() => {
@@ -45,6 +64,11 @@ export class AuthService {
             })
           );
         }
+        this.authChecked = true;
+        this.authStatusSubject.next({
+          isAuthenticated: false,
+          user: null
+        });
         return of(false);
       })
     );
@@ -65,19 +89,36 @@ export class AuthService {
     return this.currentUser;
   }
 
+  // Get auth status as observable
+  getAuthStatusObservable(): Observable<{isAuthenticated: boolean, user: any}> {
+    return this.authStatusSubject.asObservable();
+  }
+
+  // Check if auth has been checked
+  isAuthChecked(): boolean {
+    return this.authChecked;
+  }
+
   // Clear authentication data
   clearAuth(): void {
     this.isAuthenticated = false;
     this.currentUser = null;
+    this.authChecked = true;
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
+    this.authStatusSubject.next({
+      isAuthenticated: false,
+      user: null
+    });
   }
 
   // Logout
   logout(): Observable<any> {
     return this.http.post(`${environment.BACK_URL}/Client/logout`, {}, { withCredentials: true }).pipe(
-      map(() => {
+      tap(() => {
         this.clearAuth();
+      }),
+      map(() => {
         return true;
       }),
       catchError(() => {

@@ -1,26 +1,28 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-import { environment } from './environments/environment';
+import { Observable } from 'rxjs';
+import { map, filter, take } from 'rxjs/operators';
+import { AuthService } from './services/auth.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SimpleAuthGuard implements CanActivate {
-  constructor(private router: Router, private http: HttpClient) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   canActivate(): Observable<boolean> {
-    return this.http.get<{client: any}>(`${environment.BACK_URL}/Client/checkAuth`, { withCredentials: true }).pipe(
-      map((response) => {
-        console.log(response);
-        return true; // If the API call is successful, the user is authenticated
-      }),
-      catchError((error) => {
-        console.error('Error fetching authentication status:', error);
-        this.router.navigate(['/login']);  // Redirect to login if there's an error
-        return of(false);  // Return an observable of false, meaning access is denied
+    return this.authService.getAuthStatusObservable().pipe(
+      filter(authStatus => this.authService.isAuthChecked()), // Wait until auth has been checked
+      take(1), // Take only the first emission after auth is checked
+      map(authStatus => {
+        if (authStatus.isAuthenticated) {
+          console.log('User is authenticated');
+          return true; // If the user is authenticated, allow access
+        } else {
+          console.log('User is not authenticated, redirecting to login');
+          this.router.navigate(['/login']);  // Redirect to login if not authenticated
+          return false;  // Return false, meaning access is denied
+        }
       })
     );
   }
