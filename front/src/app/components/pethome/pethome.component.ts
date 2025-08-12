@@ -4,6 +4,7 @@ import { AdoptdetailsComponent } from '../../popup/adoptdetails/adoptdetails.com
 import { HttpClient } from '@angular/common/http';
 import { PetFilters } from '../pet-filters/pet-filters.component'; // Import PetFilters interface
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-pethome',
@@ -30,7 +31,7 @@ export class PethomeComponent implements OnInit, OnChanges {
   }
 
   checkAuthStatus(): void {
-    this.http.get<{ client: any }>(`${import.meta.env.BACK_URL}/Client/checkAuth`, {
+    this.http.get<{ client: any }>(`${environment.BACK_URL}/Client/checkAuth`, {
       withCredentials: true // Include cookies in request
     }).subscribe(
       (response) => {
@@ -53,7 +54,7 @@ export class PethomeComponent implements OnInit, OnChanges {
 
   loadPets() {
     this.isLoading = true;
-    this.http.get<any[]>(`${import.meta.env.BACK_URL}/adoptPet/`)
+    this.http.get<any[]>(`${environment.BACK_URL}/adoptPet/`)
       .subscribe({
         next: (data) => {
           this.pets = this.limit ? data.slice(0, this.limit) : data;
@@ -83,7 +84,7 @@ export class PethomeComponent implements OnInit, OnChanges {
     queryParams = queryParams.slice(0, -1);  // Remove the trailing "&"
   
     this.isLoading = true; // Set loading to true while fetching
-    this.http.get<any[]>(`${import.meta.env.BACK_URL}/adoptPet/pets?${queryParams}`)
+    this.http.get<any[]>(`${environment.BACK_URL}/adoptPet/pets?${queryParams}`)
     .subscribe(
       (response) => {
         this.pets = this.limit ? response.slice(0, this.limit) : response;
@@ -101,7 +102,7 @@ export class PethomeComponent implements OnInit, OnChanges {
   }
 
   deleteAdoption(pet: any): void {
-          this.http.delete(`${import.meta.env.BACK_URL}/adoptPet/delete/${pet.adoptionPetID}`, {
+          this.http.delete(`${environment.BACK_URL}/adoptPet/delete/${pet.adoptionPetID}`, {
       withCredentials: true
     }).subscribe(
       (res) => {

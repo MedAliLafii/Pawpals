@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
-import { Observable } from 'rxjs';
-import { HttpClient } from '@angular/common/http'; // Add HttpClient import
-import { catchError, map } from 'rxjs/operators';  // For error handling and response manipulation
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { environment } from './environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -10,8 +11,8 @@ import { catchError, map } from 'rxjs/operators';  // For error handling and res
 export class SimpleAuthGuard implements CanActivate {
   constructor(private router: Router, private http: HttpClient) {}
 
-  canActivate(): Observable<boolean> | Promise<boolean> | boolean {
-    return this.http.get<{client: any}>(`${import.meta.env.BACK_URL}/Client/checkAuth`, { withCredentials: true }).pipe(
+  canActivate(): Observable<boolean> {
+    return this.http.get<{client: any}>(`${environment.BACK_URL}/Client/checkAuth`, { withCredentials: true }).pipe(
       map((response) => {
         console.log(response);
         return true; // If the API call is successful, the user is authenticated
@@ -19,7 +20,7 @@ export class SimpleAuthGuard implements CanActivate {
       catchError((error) => {
         console.error('Error fetching authentication status:', error);
         this.router.navigate(['/login']);  // Redirect to login if there's an error
-        return [false];  // Return an observable of false, meaning access is denied
+        return of(false);  // Return an observable of false, meaning access is denied
       })
     );
   }

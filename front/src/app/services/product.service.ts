@@ -3,12 +3,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Product, Category, ApiResponse } from '../models';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
-  private readonly apiUrl = import.meta.env.BACK_URL;
+  private readonly apiUrl = environment.BACK_URL;
 
   constructor(private http: HttpClient) {}
 

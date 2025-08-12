@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ToastContainerComponent } from '../../shared/components/toast-container/toast-container.component';
 import { ToastService } from '../../shared/services/toast.service'; 
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-header', 
@@ -56,7 +57,7 @@ export class HeaderComponent implements OnInit {
 
   // Check if the client is logged in by calling the backend API
   checkAuthStatus(): void {
-    this.http.get<{ client: any }>(`${import.meta.env.BACK_URL}/Client/checkAuth`, {
+    this.http.get<{ client: any }>(`${environment.BACK_URL}/Client/checkAuth`, {
       withCredentials: true // Include cookies in the request (for sessions)
     }).subscribe({
       next: (response) => {
@@ -90,7 +91,7 @@ export class HeaderComponent implements OnInit {
 
     // Function to log out the user
   logout(): void {
-    this.http.post(`${import.meta.env.BACK_URL}/Client/logout`, {}, {
+    this.http.post(`${environment.BACK_URL}/Client/logout`, {}, {
       withCredentials: true // Send session cookies too
     }).subscribe(
       () => {
@@ -128,7 +129,7 @@ export class HeaderComponent implements OnInit {
   // Load cart item count
   loadCartCount(): void {
     if (this.isLoggedIn) {
-      this.http.get<any>(`${import.meta.env.BACK_URL}/Cart`, { withCredentials: true })
+      this.http.get<any>(`${environment.BACK_URL}/Cart`, { withCredentials: true })
         .subscribe({
           next: (cart) => {
             // Handle different possible response formats
