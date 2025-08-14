@@ -21,15 +21,13 @@ const app = express();
 // Enable middleware to read cookies
 app.use(cookieParser());
 
-
-
 // Enable middleware to read JSON from requests
 app.use(bodyParser.json());
 
 // CORS configuration
 app.use(cors(config.cors));
 
-// Middleware to attach the MySQL pool to each request
+// Middleware to attach the PostgreSQL pool to each request
 app.use((req, res, next) => {
   req.pool = pool; // Add the pool to the `req` object
   next(); // Continue to the next middleware
@@ -63,23 +61,21 @@ app.get("/", (req, res) => {
 // GET route to fetch all categories with enhanced error logging
 app.get("/categorie", (req, res) => {
   console.log("Attempting to fetch categories...");
-  pool.query(`SELECT * FROM categorie`, (err, results) => {
+  pool.query(`SELECT categorieid AS "categorieID", nom, description FROM categorie`, (err, results) => {
     if (err) {
       console.error("Error fetching categories:", err);
       console.error("Error code:", err.code);
       console.error("Error message:", err.message);
-      console.error("Error sqlMessage:", err.sqlMessage);
       return res.status(500).json({ 
         error: "Database request failed",
         details: {
           code: err.code,
-          message: err.message,
-          sqlMessage: err.sqlMessage
+          message: err.message
         }
       });
     } else {
-      console.log("Categories fetched successfully, count:", results.length);
-      res.status(200).json(results); // Return the list of categories
+      console.log("Categories fetched successfully, count:", results.rows.length);
+      res.status(200).json(results.rows); // Return the list of categories
     }
   });
 });
@@ -89,42 +85,43 @@ app.get("/produit/:id", (req, res) => {
   const productId = req.params.id; // Get product ID from URL parameters
 
   // SQL query to fetch product info and its category name
-  const sql = `SELECT produit.*, categorie.nom AS nomCat
+  const sql = `SELECT produit.produitid AS "produitID", produit.nom, produit.description, produit.prix, produit.stock, produit.imageurl AS "imageURL", produit.rating, categorie.nom AS nomCat
              FROM produit
-             LEFT JOIN categorie ON produit.categorieID = categorie.categorieID
-             WHERE produitID = ?`;
-
+             LEFT JOIN categorie ON produit.categorieid = categorie.categorieid
+             WHERE produit.produitid = $1`;
 
   pool.query(sql, [productId], (err, results) => {
     if (err) {
       console.error("Error fetching product:", err);
       return res.status(500).json({ error: "Database error" });
     }
-    if (results.length === 0) {
+    if (results.rows.length === 0) {
       return res.status(404).json({ error: "Product not found" });
     }
-    res.status(200).json(results[0]); // Return the found product
+    res.status(200).json(results.rows[0]); // Return the found product
   });
 });
-
 
 // GET route to fetch products with optional filters (category, max price)
 app.get('/produit', (req, res) => {
   const categoryID = req.query.categoryID; // Get category from query params
   const maxPrice = req.query.maxPrice; // Get max price from query params
 
-  let query = 'SELECT * FROM produit WHERE 1=1'; // Base query (always true)
+  let query = 'SELECT produitid AS "produitID", nom, description, prix, stock, imageurl AS "imageURL", rating, categorieid AS "categorieID" FROM produit WHERE 1=1'; // Base query (always true)
   const params = []; // Parameters for prepared statement
+  let paramCount = 0;
 
   // If category is specified, add it to the query
   if (categoryID) {
-    query += ' AND categorieID = ?';
+    paramCount++;
+    query += ` AND categorieid = $${paramCount}`;
     params.push(categoryID);
   }
 
   // If max price is specified, add it to the query
   if (maxPrice) {
-    query += ' AND prix <= ?';
+    paramCount++;
+    query += ` AND prix <= $${paramCount}`;
     params.push(maxPrice);
   }
   
@@ -134,7 +131,7 @@ app.get('/produit', (req, res) => {
       console.error('Error fetching products:', err);
       return res.status(500).json({ error: 'Failed to fetch products' });
     }
-    res.status(200).json(results); // Return the found products
+    res.status(200).json(results.rows); // Return the found products
   });
 });
 
@@ -143,10 +140,11 @@ app.use("/Client", clientRoutes);
 app.use("/Cart", cartRoutes); 
 app.use('/adoptPet', adoptPetRoutes);
 app.use('/lostPet', lostPetRoutes);
-app.use('/assets/uploads', express.static(path.join(__dirname, 'assets', 'uploads')));  // Serve static files from back/assets/uploads
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, '..', 'src', 'assets', 'uploads')));
 
 // Start the server
-const PORT = config.port;
+const PORT = config.port || 5000;
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
   console.log(`Environment: ${config.nodeEnv}`);

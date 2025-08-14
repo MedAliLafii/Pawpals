@@ -30,24 +30,25 @@ clientRoutes.post('/registerClient', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // SQL query to insert the client into the database
-        const sql = 'INSERT INTO client (nom, email, motdepasse, adresse, tel, region) VALUES (?, ?, ?, ?, ?, ?)';
+        const sql = 'INSERT INTO client (nom, email, motdepasse, adresse, tel, region) VALUES ($1, $2, $3, $4, $5, $6) RETURNING clientID';
         const values = [name, email, hashedPassword, address, tel, region];
 
-                    // Execute the query
+        // Execute the query
         pool.query(sql, values, (error, result) => {
             if (error) {
                 console.error('Error during client registration: ' + error);
                 
                 // Check if it's a duplicate email error
-                if (error.code === 'ER_DUP_ENTRY' && error.message.includes('email')) {
+                if (error.code === '23505' && error.message.includes('email')) {
                     return res.status(409).json({ error: 'An account with this email already exists.' });
                 }
                 
                 return res.status(500).json({ error: 'An error occurred during your signup' });
             }
 
-            // Création d’un panier associé au client nouvellement inscrit
-            pool.query("INSERT INTO panier (clientID) VALUES (?)", [result.insertId], (error, result) => {
+            // Création d'un panier associé au client nouvellement inscrit
+            const clientID = result.rows[0].clientid;
+            pool.query("INSERT INTO panier (clientID) VALUES ($1)", [clientID], (error, result) => {
                 if (error) reject(error);
             });
 
@@ -66,7 +67,7 @@ clientRoutes.post('/registerClient', async (req, res) => {
             });
 
             // Success response
-            return res.status(201).json({ message: 'Client sign up successfull', clientId: result.insertId });
+            return res.status(201).json({ message: 'Client sign up successfull', clientId: clientID });
         });
     } catch (error) {
         console.error('Error during password hashing:', error);
@@ -81,7 +82,7 @@ clientRoutes.post('/loginClient', async (req, res) => {
 
     try {
         // Search for client by email
-        const query = 'SELECT * FROM client WHERE email = ?';
+        const query = 'SELECT * FROM client WHERE email = $1';
         pool.query(query, [email], async (error, results) => {
             if (error) {
                 console.error('Error while searching for client:', error);
@@ -89,11 +90,11 @@ clientRoutes.post('/loginClient', async (req, res) => {
             }
 
             // Check if the client exists
-            if (results.length === 0) {
+            if (results.rows.length === 0) {
                 return res.status(404).json({ error: 'Account not found. Please check your email or register a new account.' });
             }
 
-            const client = results[0];
+            const client = results.rows[0];
 
             // Compare hashed password
             const passwordMatch = await bcrypt.compare(password, client.motdepasse);
@@ -141,14 +142,14 @@ clientRoutes.post('/forgotpassword', async (req, res) => {
 
     try {
         // Vérifie si l'e-mail existe
-        const query = 'SELECT * FROM client WHERE email = ?';
+        const query = 'SELECT * FROM client WHERE email = $1';
         pool.query(query, [email], async (error, results) => {
             if (error) {
                 console.error('Error while searching for client:', error);
                 return res.status(500).json({ error: 'Internal error.' });
             }
 
-            if (results.length === 0) {
+            if (results.rows.length === 0) {
                 return res.status(404).json({ error: 'Client not found.' });
             }
 
@@ -182,14 +183,14 @@ clientRoutes.post('/changepass', async (req, res) => {
 
     try {
         // Vérifie si l'utilisateur existe
-        const query = 'SELECT * FROM client WHERE email = ?';
+        const query = 'SELECT * FROM client WHERE email = $1';
         pool.query(query, [email], async (error, results) => {
             if (error) {
                 console.error('Error while searching for client:', error);
                 return res.status(500).json({ error: 'Internal error.' });
             }
 
-            if (results.length === 0) {
+            if (results.rows.length === 0) {
                 return res.status(404).json({ error: 'Client not found.' });
             }
 
@@ -197,7 +198,7 @@ clientRoutes.post('/changepass', async (req, res) => {
             const hashedPassword = await bcrypt.hash(newPassword, 10);
 
             // Mise à jour du mot de passe
-            const updateQuery = 'UPDATE client SET motdepasse = ? WHERE email = ?';
+            const updateQuery = 'UPDATE client SET motdepasse = $1 WHERE email = $2';
             pool.query(updateQuery, [hashedPassword, email], (error, result) => {
                 if (error) {
                     console.error('Error updating password', error);
@@ -251,19 +252,19 @@ clientRoutes.post('/changePassword', async (req, res) => {
             const email = decoded.client.email;
 
             // Vérifier le mot de passe actuel
-            const query = 'SELECT motdepasse FROM client WHERE clientID = ?';
+            const query = 'SELECT motdepasse FROM client WHERE clientID = $1';
             pool.query(query, [clientID], async (error, results) => {
                 if (error) {
                     console.error('Error while searching for client:', error);
                     return res.status(500).json({ error: 'Internal error.' });
                 }
 
-                if (results.length === 0) {
+                if (results.rows.length === 0) {
                     return res.status(404).json({ error: 'Client not found.' });
                 }
 
                 // Vérifier si le mot de passe actuel est correct
-                const passwordMatch = await bcrypt.compare(currentPassword, results[0].motdepasse);
+                const passwordMatch = await bcrypt.compare(currentPassword, results.rows[0].motdepasse);
                 if (!passwordMatch) {
                     return res.status(400).json({ error: 'Current password is incorrect.' });
                 }
@@ -272,7 +273,7 @@ clientRoutes.post('/changePassword', async (req, res) => {
                 const hashedPassword = await bcrypt.hash(newPassword, 10);
 
                 // Mise à jour du mot de passe
-                const updateQuery = 'UPDATE client SET motdepasse = ? WHERE clientID = ?';
+                const updateQuery = 'UPDATE client SET motdepasse = $1 WHERE clientID = $2';
                 pool.query(updateQuery, [hashedPassword, clientID], (error, result) => {
                     if (error) {
                         console.error('Error updating password', error);
@@ -395,7 +396,7 @@ clientRoutes.get('/getClientInfo', async (req, res) => {
 
             console.log('GetClientInfo - Token verified successfully:', decoded);
             const clientID = decoded.client.clientID;
-            const query = 'SELECT nom, region, adresse, tel, email FROM client WHERE clientID = ?';
+            const query = 'SELECT nom, region, adresse, tel, email FROM client WHERE clientID = $1';
 
             pool.query(query, [clientID], (error, results) => {
                 if (error) {
@@ -403,11 +404,11 @@ clientRoutes.get('/getClientInfo', async (req, res) => {
                     return res.status(500).json({ error: 'Error retrieving data.' });
                 }
 
-                if (results.length === 0) {
+                if (results.rows.length === 0) {
                     return res.status(404).json({ error: 'Client not found' });
                 }
 
-                res.status(200).json(results[0]);
+                res.status(200).json(results.rows[0]);
             });
         });
     } catch (error) {
@@ -441,7 +442,7 @@ clientRoutes.put('/updateClientInfo', async (req, res) => {
 
             console.log('UpdateClientInfo - Token verified successfully:', decoded);
             const clientID = decoded.client.clientID;
-            const query = 'UPDATE client SET nom = ?, region = ?, adresse = ?, tel = ? WHERE clientID = ?';
+            const query = 'UPDATE client SET nom = $1, region = $2, adresse = $3, tel = $4 WHERE clientID = $5';
 
             pool.query(query, [nom, region, adresse, tel, clientID], (error, result) => {
                 if (error) {
@@ -449,7 +450,7 @@ clientRoutes.put('/updateClientInfo', async (req, res) => {
                     return res.status(500).json({ error: 'Error during update' });
                 }
 
-                if (result.affectedRows === 0) {
+                if (result.rowCount === 0) {
                     return res.status(404).json({ error: 'Client not found or no changes made.' });
                 }
 
@@ -490,12 +491,12 @@ clientRoutes.delete('/account', async (req, res) => {
 
             // First, delete related data (cart items, orders, etc.)
             const deleteQueries = [
-                'DELETE FROM panier_produit WHERE panierID IN (SELECT panierID FROM panier WHERE clientID = ?)',
-                'DELETE FROM panier WHERE clientID = ?',
-                'DELETE FROM commande_produit WHERE commandeID IN (SELECT commandeID FROM commande WHERE clientID = ?)',
-                'DELETE FROM commande WHERE clientID = ?',
-                'DELETE FROM adoptionpet WHERE clientID = ?',
-                'DELETE FROM lostpet WHERE clientID = ?'
+                'DELETE FROM panier_produit WHERE panierID IN (SELECT panierID FROM panier WHERE clientID = $1)',
+                'DELETE FROM panier WHERE clientID = $1',
+                'DELETE FROM commande_produit WHERE commandeID IN (SELECT commandeID FROM commande WHERE clientID = $1)',
+                'DELETE FROM commande WHERE clientID = $1',
+                'DELETE FROM adoptionpet WHERE clientID = $1',
+                'DELETE FROM lostpet WHERE clientID = $1'
             ];
 
             // Execute delete queries in sequence
@@ -513,14 +514,14 @@ clientRoutes.delete('/account', async (req, res) => {
                     // When all related data is deleted, delete the client
                     if (completedQueries === totalQueries) {
                         // Delete the client
-                        const deleteClientQuery = 'DELETE FROM client WHERE clientID = ?';
+                        const deleteClientQuery = 'DELETE FROM client WHERE clientID = $1';
                         pool.query(deleteClientQuery, [clientID], (error, result) => {
                             if (error) {
                                 console.error('Error deleting client:', error);
                                 return res.status(500).json({ error: 'Error deleting account.' });
                             }
 
-                            if (result.affectedRows === 0) {
+                            if (result.rowCount === 0) {
                                 return res.status(404).json({ error: 'Client not found.' });
                             }
 

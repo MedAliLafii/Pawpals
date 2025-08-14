@@ -35,20 +35,20 @@ cartRoutes.get('/fetch', async (req, res) => {
 
         // Requête SQL pour récupérer les produits du panier
         const cartQuery = `
-            SELECT pp.produitID, p.nom, p.prix, pp.quantite, 
-                   (p.prix * pp.quantite) as total_ligne,
-                   p.imageUrl
+            SELECT pp.produitid AS "produitID", p.nom, p.prix, pp.quantite, 
+                   (p.prix * pp.quantite) as "total_ligne",
+                   p.imageurl AS "imageURL"
             FROM panier_produit pp
-            JOIN produit p ON pp.produitID = p.produitID
-            JOIN panier pa ON pp.panierID = pa.panierID
-            WHERE pa.clientID = ?
+            JOIN produit p ON pp.produitid = p.produitid
+            JOIN panier pa ON pp.panierid = pa.panierid
+            WHERE pa.clientid = $1
         `;
 
         // Exécution de la requête avec promise
         const cartProducts = await new Promise((resolve, reject) => {
             pool.query(cartQuery, [clientID], (error, results) => {
                 if (error) reject(error);
-                else resolve(results);
+                else resolve(results.rows);
             });
         });
 
@@ -101,9 +101,9 @@ cartRoutes.post('/add', async (req, res) => {
 
         // Vérifie si le panier existe déjà pour ce client
         const cartRows = await new Promise((resolve, reject) => {
-            pool.query("SELECT panierID FROM panier WHERE clientID = ?", [clientID], (error, rows) => {
+            pool.query("SELECT panierid AS \"panierID\" FROM panier WHERE clientid = $1", [clientID], (error, rows) => {
                 if (error) reject(error);
-                else resolve(rows);
+                else resolve(rows.rows);
             });
         });
 
@@ -112,11 +112,11 @@ cartRoutes.post('/add', async (req, res) => {
         // Vérifie si le produit est déjà présent dans le panier
         const existingProductRows = await new Promise((resolve, reject) => {
             pool.query(
-                "SELECT quantite FROM panier_produit WHERE panierID = ? AND produitID = ?",
+                "SELECT quantite FROM panier_produit WHERE panierid = $1 AND produitid = $2",
                 [panierID, produitID],
                 (error, rows) => {
                     if (error) reject(error);
-                    else resolve(rows);
+                    else resolve(rows.rows);
                 }
             );
         });
@@ -130,7 +130,7 @@ cartRoutes.post('/add', async (req, res) => {
             // Mise à jour de la quantité si le produit est déjà dans le panier
             await new Promise((resolve, reject) => {
                 pool.query(
-                    "UPDATE panier_produit SET quantite = quantite + ? WHERE panierID = ? AND produitID = ?",
+                    "UPDATE panier_produit SET \"quantite\" = \"quantite\" + $1 WHERE \"panierID\" = $2 AND \"produitID\" = $3",
                     [quantite, panierID, produitID],
                     (error, result) => {
                         if (error) reject(error);
@@ -142,7 +142,7 @@ cartRoutes.post('/add', async (req, res) => {
             // Insertion du produit s'il n'existe pas encore dans le panier
             await new Promise((resolve, reject) => {
                 pool.query(
-                    "INSERT INTO panier_produit (panierID, produitID, quantite) VALUES (?, ?, ?)",
+                    "INSERT INTO panier_produit (\"panierID\", \"produitID\", \"quantite\") VALUES ($1, $2, $3)",
                     [panierID, produitID, quantite],
                     (error, result) => {
                         if (error) reject(error);
@@ -165,7 +165,7 @@ cartRoutes.post('/add', async (req, res) => {
     }
 });
 
-//  Mettre à jour la quantité d’un produit
+//  Mettre à jour la quantité d'un produit
 cartRoutes.put('/update', async (req, res) => {
     const pool = req.pool;
     const { produitID, quantite } = req.body;
@@ -179,35 +179,33 @@ cartRoutes.put('/update', async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const clientID = decoded.client.clientID;
 
-        // Récupération du panier lié au client
+        // Récupération du panierID
         const cartRows = await new Promise((resolve, reject) => {
-            pool.query("SELECT panierID FROM panier WHERE clientID = ?", [clientID], (error, rows) => {
+            pool.query("SELECT panierid FROM panier WHERE clientid = $1", [clientID], (error, rows) => {
                 if (error) reject(error);
-                else resolve(rows);
+                else resolve(rows.rows);
             });
         });
 
-        if (cartRows.length === 0) {
-            return res.status(404).json({ error: "Cart not found." });
-        }
-
         const panierID = cartRows[0].panierID;
 
-        // Vérifie la quantité actuelle dans le panier
-        const currentQuantityQuery = "SELECT quantite FROM panier_produit WHERE panierID = ? AND produitID = ?";
+        // Récupération de la quantité actuelle
         const currentQuantityResult = await new Promise((resolve, reject) => {
-            pool.query(currentQuantityQuery, [panierID, produitID], (error, rows) => {
-                if (error) reject(error);
-                else if (rows.length === 0) reject(new Error('Product not found in cart'));
-                else resolve(rows[0].quantite);
-            });
+            pool.query(
+                "SELECT quantite FROM panier_produit WHERE panierid = $1 AND produitid = $2",
+                [panierID, produitID],
+                (error, rows) => {
+                    if (error) reject(error);
+                    else resolve(rows.rows[0].quantite);
+                }
+            );
         });
 
         // Si la quantité est la même, ne rien changer
         if (quantite === currentQuantityResult) {
             await new Promise((resolve, reject) => {
-                            pool.query(
-                "UPDATE panier_produit SET quantite = ? WHERE panierID = ? AND produitID = ?",
+                pool.query(
+                    "UPDATE panier_produit SET quantite = $1 WHERE panierid = $2 AND produitid = $3",
                     [quantite, panierID, produitID],
                     (error, result) => {
                         if (error) reject(error);
@@ -219,11 +217,11 @@ cartRoutes.put('/update', async (req, res) => {
         }
 
         // Vérifie le stock disponible pour ce produit
-        const stockQuery = "SELECT stock FROM produit WHERE produitID = ?";
+        const stockQuery = "SELECT stock FROM produit WHERE produitid = $1";
         const stockResult = await new Promise((resolve, reject) => {
             pool.query(stockQuery, [produitID], (error, rows) => {
                 if (error) reject(error);
-                else resolve(rows[0].stock);
+                else resolve(rows.rows[0].stock);
             });
         });
 
@@ -234,7 +232,7 @@ cartRoutes.put('/update', async (req, res) => {
         // Mise à jour de la quantité dans le panier
         await new Promise((resolve, reject) => {
             pool.query(
-                "UPDATE panier_produit SET quantite = ? WHERE panierID = ? AND produitID = ?",
+                "UPDATE panier_produit SET quantite = $1 WHERE panierid = $2 AND produitid = $3",
                 [quantite, panierID, produitID],
                 (error, result) => {
                     if (error) reject(error);
@@ -251,29 +249,29 @@ cartRoutes.put('/update', async (req, res) => {
             return res.status(401).json({ error: "Token invalid." });
         }
 
-        res.status(500).json({ error: "An error occurred while updating the quantity" });
+        res.status(500).json({ error: "An error occurred while updating the quantity." });
     }
 });
 
-// Supprimer un produit du panier 
+// Supprimer un produit du panier
 cartRoutes.delete('/remove', async (req, res) => {
     const pool = req.pool;
     const { produitID } = req.body;
     const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ error: "Acces denied, token missing." });
+        return res.status(401).json({ error: "Access denied, missing token." });
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const clientID = decoded.client.clientID;
 
-        // Récupère le panier du client
+        // Récupération du panierID
         const cartRows = await new Promise((resolve, reject) => {
-            pool.query("SELECT panierID FROM panier WHERE clientID = ?", [clientID], (error, rows) => {
+            pool.query("SELECT panierid FROM panier WHERE clientid = $1", [clientID], (error, rows) => {
                 if (error) reject(error);
-                else resolve(rows);
+                else resolve(rows.rows);
             });
         });
 
@@ -282,7 +280,7 @@ cartRoutes.delete('/remove', async (req, res) => {
         // Suppression du produit du panier
         await new Promise((resolve, reject) => {
             pool.query(
-                "DELETE FROM panier_produit WHERE panierID = ? AND produitID = ?",
+                "DELETE FROM panier_produit WHERE panierid = $1 AND produitid = $2",
                 [panierID, produitID],
                 (error, result) => {
                     if (error) reject(error);
@@ -291,59 +289,55 @@ cartRoutes.delete('/remove', async (req, res) => {
             );
         });
 
-        res.status(200).json({ message: "Product deleted from cart successfully" });
+        res.status(200).json({ message: "Product removed from cart successfully." });
     } catch (error) {
-        console.error("Error deleting product:", error);
+        console.error("Error removing product from cart:", error);
+
         if (error.name === 'JsonWebTokenError') {
             return res.status(401).json({ error: "Token invalid." });
         }
-        res.status(500).json({ error: "An error occurred while deleting the product" });
+
+        res.status(500).json({ error: "An error occurred while removing the product from the cart." });
     }
 });
 
 // Passer commande 
 cartRoutes.post('/commander', async (req, res) => {
     const pool = req.pool;
-    const token = req.cookies.token || req.headers.authorization?.split(' ')[1]; // Check both cookies and Authorization header
-
-    console.log('Commander - Token from cookies:', req.cookies.token);
-    console.log('Commander - Token from headers:', req.headers.authorization);
-    console.log('Commander - Final token:', token);
+    const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
 
     if (!token) {
-        console.log('Commander - No token found');
         return res.status(401).json({ error: "Access denied, missing token." });
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('Commander - Token decoded successfully:', decoded);
         const clientID = decoded.client.clientID;
 
-        // Vérifie si le client a un panier
+        // Récupération du panierID
         const cartRows = await new Promise((resolve, reject) => {
-            pool.query("SELECT panierID FROM panier WHERE clientID = ?", [clientID], (error, rows) => {
+            pool.query("SELECT panierid FROM panier WHERE clientid = $1", [clientID], (error, rows) => {
                 if (error) reject(error);
-                else resolve(rows);
+                else resolve(rows.rows);
             });
         });
 
         const panierID = cartRows[0].panierID;
 
-        // Récupère les produits dans le panier
+        // Récupération des produits du panier
         const cartProducts = await new Promise((resolve, reject) => {
             pool.query(
-                "SELECT produitID, quantite FROM panier_produit WHERE panierID = ?",
+                "SELECT pp.produitid, pp.quantite FROM panier_produit pp WHERE pp.panierid = $1",
                 [panierID],
-                (error, rows) => {
+                (error, results) => {
                     if (error) reject(error);
-                    else resolve(rows);
+                    else resolve(results.rows);
                 }
             );
         });
 
         if (cartProducts.length === 0) {
-            return res.status(400).json({ error: "Your cart is empty" });
+            return res.status(400).json({ error: "Your cart is empty." });
         }
 
         // Calcul du total de la commande
@@ -351,12 +345,12 @@ cartRoutes.post('/commander', async (req, res) => {
             pool.query(
                 `SELECT SUM(p.prix * pp.quantite) AS total 
                  FROM panier_produit pp 
-                 JOIN produit p ON pp.produitID = p.produitID 
-                 WHERE pp.panierID = ?`,
+                 JOIN produit p ON pp.produitid = p.produitid 
+                 WHERE pp.panierid = $1`,
                 [panierID],
                 (error, results) => {
                     if (error) reject(error);
-                    else resolve(results[0].total);
+                    else resolve(results.rows[0].total);
                 }
             );
         });
@@ -364,7 +358,7 @@ cartRoutes.post('/commander', async (req, res) => {
         // Insertion de la commande
         const commandeResult = await new Promise((resolve, reject) => {
             pool.query(
-                "INSERT INTO commande (clientID, dateCommande, statut, total) VALUES (?, NOW(), 'En attente', ?)",
+                "INSERT INTO commande (clientid, datecommande, statut, total) VALUES ($1, NOW(), 'En attente', $2) RETURNING commandeid",
                 [clientID, totalCommande],
                 (error, result) => {
                     if (error) reject(error);
@@ -373,14 +367,14 @@ cartRoutes.post('/commander', async (req, res) => {
             );
         });
 
-        const commandeID = commandeResult.insertId;
+        const commandeID = commandeResult.rows[0].commandeid;
 
         // Insertion des produits dans la commande + mise à jour du stock
         for (const item of cartProducts) {
             await new Promise((resolve, reject) => {
                 pool.query(
-                    "INSERT INTO commande_produit (commandeID, produitID, quantite) VALUES (?, ?, ?)",
-                    [commandeID, item.produitID, item.quantite],
+                    "INSERT INTO commande_produit (commandeid, produitid, quantite) VALUES ($1, $2, $3)",
+                    [commandeID, item.produitid, item.quantite],
                     (error, result) => {
                         if (error) reject(error);
                         else resolve(result);
@@ -390,8 +384,8 @@ cartRoutes.post('/commander', async (req, res) => {
 
             await new Promise((resolve, reject) => {
                 pool.query(
-                    "UPDATE produit SET stock = stock - ? WHERE produitID = ?",
-                    [item.quantite, item.produitID],
+                    "UPDATE produit SET stock = stock - $1 WHERE produitid = $2",
+                    [item.quantite, item.produitid],
                     (error, result) => {
                         if (error) reject(error);
                         else resolve(result);
@@ -403,7 +397,7 @@ cartRoutes.post('/commander', async (req, res) => {
         // Vider le panier
         await new Promise((resolve, reject) => {
             pool.query(
-                "DELETE FROM panier_produit WHERE panierID = ?",
+                "DELETE FROM panier_produit WHERE panierid = $1",
                 [panierID],
                 (error, result) => {
                     if (error) reject(error);
