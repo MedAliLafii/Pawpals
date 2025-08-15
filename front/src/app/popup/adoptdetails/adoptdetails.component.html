@@ -8,7 +8,7 @@
 
   <div class="modal-body">
     <div class="pet-image-container">
-      <img [src]="'assets/uploads/' + pet.imageurl" [alt]="pet.petname || 'Pet image'" />
+      <img [src]="pet.imageurl" [alt]="pet.petname || 'Pet image'" />
       <div class="pet-type-badge">
         <i class="fa-solid fa-paw"></i> {{ pet.type }}
       </div>

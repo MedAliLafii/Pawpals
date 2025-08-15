@@ -3,20 +3,16 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const jwt = require('jsonwebtoken');
+const blobService = require('./blobService');
 require('dotenv').config();
 
-// Set up multer for handling image uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // Save images to the 'src/assets/uploads' directory
-    cb(null, path.join(__dirname, '..', 'src', 'assets', 'uploads'));  // Fixed path
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));  // Add unique timestamp to file names
+// Set up multer for handling image uploads (memory storage for Vercel Blob)
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
   }
 });
-
-const upload = multer({ storage });
 
 // Middleware to extract clientid from JWT token
 function authenticateJWT(req, res, next) {
@@ -33,18 +29,39 @@ function authenticateJWT(req, res, next) {
 }
 
 // Route to create a lost pet entry
-router.post('/add', authenticateJWT, upload.single('image'), (req, res) => {
+router.post('/add', authenticateJWT, upload.single('image'), async (req, res) => {
   console.log("Received data:", req.body); // Logs form data to the console
   console.log("Received file:", req.file);  // Logs file details to the console
 
   const { name, breed, age, type, dateLost, location, description } = req.body;
-  const imageURL = req.file ? 'uploads/' + req.file.filename : null;  // Save the relative path for the image
+  let imageURL = null;
+
+  // Handle image upload to Vercel Blob
+  if (req.file) {
+    try {
+      const filename = blobService.generateUniqueFilename(req.file.originalname, 'lost_');
+      const uploadResult = await blobService.uploadFile(
+        req.file.buffer, 
+        filename, 
+        req.file.mimetype
+      );
+
+      if (uploadResult.success) {
+        imageURL = uploadResult.url;
+        console.log('Image uploaded to Vercel Blob:', imageURL);
+      } else {
+        console.error('Failed to upload image to Vercel Blob:', uploadResult.error);
+        return res.status(500).json({ error: 'Failed to upload image' });
+      }
+    } catch (error) {
+      console.error('Error uploading image to Vercel Blob:', error);
+      return res.status(500).json({ error: 'Image upload error' });
+    }
+  }
 
   const sql = `INSERT INTO lostpet (clientid, petname, breed, age, type, imageurl, datelost, location, description)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
-req.pool.query(sql, [req.clientid, name, breed, age, type, imageURL, dateLost, location, description], (err, results) => {
-  // Continue as normal
-
+  req.pool.query(sql, [req.clientid, name, breed, age, type, imageURL, dateLost, location, description], (err, results) => {
     if (err) {
       console.error('Error while adding a lost pet:', err);
       return res.status(500).json({ error: 'Database error' });
