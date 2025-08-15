@@ -151,7 +151,7 @@ export class LoginComponent {
             
             // Wait a moment for the auth service to update, then redirect
             setTimeout(() => {
-              this.router.navigate(['/']); // Redirect to home page
+              this.router.navigate(['/home']); // Redirect to home page
             }, 100);
           },
           error: (error) => {
@@ -240,7 +240,7 @@ export class LoginComponent {
             this.router.navigate([redirectUrl]);
           } else {
             console.log('Redirecting to home page');
-            this.router.navigate(['/']); // Redirect to home page
+            this.router.navigate(['/home']); // Redirect to home page
           }
         }, 100);
       },
@@ -273,15 +273,22 @@ export class LoginComponent {
 
   // Check if user is already logged in (active session on server side)
   checkAuthStatus(): void {
+    // Only check auth status if we're not already on the login page
+    // This prevents unnecessary redirects and potential loops
     this.authService.getAuthStatusObservable().pipe(
       filter(authStatus => this.authService.isAuthChecked()) // Wait until auth has been checked
     ).subscribe(
       (authStatus) => {
-        if (authStatus.isAuthenticated) {
-          console.log('Already logged in'); // Show info if user is authenticated
-          this.router.navigate(['/']); // Redirect to home if authenticated
+        if (authStatus.isAuthenticated && !this.authService.isOnLoginPage()) {
+          console.log('Already logged in, redirecting to home'); // Show info if user is authenticated
+          // Use a small delay to ensure the auth state is properly set
+          setTimeout(() => {
+            this.router.navigate(['/home']); // Redirect to home if authenticated
+          }, 100);
+        } else if (authStatus.isAuthenticated) {
+          console.log('Already logged in, but staying on login page'); // User is authenticated but on login page
         } else {
-          console.log('Not logged in'); // Log error if not authenticated
+          console.log('Not logged in, staying on login page'); // Log if not authenticated
         }
       }
     );

@@ -22,12 +22,18 @@ export const ErrorInterceptor: HttpInterceptorFn = (req, next) => {
           case 401:
             errorMessage = 'Unauthorized. Please log in again.';
             // Only redirect to login for specific protected endpoints that require authentication
-            if (req.url.includes('/Cart') || 
+            // And only if we're not already on the login page to avoid loops
+            if ((req.url.includes('/Cart') || 
                 req.url.includes('/Client/profile') ||
                 req.url.includes('/Client/updateClientInfo') ||
                 req.url.includes('/Client/getClientInfo') ||
-                req.url.includes('/Client/changePassword')) {
-              router.navigate(['/login']);
+                req.url.includes('/Client/changePassword')) &&
+                !req.url.includes('/checkAuth')) {
+              // Check current route to avoid redirecting if already on login page
+              const currentUrl = router.url;
+              if (!currentUrl.includes('/login')) {
+                router.navigate(['/login']);
+              }
             }
             // Don't redirect for checkAuth failures as they're expected for non-authenticated users
             break;

@@ -17,13 +17,13 @@ export class AuthService {
   });
 
   constructor(private http: HttpClient) {
-    // Check if user is already authenticated on service initialization
-    this.checkAuthStatus().subscribe();
+    // Don't automatically check auth status on service initialization
+    // This will be called explicitly when needed
   }
 
   // Set authentication state after successful login
   setAuthState(user: any, token?: string): void {
-    console.log('Setting auth state:', { user, token });
+    console.log('AuthService: Setting auth state:', { user: user?.nom, token: token ? 'present' : 'not present' });
     this.isAuthenticated = true;
     this.currentUser = user;
     this.authChecked = true;
@@ -31,21 +31,24 @@ export class AuthService {
     // Store token in localStorage if provided
     if (token) {
       localStorage.setItem('authToken', token);
+      console.log('AuthService: Token stored in localStorage');
     }
     
     this.authStatusSubject.next({
       isAuthenticated: true,
       user: user
     });
-    console.log('Auth state updated, isAuthenticated:', this.isAuthenticated);
+    console.log('AuthService: Auth state updated, isAuthenticated:', this.isAuthenticated);
   }
 
   // Login method
   login(loginData: any): Observable<any> {
+    console.log('AuthService: Starting login process');
     return this.http.post(`${environment.BACK_URL}/Client/loginClient`, loginData, { 
       withCredentials: true 
     }).pipe(
       tap((response: any) => {
+        console.log('AuthService: Login successful, response:', response);
         // Update auth state after successful login
         this.setAuthState(response.client, response.token);
       })
@@ -54,11 +57,15 @@ export class AuthService {
 
   // Check authentication status using both cookies and localStorage
   checkAuthStatus(): Observable<boolean> {
+    console.log('AuthService: Starting checkAuthStatus');
     // First try with cookies (preferred method)
     const token = localStorage.getItem('authToken');
     const headers: Record<string, string> = {};
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+      console.log('AuthService: Found token in localStorage:', token.substring(0, 20) + '...');
+    } else {
+      console.log('AuthService: No token found in localStorage');
     }
     
     return this.http.get<{ client: any }>(`${environment.BACK_URL}/Client/checkAuth`, { 
@@ -66,6 +73,7 @@ export class AuthService {
       headers: headers
     }).pipe(
       tap((response) => {
+        console.log('AuthService: checkAuth successful, response:', response);
         this.isAuthenticated = true;
         this.currentUser = response.client;
         this.authChecked = true;
@@ -75,15 +83,19 @@ export class AuthService {
         });
       }),
       map((response) => {
+        console.log('AuthService: Authentication successful');
         return true;
       }),
       catchError((error) => {
+        console.log('AuthService: checkAuth failed with error:', error.status, error.message);
         // If cookie-based auth fails, try localStorage fallback
         const token = localStorage.getItem('authToken');
         if (token) {
+          console.log('AuthService: Trying localStorage fallback with token');
           // Verify token with backend
           return this.verifyToken(token).pipe(
             tap((response) => {
+              console.log('AuthService: Token verification successful:', response);
               this.isAuthenticated = true;
               this.currentUser = response.client;
               this.authChecked = true;
@@ -93,15 +105,18 @@ export class AuthService {
               });
             }),
             map((response) => {
+              console.log('AuthService: localStorage fallback successful');
               return true;
             }),
-            catchError(() => {
+            catchError((verifyError) => {
+              console.log('AuthService: Token verification failed:', verifyError);
               // Token is invalid, clear localStorage
               this.clearAuth();
               return of(false);
             })
           );
         }
+        console.log('AuthService: No fallback token available, user not authenticated');
         this.authChecked = true;
         this.authStatusSubject.next({
           isAuthenticated: false,
@@ -115,6 +130,11 @@ export class AuthService {
   // Verify token with backend
   private verifyToken(token: string): Observable<{ client: any }> {
     return this.http.post<{ client: any }>(`${environment.BACK_URL}/Client/verifyToken`, { token });
+  }
+
+  // Check if user is currently on login page
+  isOnLoginPage(): boolean {
+    return window.location.pathname === '/login';
   }
 
   // Get current authentication status

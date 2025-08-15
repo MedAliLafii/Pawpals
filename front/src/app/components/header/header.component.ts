@@ -177,22 +177,32 @@ export class HeaderComponent implements OnInit {
     ).subscribe({
       next: (authStatus) => {
         if (authStatus.isAuthenticated) {
-          this.http.get<any>(`${environment.BACK_URL}/Cart`, { withCredentials: true })
-            .subscribe({
-              next: (cart) => {
-                // Handle different possible response formats
-                if (cart && Array.isArray(cart)) {
-                  this.cartItemCount = cart.length;
-                } else if (cart && cart.items && Array.isArray(cart.items)) {
-                  this.cartItemCount = cart.items.length;
-                } else {
-                  this.cartItemCount = 0;
-                }
-              },
-              error: () => {
+          // Get token from localStorage and include it in the request
+          const token = localStorage.getItem('authToken');
+          const headers: Record<string, string> = {};
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+          
+          this.http.get<any>(`${environment.BACK_URL}/Cart`, { 
+            withCredentials: true,
+            headers: headers
+          }).subscribe({
+            next: (cart) => {
+              // Handle different possible response formats
+              if (cart && Array.isArray(cart)) {
+                this.cartItemCount = cart.length;
+              } else if (cart && cart.items && Array.isArray(cart.items)) {
+                this.cartItemCount = cart.items.length;
+              } else {
                 this.cartItemCount = 0;
               }
-            });
+            },
+            error: (error) => {
+              console.error('Error loading cart count:', error);
+              this.cartItemCount = 0;
+            }
+          });
         } else {
           this.cartItemCount = 0;
         }
