@@ -29,7 +29,7 @@ export class ProductCardComponent implements OnInit {
   ) {}
 
   get produitID(): string {
-    return this.product?.produitID?.toString() || '';
+    return this.product?.produitid?.toString() || '';
   }
 
   getStarsArray(rating: number): number[] {
@@ -103,7 +103,7 @@ export class ProductCardComponent implements OnInit {
 
   quickView(): void {
     // Navigate to product details
-    window.open(`/product/${this.product.produitID}`, '_blank');
+    window.open(`/product/${this.product.produitid}`, '_blank');
   }
 }
 

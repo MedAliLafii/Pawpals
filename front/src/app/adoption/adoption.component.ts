@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../components/header/header.component';
@@ -19,10 +19,8 @@ import { filter, take } from 'rxjs/operators';
   templateUrl: './adoption.component.html',
   styleUrls: ['./adoption.component.css']
 })
-export class AdoptionComponent implements OnInit, OnChanges {
-  @Input() filters: { location: string; types: string[]; ages: number } = { location: '', types: [], ages: 0 };
-  filteredPets: any[] = [];
-  allPets: any[] = [];
+export class AdoptionComponent implements OnInit {
+  filters: { location: string; types: string[]; ages: number } = { location: '', types: [], ages: 0 };
   isLoggedIn: boolean = false;
   clientId: number = 0;
   selectedCategory: string = 'all-pets'; // Track selected category
@@ -42,21 +40,7 @@ export class AdoptionComponent implements OnInit, OnChanges {
   }
 
   
-  ngOnChanges(): void {
-    this.applyFilters();
-  }
 
-  applyFilters(): void {
-    const { location, types, ages } = this.filters;
-
-    this.filteredPets = this.allPets.filter(pet => {
-      const matchLocation = location ? pet.location === location : true;
-      const matchType = types.length ? types.includes(pet.type) : true;
-      const matchAge = ages ? ages === pet.age : true;
-
-      return matchLocation && matchType && matchAge;
-    });
-  }
 
   checkAuthStatus(): void {
     this.authService.getAuthStatusObservable().pipe(
@@ -102,13 +86,13 @@ export class AdoptionComponent implements OnInit, OnChanges {
       this.filters = { ...this.filters, types: [] };
     } else if (category === 'dogs') {
       // Show only dogs
-      this.filters = { ...this.filters, types: ['dog'] };
+      this.filters = { ...this.filters, types: ['Dog'] };
     } else if (category === 'cats') {
       // Show only cats
-      this.filters = { ...this.filters, types: ['cat'] };
+      this.filters = { ...this.filters, types: ['Cat'] };
     } else if (category === 'other-pets') {
       // Show other pets (birds, etc.)
-      this.filters = { ...this.filters, types: ['bird', 'other-pets'] };
+      this.filters = { ...this.filters, types: ['Bird', 'Other'] };
     }
     
     console.log('Filters after category click:', this.filters);

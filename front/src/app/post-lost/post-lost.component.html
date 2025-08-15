@@ -54,16 +54,21 @@
           <!-- Image Upload -->
           <div class="image-upload">
             <label>Upload Photo</label>
-            <div class="image-preview" *ngIf="imagePreview">
-              <img [src]="imagePreview" alt="Preview" />
-              <button type="button" (click)="removeImage()">✕</button>
+            <div class="image-drop" 
+                 (click)="triggerFileInput()"
+                 (dragover)="onDragOver($event)"
+                 (dragleave)="onDragLeave($event)"
+                 (drop)="onDrop($event)">
+              <div class="image-preview" *ngIf="imagePreview">
+                <img [src]="imagePreview" alt="Preview" />
+                <button type="button" class="remove-btn" (click)="removeImage()">✕</button>
+              </div>
+              <div *ngIf="!imagePreview" class="upload-content">
+                <i class="icon-camera"></i>
+                <p>Drag & drop or click to upload</p>
+              </div>
             </div>
-            <div *ngIf="!imagePreview" class="image-drop">
-              <i class="icon-camera"></i>
-              <p>Drag & drop or click to upload</p>
-            </div>
-            <input type="file" id="image" (change)="handleImageChange($event)" accept="image/*" />
-            <button type="button" (click)="triggerFileInput()">Browse Files</button>
+            <input type="file" id="image" (change)="handleImageChange($event)" accept="image/*" style="display: none;" />
           </div>
         </section>
 

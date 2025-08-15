@@ -1,92 +1,259 @@
-.filter-panel {
-    width: 320px;
-    background: white;
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    font-family: sans-serif;
-  }
-  
-  .panel-title {
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: #2d3748;
-    border-bottom: 1px solid #e2e8f0;
-    padding-bottom: 8px;
-  }
-  
-  .category-list {
-    margin-top: 16px;
-    list-style: none;
-    padding: 0;
-  }
-  
-  .category-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 14px;
-    font-size: 1rem;
-    color: #000000;
-  }
-  
-  .category-radio {
-    width: 16px;
-    height: 16px;
-    accent-color: #77DD77; /* vert */
-  }
-  
-  .category-label {
-    margin-left: 12px;
-    cursor: pointer;
-    transition: color 0.3s;
-  }
-  
-  .category-label:hover {
-    color:  #15803d;
-  }
-  
-  .price-info {
-    margin-top: 12px;
-    font-size: 0.875rem;
-    color: #4a5568;
-  }
-  
-  .price-value {
-    font-weight: 600;
-    color: #77DD77;
-  }
-  
-  .price-slider {
+.filter-sidebar {
+  width: 280px;
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  margin-left: auto;
+  margin-right: 1rem;
+  border: 1px solid #e5e7eb;
+}
+
+.filter-section {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.filter-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.filter-title {
+  display: block;
+  color: #166534;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #374151;
+  border: 2px solid transparent;
+  background: #f8fafc;
+  position: relative;
+  overflow: hidden;
+}
+
+.filter-checkbox:hover {
+  background: #f0fdf4;
+  transform: translateX(3px);
+  border-color: #22c55e;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+}
+
+.filter-checkbox input {
+  position: relative;
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+  appearance: none;
+  border: 2px solid #d1d5db;
+  border-radius: 50%;
+  background: white;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.filter-checkbox input:checked {
+  background: #22c55e;
+  border-color: #22c55e;
+  position: relative;
+}
+
+.filter-checkbox input:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.4rem;
+  height: 0.4rem;
+  background: white;
+  border-radius: 50%;
+}
+
+.filter-checkbox input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+}
+
+.filter-checkbox label {
+  cursor: pointer;
+  font-weight: 500;
+  flex: 1;
+  transition: color 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.filter-checkbox:hover label {
+  color: #166534;
+}
+
+.filter-checkbox input:checked + label {
+  color: #166534;
+  font-weight: 600;
+}
+
+.filter-reset {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #22c55e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.filter-reset:hover {
+  background: #16a34a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.filter-reset:active {
+  transform: translateY(0);
+}
+
+.filter-slider {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.5rem 0;
+}
+
+.price-slider {
+  width: 100%;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  outline: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.price-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #22c55e;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.price-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #22c55e;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.price-slider:focus {
+  background: #d1fae5;
+}
+
+.price-slider:active::-webkit-slider-thumb {
+  background: #16a34a;
+  transform: scale(1.1);
+}
+
+.price-slider:active::-moz-range-thumb {
+  background: #16a34a;
+  transform: scale(1.1);
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .filter-sidebar {
     width: 100%;
-    margin-top: 8px;
-    accent-color:#77DD77;
-  }
-  
-  .reset-button {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: #77DD77;
-    color: white;
-    padding: 10px;
+    margin: 0;
+    padding: 1rem;
     border-radius: 8px;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    transition: background 0.3s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
-  
-  .reset-button:hover {
-    background: #15803d;
+
+  .filter-section {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
   }
-  
-  .reset-icon {
-    width: 20px;
-    height: 20px;
+
+  .filter-title {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
   }
+
+  .filter-checkbox {
+    padding: 0.6rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .filter-checkbox input {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .filter-reset {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+    margin-top: 0.8rem;
+  }
+
+  .price-slider {
+    height: 5px;
+  }
+
+  .price-slider::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+  }
+
+  .price-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-sidebar {
+    padding: 0.8rem;
+  }
+
+  .filter-section {
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.8rem;
+  }
+
+  .filter-title {
+    font-size: 0.85rem;
+  }
+
+  .filter-checkbox {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .filter-reset {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.8rem;
+  }
+}
   

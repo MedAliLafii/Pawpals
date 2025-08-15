@@ -1,9 +1,18 @@
 
 <!-- Dynamic categories section -->
-<div class="header-section-2">
-    <div class="header-inner-section-2">
-        <a *ngFor="let category of categories" (click)="goToCategory(category.categorieID)">
-            {{ category.nom }}
-        </a>
+<div class="categories-container">
+    <div class="categories-grid">
+        <div class="category-card" *ngFor="let category of categories" (click)="goToCategory(category.categorieid)">
+            <div class="category-icon">
+                <i class="fas fa-tag"></i>
+            </div>
+            <div class="category-content">
+                <span class="category-name">{{ category.nom }}</span>
+                <span class="category-description">{{ category.description || 'Shop products' }}</span>
+            </div>
+            <div class="category-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </div>
     </div>
 </div>

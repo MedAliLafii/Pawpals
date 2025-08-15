@@ -3,10 +3,10 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { Product } from '../models';
 
 export interface GuestCartItem {
-  produitID: number;
+  produitid: number;
   nom: string;
   prix: number;
-  imageURL: string;
+  imageurl: string;
   quantite: number;
 }
 
@@ -27,16 +27,16 @@ export class GuestCartService {
 
   addToCart(product: Product, quantity: number = 1): void {
     const currentItems = this.cartItems.value;
-    const existingItem = currentItems.find(item => item.produitID === product.produitID);
+    const existingItem = currentItems.find(item => item.produitid === product.produitid);
 
     if (existingItem) {
       existingItem.quantite += quantity;
     } else {
       currentItems.push({
-        produitID: product.produitID,
+        produitid: product.produitid,
         nom: product.nom,
         prix: product.prix,
-        imageURL: product.imageURL,
+        imageurl: product.imageurl,
         quantite: quantity
       });
     }
@@ -46,13 +46,13 @@ export class GuestCartService {
 
   removeFromCart(productId: number): void {
     const currentItems = this.cartItems.value;
-    const updatedItems = currentItems.filter(item => item.produitID !== productId);
+    const updatedItems = currentItems.filter(item => item.produitid !== productId);
     this.updateCart(updatedItems);
   }
 
   updateQuantity(productId: number, quantity: number): void {
     const currentItems = this.cartItems.value;
-    const item = currentItems.find(item => item.produitID === productId);
+    const item = currentItems.find(item => item.produitid === productId);
     
     if (item) {
       if (quantity <= 0) {
@@ -105,7 +105,7 @@ export class GuestCartService {
   // Convert guest cart to server format when user logs in
   convertToServerCart(): any[] {
     return this.cartItems.value.map(item => ({
-      produitID: item.produitID,
+      produitID: item.produitid,
       quantite: item.quantite
     }));
   }

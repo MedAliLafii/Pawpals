@@ -2,28 +2,99 @@
 
 <div class="modal-content">
   <div class="modal-header">
-    <h2>{{ pet.petName }}</h2>
+    <h2>{{ pet.petname }}</h2>
     <button class="close-button" (click)="close()">✕</button>
   </div>
 
   <div class="modal-body">
-    <img [src]="'assets/uploads/' + pet.imageURL" [alt]="pet.petName || 'Pet image'" />
-    <p><strong>Breed:</strong> {{ pet.breed }}</p>
-    <p><strong>Age:</strong> {{ pet.age }} months</p>
-    <p><strong>Gender:</strong> {{ pet.gender }}</p>
-    <p><strong>Location:</strong> {{ pet.location }}</p>
-    <p><strong>Description:</strong> {{ pet.description }}</p>
+    <div class="pet-image-container">
+      <img [src]="'assets/uploads/' + pet.imageurl" [alt]="pet.petname || 'Pet image'" />
+      <div class="pet-type-badge">
+        <i class="fa-solid fa-paw"></i> {{ pet.type }}
+      </div>
+    </div>
+    
+    <div class="pet-info-grid">
+      <div class="info-item">
+        <i class="fa-solid fa-dog"></i>
+        <div>
+          <label>Breed</label>
+          <span>{{ pet.breed }}</span>
+        </div>
+      </div>
+      
+      <div class="info-item">
+        <i class="fa-solid fa-calendar-days"></i>
+        <div>
+          <label>Age</label>
+          <span>{{ pet.age }} months</span>
+        </div>
+      </div>
+      
+      <div class="info-item">
+        <i class="fa-solid fa-venus-mars"></i>
+        <div>
+          <label>Gender</label>
+          <span>{{ pet.gender }}</span>
+        </div>
+      </div>
+      
+      <div class="info-item">
+        <i class="fa-solid fa-map-pin"></i>
+        <div>
+          <label>Location</label>
+          <span>{{ pet.location }}</span>
+        </div>
+      </div>
+      
+      <div class="info-item full-width">
+        <i class="fa-solid fa-file-text"></i>
+        <div>
+          <label>Description</label>
+          <span>{{ pet.description }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="pet-traits">
+      <h5><i class="fa-solid fa-heart"></i> Pet Traits</h5>
+      <div class="traits-grid">
+        <div class="trait-item" *ngIf="pet.goodwithkids == 1">
+          <i class="fa-solid fa-child"></i>
+          <span>Good with Kids</span>
+        </div>
+        <div class="trait-item" *ngIf="pet.goodwithotherpets == 1">
+          <i class="fa-solid fa-paw"></i>
+          <span>Good with Other Pets</span>
+        </div>
+        <div class="trait-item" *ngIf="pet.housetrained == 1">
+          <i class="fa-solid fa-home"></i>
+          <span>House Trained</span>
+        </div>
+        <div class="trait-item" *ngIf="pet.specialneeds == 1">
+          <i class="fa-solid fa-wheelchair"></i>
+          <span>Special Needs</span>
+        </div>
+      </div>
+    </div>
 
-    <p *ngIf="pet.goodWithKids == 1"><strong>✓</strong> Good with Kids</p>
-    <p *ngIf="pet.goodWithOtherPets == 1"><strong>✓</strong> Good with Other Pets</p>
-    <p *ngIf="pet.houseTrained == 1"><strong>✓</strong> House Trained</p>
-    <p *ngIf="pet.specialNeeds == 1"><strong>✓</strong> Special Needs</p>
-
-    <h5>Contact Information:</h5>
-    <p><strong>Phone:</strong> <a [href]="'tel:' + pet.ownerPhone">{{ pet.ownerPhone }}</a></p>
-    <p><strong>Email:</strong> <a [href]="'mailto:' + pet.ownerEmail">{{ pet.ownerEmail }}</a></p>
-
-    <a class="contact-owner" [href]="'tel:' + pet.ownerPhone">Contact Owner</a>
+    <div class="contact-section">
+      <h5><i class="fa-solid fa-address-book"></i> Contact Information</h5>
+      <div class="contact-info">
+        <div class="contact-item">
+          <i class="fa-solid fa-phone"></i>
+          <a [href]="'tel:' + pet.ownerPhone">{{ pet.ownerPhone }}</a>
+        </div>
+        <div class="contact-item">
+          <i class="fa-solid fa-envelope"></i>
+          <a [href]="'mailto:' + pet.ownerEmail">{{ pet.ownerEmail }}</a>
+        </div>
+      </div>
+      
+      <a class="contact-owner" [href]="'tel:' + pet.ownerPhone">
+        <i class="fa-solid fa-phone"></i> Contact Owner
+      </a>
+    </div>
   </div>
 
   

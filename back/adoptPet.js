@@ -96,22 +96,22 @@ router.delete('/delete/:id', authenticateJWT, (req, res) => {
 router.get('/', (req, res) => {
   const sql = `
     SELECT 
-      ap.adoptionpetid AS "adoptionPetID", 
-      ap.clientid AS "clientid", 
-      ap.petname AS "petName", 
+      ap.adoptionpetid, 
+      ap.clientid, 
+      ap.petname, 
       ap.breed, 
       ap.age, 
       ap.type, 
       ap.gender, 
-      ap.imageurl AS "imageURL", 
+      ap.imageurl, 
       ap.location, 
       ap.shelter, 
       ap.description, 
-      ap.goodwithkids AS "goodWithKids", 
-      ap.goodwithotherpets AS "goodWithOtherPets", 
-      ap.housetrained AS "houseTrained", 
-      ap.specialneeds AS "specialNeeds", 
-      ap.dateposted AS "datePosted",
+      ap.goodwithkids, 
+      ap.goodwithotherpets, 
+      ap.housetrained, 
+      ap.specialneeds, 
+      ap.dateposted,
       c.email AS "ownerEmail", 
       c.nom AS "ownerName", 
       c.tel AS "ownerPhone"
@@ -134,25 +134,24 @@ router.get('/pets', (req, res) => {
 
   let sql = `
     SELECT 
-      ap.adoptionpetid AS "adoptionPetID",
-      ap.clientid AS "clientid", 
-      ap.petname AS "petName", 
+      ap.adoptionpetid,
+      ap.clientid, 
+      ap.petname, 
       ap.breed, 
       ap.age, 
       ap.type, 
       ap.gender, 
-      ap.imageurl AS "imageURL", 
+      ap.imageurl, 
       ap.location, 
       ap.shelter, 
       ap.description, 
-      ap.goodwithkids AS "goodWithKids", 
-      ap.goodwithotherpets AS "goodWithOtherPets", 
-      ap.housetrained AS "houseTrained", 
-      ap.specialneeds AS "specialNeeds", 
-      ap.dateposted AS "datePosted",
+      ap.goodwithkids, 
+      ap.goodwithotherpets, 
+      ap.housetrained, 
+      ap.specialneeds, 
+      ap.dateposted,
       c.email AS "ownerEmail", 
-      c.tel AS "ownerPhone",
-      ap.location AS "petLocation"
+      c.tel AS "ownerPhone"
     FROM 
       adoptionpet ap
     INNER JOIN 
@@ -168,12 +167,13 @@ router.get('/pets', (req, res) => {
 
   if (types) {
     const typeList = types.split(',');
-    sql += ` AND ap.type IN (${typeList.map(() => '$2').join(',')})`;
+    const placeholders = typeList.map((_, index) => `$${params.length + index + 1}`).join(',');
+    sql += ` AND ap.type IN (${placeholders})`;
     params.push(...typeList);
   }
 
   if (ages) {
-    sql += ` AND ap.age < $3`;
+    sql += ` AND ap.age < $${params.length + 1}`;
     params.push(ages);
   }
 

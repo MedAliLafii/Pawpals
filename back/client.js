@@ -266,7 +266,7 @@ clientRoutes.post('/changePassword', async (req, res) => {
                 const currentPassword = results.rows[0].motdepasse;
 
                 // Vérifier si l'ancien mot de passe est correct
-                const isCurrentPasswordValid = await bcrypt.compare(oldPassword, currentPassword);
+                const isCurrentPasswordValid = await bcrypt.compare(req.body.currentPassword, currentPassword);
                 if (!isCurrentPasswordValid) {
                     return res.status(400).json({ error: 'Current password is incorrect.' });
                 }

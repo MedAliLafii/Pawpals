@@ -351,6 +351,11 @@
     padding: 0.5rem;
     border-radius: 50%;
     transition: var(--transition);
+    position: relative;
+    overflow: visible;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .search-icon-btn:hover,
@@ -361,6 +366,11 @@
   .search-icon-btn i,
   .cart-icon i {
     font-size: 1.15rem;
+    display: inline-block;
+    line-height: 1;
+    vertical-align: middle;
+    width: auto;
+    height: auto;
   }
 
   /* Search functionality styles */
@@ -525,6 +535,11 @@
   /* Cart badge */
   .cart-icon {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: inherit;
   }
 
   .cart-badge {

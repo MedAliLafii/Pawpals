@@ -61,7 +61,7 @@ app.get("/", (req, res) => {
 // GET route to fetch all categories with enhanced error logging
 app.get("/categorie", (req, res) => {
   console.log("Attempting to fetch categories...");
-  pool.query(`SELECT categorieid AS "categorieID", nom, description FROM categorie`, (err, results) => {
+  pool.query(`SELECT categorieid, nom, description FROM categorie`, (err, results) => {
     if (err) {
       console.error("Error fetching categories:", err);
       console.error("Error code:", err.code);
@@ -85,7 +85,7 @@ app.get("/produit/:id", (req, res) => {
   const productId = req.params.id; // Get product ID from URL parameters
 
   // SQL query to fetch product info and its category name
-  const sql = `SELECT produit.produitid AS "produitID", produit.nom, produit.description, produit.prix, produit.stock, produit.imageurl AS "imageURL", produit.rating, categorie.nom AS nomCat
+  const sql = `SELECT produit.produitid, produit.nom, produit.description, produit.prix, produit.stock, produit.imageurl, produit.rating, categorie.nom AS nomCat
              FROM produit
              LEFT JOIN categorie ON produit.categorieid = categorie.categorieid
              WHERE produit.produitid = $1`;
@@ -107,22 +107,22 @@ app.get('/produit', (req, res) => {
   const categoryID = req.query.categoryID; // Get category from query params
   const maxPrice = req.query.maxPrice; // Get max price from query params
 
-  let query = 'SELECT produitid AS "produitID", nom, description, prix, stock, imageurl AS "imageURL", rating, categorieid AS "categorieID" FROM produit WHERE 1=1'; // Base query (always true)
+  let query = 'SELECT produitid, nom, description, prix, stock, imageurl, rating, categorieid FROM produit WHERE 1=1'; // Base query (always true)
   const params = []; // Parameters for prepared statement
   let paramCount = 0;
 
-  // If category is specified, add it to the query
-  if (categoryID) {
+  // If category is specified and is a valid number, add it to the query
+  if (categoryID && categoryID !== 'null' && categoryID !== 'undefined' && !isNaN(Number(categoryID))) {
     paramCount++;
     query += ` AND categorieid = $${paramCount}`;
-    params.push(categoryID);
+    params.push(Number(categoryID));
   }
 
-  // If max price is specified, add it to the query
-  if (maxPrice) {
+  // If max price is specified and is a valid number, add it to the query
+  if (maxPrice && maxPrice !== 'null' && maxPrice !== 'undefined' && !isNaN(Number(maxPrice))) {
     paramCount++;
     query += ` AND prix <= $${paramCount}`;
-    params.push(maxPrice);
+    params.push(Number(maxPrice));
   }
   
   // Execute the query with parameters

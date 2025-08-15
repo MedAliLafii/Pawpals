@@ -56,20 +56,20 @@ req.pool.query(sql, [req.clientid, name, breed, age, type, imageURL, dateLost, l
 // Route to retrieve all lost pets with owner details
 router.get('/', (req, res) => {
   const sql = `SELECT 
-                 lp.lostpetid AS "lostPetID",
-                 lp.petname AS "petName",
+                 lp.lostpetid,
+                 lp.petname,
                  lp.breed,
                  lp.age,
                  lp.type,
-                 lp.imageurl AS "imageURL",
-                 lp.datelost AS "dateLost",
+                 lp.imageurl,
+                 lp.datelost,
                  lp.location,
                  lp.description,
-                 lp.dateposted AS "datePosted",
+                 lp.dateposted,
                  c.nom AS "ownerName",
                  c.tel AS "ownerPhone",
                  c.email AS "ownerEmail",
-                 lp.clientid AS "clientid"
+                 lp.clientid
                FROM lostpet lp
                LEFT JOIN client c ON lp.clientid = c.clientid`; // Use LEFT JOIN to handle missing clients
 
@@ -85,20 +85,20 @@ router.get('/', (req, res) => {
 
 router.get('/all', (req, res) => {
   const sql = `SELECT 
-                 lp.lostpetid AS "lostPetID",
-                 lp.petname AS "petName",
+                 lp.lostpetid,
+                 lp.petname,
                  lp.breed,
                  lp.age,
                  lp.type,
-                 lp.imageurl AS "imageURL",
-                 lp.datelost AS "dateLost",
+                 lp.imageurl,
+                 lp.datelost,
                  lp.location,
                  lp.description,
-                 lp.dateposted AS "datePosted",
+                 lp.dateposted,
                  c.nom AS "ownerName",
                  c.tel AS "ownerPhone",
                  c.email AS "ownerEmail",
-                 lp.clientid AS "clientid"
+                 lp.clientid
                FROM lostpet lp
                LEFT JOIN client c ON lp.clientid = c.clientid`; // Use LEFT JOIN to handle missing clients
 
@@ -117,20 +117,20 @@ router.get('/pets', (req, res) => {
 
   let sql = `
     SELECT 
-      lp.lostpetid AS "lostPetID",
-      lp.petname AS "petName",
+      lp.lostpetid,
+      lp.petname,
       lp.breed,
       lp.age,
       lp.type,
-      lp.imageurl AS "imageURL",
-      lp.datelost AS "dateLost",
+      lp.imageurl,
+      lp.datelost,
       lp.description,
-      lp.dateposted AS "datePosted",
+      lp.dateposted,
       c.nom AS "ownerName",
       c.tel AS "ownerPhone",
       c.email AS "ownerEmail", 
       lp.location,
-      lp.clientid AS "clientid"
+      lp.clientid
          FROM 
        lostpet lp
      INNER JOIN 
@@ -146,12 +146,13 @@ router.get('/pets', (req, res) => {
 
   if (types) {
     const typeList = types.split(',');
-    sql += ` AND lp.type IN (${typeList.map(() => '$2').join(',')})`;
+    const placeholders = typeList.map((_, index) => `$${params.length + index + 1}`).join(',');
+    sql += ` AND lp.type IN (${placeholders})`;
     params.push(...typeList);
   }
 
   if (ages) {
-    sql += ` AND lp.age < $3`;
+    sql += ` AND lp.age < $${params.length + 1}`;
     params.push(ages);
   }
 

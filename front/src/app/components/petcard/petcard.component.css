@@ -92,9 +92,24 @@
 .card-content .breed {
     color: #6b7280;
     font-size: 0.875rem; /* Increased font size */
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     font-weight: 500;
     flex-shrink: 0;
+}
+
+.card-content .pet-type {
+    color: #22c55e;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-content .pet-type i {
+    color: #16a34a;
 }
 
 .details {

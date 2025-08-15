@@ -209,6 +209,24 @@ h1 {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+.checkout-btn:disabled {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.checkout-btn:disabled:hover {
+    background-color: #ccc;
+    transform: none;
+    box-shadow: none;
+}
+
+a.disabled {
+    pointer-events: none;
+}
+
 /* Mobile responsive styles */
 @media (max-width: 768px) {
     .cart-container {

@@ -14,14 +14,14 @@ export class ProductService {
   constructor(private http: HttpClient) {}
 
   // Get products with optional filters (maintains backward compatibility)
-  getProducts(categoryID?: number, maxPrice?: number, page: number = 1, limit: number = 12): Observable<Product[]> {
+  getProducts(categoryID?: number | null, maxPrice?: number | null, page: number = 1, limit: number = 12): Observable<Product[]> {
     let params = new HttpParams();
     
-    if (categoryID !== undefined) {
+    if (categoryID !== undefined && categoryID !== null) {
       params = params.set('categoryID', categoryID.toString());
     }
     
-    if (maxPrice !== undefined) {
+    if (maxPrice !== undefined && maxPrice !== null) {
       params = params.set('maxPrice', maxPrice.toString());
     }
 
@@ -41,7 +41,7 @@ export class ProductService {
       .pipe(
         catchError((error) => {
           console.warn('API not available for product details:', error);
-          return [];
+          throw error; // Re-throw the error instead of returning empty array
         })
       );
   }
@@ -69,10 +69,10 @@ export class ProductService {
   }
 
   // Search products
-  searchProducts(query: string, categoryID?: number): Observable<Product[]> {
+  searchProducts(query: string, categoryID?: number | null): Observable<Product[]> {
     let params = new HttpParams().set('q', query);
     
-    if (categoryID !== undefined) {
+    if (categoryID !== undefined && categoryID !== null) {
       params = params.set('categoryID', categoryID.toString());
     }
 

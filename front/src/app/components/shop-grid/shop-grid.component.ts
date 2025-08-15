@@ -50,17 +50,21 @@ export class ShopGridComponent implements OnInit {
 
   // Fonction pour récupérer les produits depuis le service
   fetchProducts(): void {
+    console.log('Fetching products with categoryID:', this.currentCategoryId, 'and maxPrice:', this.selectedPrice);
+    
     // Si le prix sélectionné est 0, ne rien afficher
     if (this.selectedPrice === 0) {
       this.products = []; // Aucun produit à afficher
       return;
     }
 
-    // If a category is selected, include it in the request, otherwise undefined
-    const categoryID = this.currentCategoryId !== null ? this.currentCategoryId : undefined;
+    // If a category is selected, include it in the request, otherwise null
+    const categoryID = this.currentCategoryId;
 
     // Si un prix est sélectionné (> 0), on l'utilise comme filtre
     const maxPrice = this.selectedPrice > 0 ? this.selectedPrice : undefined;
+
+    console.log('Calling productService.getProducts with categoryID:', categoryID, 'and maxPrice:', maxPrice);
 
     // Appel au service pour récupérer les produits filtrés
     this.productService.getProducts(categoryID, maxPrice).subscribe(
@@ -85,7 +89,9 @@ export class ShopGridComponent implements OnInit {
 
   // Méthode appelée quand l'utilisateur change la catégorie dans le filtre
   onCategoryChange(categoryID: number | null): void {
+    console.log('Shop grid received category change:', categoryID);
     this.currentCategoryId = categoryID; // Met à jour la catégorie sélectionnée
+    console.log('Current category ID updated to:', this.currentCategoryId);
     this.fetchProducts(); // Récupère les produits filtrés
   }
 

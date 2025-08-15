@@ -39,13 +39,13 @@ onFilterChange() {
     if (type === 'all-pets') {
       if (event.target.checked) {
         // Check all pet types when "All Pets" is checked
-        this.selectedTypes = ['dog', 'cat', 'bird', 'other-pets'];
+        this.selectedTypes = ['Dog', 'Cat', 'Bird', 'Other'];
       } else {
         // Uncheck all pet types when "All Pets" is unchecked
         this.selectedTypes = [];
       }
     } else {
-      // For other pet types (Dog, Cat, Other Pets), add/remove them from the selectedTypes array
+      // For other pet types (Dog, Cat, Bird, Other), add/remove them from the selectedTypes array
       if (event.target.checked) {
         this.selectedTypes.push(type);
       } else {
@@ -53,7 +53,7 @@ onFilterChange() {
       }
   
       // If a specific type is unchecked, ensure "All Pets" is unchecked as well
-      if (this.selectedTypes.length < 3) {
+      if (this.selectedTypes.length < 4) {
         const allPetsIndex = this.selectedTypes.indexOf('all-pets');
         if (allPetsIndex !== -1) {
           this.selectedTypes.splice(allPetsIndex, 1);

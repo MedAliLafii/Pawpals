@@ -56,8 +56,13 @@ export class PethomeComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['filters']) {
-      this.fetchPets(); // Fetch pets whenever filters change
+    if (changes['filters'] && changes['filters'].currentValue) {
+      console.log('Filters changed:', this.filters);
+      if (this.filters && (this.filters.location || this.filters.types.length > 0 || this.filters.ages > 0)) {
+        this.fetchPets(); // Fetch pets whenever filters change
+      } else {
+        this.loadPets(); // Load all pets when no filters
+      }
     }
   }
 
@@ -111,7 +116,7 @@ export class PethomeComponent implements OnInit, OnChanges {
   }
 
   deleteAdoption(pet: any): void {
-          this.http.delete(`${environment.BACK_URL}/adoptPet/delete/${pet.adoptionPetID}`, {
+          this.http.delete(`${environment.BACK_URL}/adoptPet/delete/${pet.adoptionpetid}`, {
       withCredentials: true
     }).subscribe(
       (res) => {

@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router'; // Import Router for navigation
 import { PetCardComponent } from '../components/petcard/petcard.component';
@@ -20,10 +20,8 @@ import { filter, take } from 'rxjs/operators';
   standalone: true,
   imports: [CommonModule, FormsModule, PetCardComponent, HeaderComponent, FooterComponent, PetFiltersComponent]
 })
-export class LostComponent implements OnInit, OnChanges {
-  @Input() filters: { location: string; types: string[]; ages: number } = { location: '', types: [], ages: 0 };
-  filteredPets: any[] = [];
-  allPets: any[] = [];
+export class LostComponent implements OnInit {
+  filters: { location: string; types: string[]; ages: number } = { location: '', types: [], ages: 0 };
   isLoggedIn: boolean = false;
   clientId: number = 0;
 
@@ -41,21 +39,7 @@ export class LostComponent implements OnInit, OnChanges {
     this.checkAuthStatus();
   }
 
-  ngOnChanges(): void {
-    this.applyFilters();
-  }
 
-  applyFilters(): void {
-    const { location, types, ages } = this.filters;
-
-    this.filteredPets = this.allPets.filter(pet => {
-      const matchLocation = location ? pet.location === location : true;
-      const matchType = types.length ? types.includes(pet.type) : true;
-      const matchAge = ages ? ages === pet.age : true;
-
-      return matchLocation && matchType && matchAge;
-    });
-  }
 
   // Listen for filter changes
   onFiltersChanged(filters: { location: string, types: string[], ages: number }): void {

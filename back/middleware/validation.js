@@ -72,8 +72,8 @@ const adoptionValidation = [
     .withMessage('Age must be between 0 and 30 years'),
   body('type')
     .optional()
-    .isIn(['dog', 'cat', 'bird', 'other'])
-    .withMessage('Pet type must be dog, cat, bird, or other'),
+    .isIn(['Dog', 'Cat', 'Bird', 'Other'])
+    .withMessage('Pet type must be Dog, Cat, Bird, or Other'),
   body('description')
     .optional()
     .isLength({ max: 1000 })

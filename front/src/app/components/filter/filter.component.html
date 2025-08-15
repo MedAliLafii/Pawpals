@@ -1,47 +1,49 @@
-<div class="filter-panel">
-  <!-- Catégories -->
-  <div>
-    <h2 class="panel-title">Categories</h2>
-    <ul class="category-list">
-      <li *ngFor="let category of categories" class="category-item">
-        <input
-          [id]="'category' + category.categorieID"
-          type="radio"
-          name="categoryFilter"
-          [(ngModel)]="selectedCategoryId"
-          [value]="category.categorieID"
-          (change)="onCategoryChange(category.categorieID)"
-          class="category-radio"
-        />
-        <label
-          [for]="'category' + category.categorieID"
-          class="category-label"
-        >
-          {{ category.nom }}
-        </label>
-      </li>
-    </ul>
-  </div>
-
-  <!-- Prix -->
-  <div>
-    <h2 class="panel-title">Price</h2>
-    <div class="price-info">
-      Selected price: <span class="price-value">${{ selectedPrice }}</span>
+<div class="filter-sidebar">
+  <!-- Categories -->
+  <div class="filter-section">
+    <span class="filter-title">Categories</span>
+    <div class="filter-checkbox">
+      <input
+        type="radio"
+        id="category-all"
+        name="categoryFilter"
+        [value]="'all'"
+        [(ngModel)]="selectedCategoryId"
+        (change)="onCategoryChange(null)"
+      />
+      <label for="category-all">All Categories</label>
     </div>
-    <input
-      type="range"
-      [min]="minPrice"
-      [max]="maxPrice"
-      step="10"
-      [(ngModel)]="selectedPrice"
-      (input)="onPriceChange($event)"
-      class="price-slider"
-    />
+    <div class="filter-checkbox" *ngFor="let category of categories">
+      <input
+        type="radio"
+        [id]="'category' + category.categorieid"
+        name="categoryFilter"
+        [value]="category.categorieid.toString()"
+        [(ngModel)]="selectedCategoryId"
+        (change)="onCategoryChange(category.categorieid)"
+      />
+      <label [for]="'category' + category.categorieid">
+        {{ category.nom }}
+      </label>
+    </div>
   </div>
 
-  <!-- Réinitialiser -->
-  <button (click)="resetFilters()" class="reset-button">
-    Réinitialiser
-  </button>
+  <!-- Price -->
+  <div class="filter-section">
+    <span class="filter-title">Price less than ${{ selectedPrice }}</span>
+    <div class="filter-slider">
+      <input
+        type="range"
+        [min]="minPrice"
+        [max]="maxPrice"
+        step="10"
+        [(ngModel)]="selectedPrice"
+        (input)="onPriceChange($event)"
+        class="price-slider"
+      />
+    </div>
+  </div>
+
+  <!-- Reset Button -->
+  <button class="filter-reset" (click)="resetFilters()">Reset Filters</button>
 </div>

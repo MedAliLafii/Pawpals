@@ -3,8 +3,9 @@
   <!-- Location Dropdown -->
   <div class="filter-section">
     <span class="filter-title">Location</span>
-    <select class="filter-input filter-select" [value]="selectedLocation" (change)="onLocationChange($event)">
-      <option value="Tunis">Tunis</option>
+         <select class="filter-input filter-select" [value]="selectedLocation" (change)="onLocationChange($event)">
+       <option value="">Choose location</option>
+       <option value="Tunis">Tunis</option>
       <option value="Ariana">Ariana</option>
       <option value="Ben Arous">Ben Arous</option>
       <option value="Sousse">Sousse</option>
@@ -34,23 +35,23 @@
   <div class="filter-section">
     <span class="filter-title">Pet Type</span>
     <div class="filter-checkbox">
-      <input type="checkbox" id="all-pets" [checked]="selectedTypes.length === 3" (change)="onTypeChange('all-pets', $event)" />
+      <input type="checkbox" id="all-pets" [checked]="selectedTypes.length === 4" (change)="onTypeChange('all-pets', $event)" />
       <label for="all-pets">All Pets</label>
     </div>    
     <div class="filter-checkbox">
-      <input type="checkbox" id="dogs" (change)="onTypeChange('dog', $event)" />
+      <input type="checkbox" id="dogs" (change)="onTypeChange('Dog', $event)" />
       <label for="dogs">Dogs</label>
     </div>
     <div class="filter-checkbox">
-      <input type="checkbox" id="cats" (change)="onTypeChange('cat', $event)" />
+      <input type="checkbox" id="cats" (change)="onTypeChange('Cat', $event)" />
       <label for="cats">Cats</label>
     </div>
     <div class="filter-checkbox">
-      <input type="checkbox" id="birds" (change)="onTypeChange('bird', $event)" />
+      <input type="checkbox" id="birds" (change)="onTypeChange('Bird', $event)" />
       <label for="birds">Birds</label>
     </div>
     <div class="filter-checkbox">
-      <input type="checkbox" id="other-pets" (change)="onTypeChange('other-pets', $event)" />
+      <input type="checkbox" id="other-pets" (change)="onTypeChange('Other', $event)" />
       <label for="other-pets">Other Pets</label>
     </div>
   </div>

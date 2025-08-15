@@ -192,6 +192,42 @@ export class PostLostComponent implements OnInit {
     fileInput?.click();
   }
 
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const element = event.currentTarget as HTMLElement;
+    element.classList.add('dragover');
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const element = event.currentTarget as HTMLElement;
+    element.classList.remove('dragover');
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const element = event.currentTarget as HTMLElement;
+    element.classList.remove('dragover');
+    
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file.type.startsWith('image/')) {
+        this.formData.image = file;
+        const reader = new FileReader();
+        reader.onload = () => {
+          this.imagePreview = reader.result as string;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        this.toastService.error('Please select an image file.');
+      }
+    }
+  }
+
   removeImage() {
     this.formData.image = null;
     this.imagePreview = null;

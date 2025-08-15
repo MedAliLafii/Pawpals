@@ -40,7 +40,15 @@ export class ProductDetailsComponent implements OnInit { // Déclaration du comp
   loadProduct(): void {
     this.isLoading = true;
     this.error = null;
-    this.produitID = Number(this.route.snapshot.paramMap.get('id')); // Récupération de l'ID du produit depuis l'URL
+    const idParam = this.route.snapshot.paramMap.get('id');
+    this.produitID = Number(idParam); // Récupération de l'ID du produit depuis l'URL
+
+    // Validate that we have a valid product ID
+    if (isNaN(this.produitID) || this.produitID <= 0) {
+      this.error = 'Invalid product ID. Please check the URL.';
+      this.isLoading = false;
+      return;
+    }
 
     // Récupération des informations du produit à partir du service ProductService
     this.productService.getProductById(this.produitID).subscribe({
@@ -71,7 +79,7 @@ export class ProductDetailsComponent implements OnInit { // Déclaration du comp
   addToCart(): void {
     this.http.post(
       `${environment.BACK_URL}/Cart/add`, // URL de l'API pour ajouter un produit au panier
-      { produitID: this.produitID, quantite: this.selectedQuantity }, // Données envoyées dans la requête (ID du produit et quantité)
+      { produitID: this.produitID, quantite: this.selectedQuantity }, // Keep produitID for backend compatibility
       { withCredentials: true } // Indication que les informations d'authentification (cookies, session) doivent être envoyées avec la requête
     ).subscribe(
       () => {

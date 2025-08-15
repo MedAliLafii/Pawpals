@@ -2,13 +2,14 @@
   <!-- Loop through the pets array and display each pet's details -->
   <div class="pet-card" *ngFor="let pet of pets">
     <div class="image-wrapper">
-      <img [src]="'assets/uploads/' + pet.imageURL" [alt]="pet.petName || 'Pet image'" />
+      <img [src]="'assets/uploads/' + pet.imageurl" [alt]="pet.petname || 'Pet image'" />
       <span class="badge lost">Lost</span>
     </div>
 
     <div class="card-content">
-      <h3>{{ pet.petName }}</h3> <!-- Use petName instead of name -->
+      <h3>{{ pet.petname }}</h3> <!-- Use petname instead of name -->
       <p class="breed">{{ pet.breed }}</p>
+      <p class="pet-type"><i class="fa-solid fa-paw"></i> {{ pet.type }}</p>
 
       <div class="details">
         <div class="detail">
@@ -21,7 +22,7 @@
         </div>
         <div class="detail">
           <i class="fa-solid fa-calendar-days"></i>
-          <span>Lost on {{ pet.dateLost | date:'dd/MM/yyyy' }}</span>
+          <span>Lost on {{ pet.datelost | date:'dd/MM/yyyy' }}</span>
         </div>
       </div>
 

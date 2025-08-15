@@ -8,13 +8,13 @@ import { AuthService } from '../../../services/auth.service';
 import { filter, take } from 'rxjs/operators';
 
 export interface Review {
-  reviewID: number;
-  produitID: number;
+  reviewid: number;
+  produitid: number;
   clientid: number;
   rating: number;
   comment: string;
-  datePosted: Date;
-  clientName: string;
+  dateposted: Date;
+  clientname: string;
 }
 
 @Component({
@@ -72,7 +72,7 @@ export interface Review {
         <div *ngFor="let review of reviews" class="review-item">
           <div class="review-header">
             <div class="reviewer-info">
-              <strong>{{ review.clientName }}</strong>
+              <strong>{{ review.clientname }}</strong>
               <div class="rating-display">
                 <i 
                   *ngFor="let star of [1,2,3,4,5]" 
@@ -81,7 +81,7 @@ export interface Review {
                 ></i>
               </div>
             </div>
-            <small class="text-muted">{{ review.datePosted | date:'mediumDate' }}</small>
+            <small class="text-muted">{{ review.dateposted | date:'mediumDate' }}</small>
           </div>
           <div class="review-content">
             <p>{{ review.comment }}</p>

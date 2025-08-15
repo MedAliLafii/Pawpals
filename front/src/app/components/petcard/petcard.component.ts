@@ -34,6 +34,7 @@ export class PetCardComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.checkAuthStatus();
+    // Initialize with all pets, then apply filters when they change
     this.fetchLostPets();
   }
 
@@ -56,8 +57,13 @@ export class PetCardComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['filters'] && changes['filters'].currentValue && this.filters) {
-      this.fetchPets(); // Fetch pets whenever filters change
+    if (changes['filters'] && changes['filters'].currentValue) {
+      console.log('Filters changed:', this.filters);
+      if (this.filters && (this.filters.location || this.filters.types.length > 0 || this.filters.ages > 0)) {
+        this.fetchPets(); // Fetch pets whenever filters change
+      } else {
+        this.fetchLostPets(); // Load all pets when no filters
+      }
     }
   }
 
@@ -67,7 +73,7 @@ export class PetCardComponent implements OnInit, OnChanges {
       .subscribe(
         (data) => {
           const processedPets = data.map(pet => {
-            pet.dateLost = new Date(pet.dateLost);
+            pet.datelost = new Date(pet.datelost);
             return pet;
           });
           this.pets = this.limit ? processedPets.slice(0, this.limit) : processedPets;
@@ -137,11 +143,11 @@ export class PetCardComponent implements OnInit, OnChanges {
   }
   
   deleteLostPet(pet: any): void {
-    console.log('Trying to delete pet with ID:', pet.lostPetID);
+    console.log('Trying to delete pet with ID:', pet.lostpetid);
       if (!confirm('Are you sure you want to delete this lost pet post?')) return;
     
   
-      this.http.delete(`${environment.BACK_URL}/lostPet/delete/${pet.lostPetID}`, {
+      this.http.delete(`${environment.BACK_URL}/lostPet/delete/${pet.lostpetid}`, {
         withCredentials: true
       }).subscribe(
       (res) => {

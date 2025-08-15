@@ -3,21 +3,68 @@
 
 <div class="modal-content">
   <div class="modal-header">
-    <h2>{{ pet.petName }}</h2>
+    <h2>{{ pet.petname }}</h2>
     <button class="close-button" (click)="close()">✕</button>
   </div>
 
   <div class="modal-body">
-    <img [src]="'assets/uploads/' + pet.imageURL" [alt]="pet.petName || 'Pet image'" />
-    <p><strong>Breed:</strong> {{ pet.breed }}</p>
-    <p><strong>Age:</strong> {{ pet.age }} months</p>
-    <p><strong>Location:</strong> {{ pet.location }}</p>
-    <p><strong>Description:</strong> {{ pet.description }}</p>
+    <div class="pet-image-container">
+      <img [src]="'assets/uploads/' + pet.imageurl" [alt]="pet.petname || 'Pet image'" />
+      <div class="pet-type-badge">
+        <i class="fa-solid fa-paw"></i> {{ pet.type }}
+      </div>
+    </div>
+    
+    <div class="pet-info-grid">
+      <div class="info-item">
+        <i class="fa-solid fa-dog"></i>
+        <div>
+          <label>Breed</label>
+          <span>{{ pet.breed }}</span>
+        </div>
+      </div>
+      
+      <div class="info-item">
+        <i class="fa-solid fa-calendar-days"></i>
+        <div>
+          <label>Age</label>
+          <span>{{ pet.age }} months</span>
+        </div>
+      </div>
+      
+      <div class="info-item">
+        <i class="fa-solid fa-map-pin"></i>
+        <div>
+          <label>Location</label>
+          <span>{{ pet.location }}</span>
+        </div>
+      </div>
+      
+      <div class="info-item full-width">
+        <i class="fa-solid fa-file-text"></i>
+        <div>
+          <label>Description</label>
+          <span>{{ pet.description }}</span>
+        </div>
+      </div>
+    </div>
 
-    <h5>Contact Information:</h5>
-    <p><strong>Phone:</strong> <a [href]="'tel:' + pet.ownerPhone">{{ pet.ownerPhone }}</a></p>
-    <p><strong>Email:</strong> <a [href]="'mailto:' + pet.ownerEmail">{{ pet.ownerEmail }}</a></p>
-
-    <a class="contact-owner" [href]="'tel:' + pet.ownerPhone">Contact Owner</a>
+    <div class="contact-section">
+      <h5><i class="fa-solid fa-address-book"></i> Contact Information</h5>
+      <div class="contact-info">
+        <div class="contact-item">
+          <i class="fa-solid fa-phone"></i>
+          <a [href]="'tel:' + pet.ownerPhone">{{ pet.ownerPhone }}</a>
+        </div>
+        <div class="contact-item">
+          <i class="fa-solid fa-envelope"></i>
+          <a [href]="'mailto:' + pet.ownerEmail">{{ pet.ownerEmail }}</a>
+        </div>
+      </div>
+      
+      <a class="contact-owner" [href]="'tel:' + pet.ownerPhone">
+        <i class="fa-solid fa-phone"></i> Contact Owner
+      </a>
+    </div>
   </div>
 </div>

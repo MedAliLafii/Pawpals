@@ -484,6 +484,7 @@ This action cannot be undone!`;
             
             // Clear any stored user data
             localStorage.removeItem('user');
+            localStorage.removeItem('authToken');
             sessionStorage.clear();
             
             // Navigate to home page

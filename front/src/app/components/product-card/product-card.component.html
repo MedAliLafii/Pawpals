@@ -1,7 +1,7 @@
 <div class="product-card">
   <div class="product-image">
-    <a [routerLink]="['/product', product.produitID]" class="product-card-link">
-      <img [src]="'assets/uploads/' + product.imageURL" [alt]="product.nom">
+    <a [routerLink]="['/product', product.produitid]" class="product-card-link">
+      <img [src]="'assets/uploads/' + product.imageurl" [alt]="product.nom">
       <div class="product-overlay">
         <div class="overlay-content">
           <i class="fas fa-eye"></i>
@@ -24,7 +24,7 @@
   </div>
   
   <div class="product-info">
-    <a [routerLink]="['/product', product.produitID]" class="product-card-link">
+    <a [routerLink]="['/product', product.produitid]" class="product-card-link">
       <h3 class="product-name">{{ product.nom }}</h3>
       
       <div class="rating" *ngIf="product.rating">

@@ -31,7 +31,6 @@ export class AuthService {
     // Store token in localStorage if provided
     if (token) {
       localStorage.setItem('authToken', token);
-      localStorage.setItem('userData', JSON.stringify(user));
     }
     
     this.authStatusSubject.next({
@@ -144,7 +143,6 @@ export class AuthService {
     this.currentUser = null;
     this.authChecked = true;
     localStorage.removeItem('authToken');
-    localStorage.removeItem('userData');
     this.authStatusSubject.next({
       isAuthenticated: false,
       user: null

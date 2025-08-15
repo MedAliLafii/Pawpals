@@ -15,7 +15,7 @@ export class FilterComponent implements OnInit {
   minPrice: number = 0; // Prix minimum
   maxPrice: number = 100; // Prix maximum
   categories: any[] = [];
-  selectedCategoryId: number | null = null;
+  selectedCategoryId: string = 'all';
 
   @Output() categoryChanged = new EventEmitter<number | null>();
   @Output() priceChanged = new EventEmitter<number>();
@@ -26,6 +26,9 @@ export class FilterComponent implements OnInit {
       this.categoryService.getCategories().subscribe(
         (data) => {
           this.categories = data;
+          // Ensure "All Categories" is selected by default
+          this.selectedCategoryId = 'all';
+          this.categoryChanged.emit(null);
         },
         (error) => {
           console.error('Error fetching categories:', error);
@@ -35,8 +38,15 @@ export class FilterComponent implements OnInit {
   }
     
   onCategoryChange(categoryID: number | null): void {
-      this.selectedCategoryId = categoryID !== null ? +categoryID : null;
-      this.categoryChanged.emit(this.selectedCategoryId);
+      console.log('Category change triggered:', categoryID);
+      if (categoryID === null) {
+          this.selectedCategoryId = 'all';
+          this.categoryChanged.emit(null);
+      } else {
+          this.selectedCategoryId = categoryID.toString();
+          this.categoryChanged.emit(categoryID);
+      }
+      console.log('Selected category ID:', this.selectedCategoryId);
   }
 
   // Fonction pour mettre à jour la valeur du prix
@@ -46,7 +56,7 @@ export class FilterComponent implements OnInit {
   }
 
   resetFilters() {
-    this.selectedCategoryId = null;
+    this.selectedCategoryId = 'all';
     this.categoryChanged.emit(null);
     this.selectedPrice = 50;
     this.priceChanged.emit(this.selectedPrice);

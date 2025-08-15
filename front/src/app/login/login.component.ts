@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { ScrollService } from '../services/scroll.service';
 import { ToastService } from '../shared/services/toast.service';
@@ -19,6 +19,7 @@ export class LoginComponent {
   constructor(
     private http: HttpClient, 
     private router: Router,
+    private route: ActivatedRoute,
     private scrollService: ScrollService,
     private toastService: ToastService,
     private authService: AuthService
@@ -29,6 +30,19 @@ export class LoginComponent {
     // Scroll to top when component initializes
     this.scrollService.scrollToTop();
     this.checkAuthStatus(); // Check if the user is already logged in
+
+    // Check if we should show sign-up form by default
+    this.route.queryParams.subscribe(params => {
+      if (params['mode'] === 'signup') {
+        // Show sign-up form by default
+        setTimeout(() => {
+          const container = document.getElementById('container') as HTMLElement;
+          if (container) {
+            container.classList.add("right-panel-active");
+          }
+        }, 100);
+      }
+    });
 
     // Get HTML elements
     const signUpButton = document.getElementById('signUp') as HTMLButtonElement;

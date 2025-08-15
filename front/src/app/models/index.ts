@@ -22,27 +22,27 @@ export interface RegisterRequest extends LoginRequest {
 
 // Product Models
 export interface Product {
-  produitID: number;
+  produitid: number;
   nom: string;
   nomCat: string;
   description: string;
   prix: number;
   oldPrice: number;
   stock: number;
-  imageURL: string;
-  categorieID: number;
+  imageurl: string;
+  categorieid: number;
   rating?: number;
 }
 
 export interface Category {
-  categorieID: number;
+  categorieid: number;
   nom: string;
   description?: string;
 }
 
 // Cart Models
 export interface CartItem {
-  produitID: number;
+  produitid: number;
   quantite: number;
   product?: Product;
 }
@@ -55,53 +55,53 @@ export interface Cart {
 
 // Order Models
 export interface Order {
-  commandeID: number;
+  commandeid: number;
   clientid: number;
-  dateCommande: Date;
+  datecommande: Date;
   statut: string;
   total: number;
   items: OrderItem[];
 }
 
 export interface OrderItem {
-  produitID: number;
+  produitid: number;
   quantite: number;
   product?: Product;
 }
 
 // Pet Models
 export interface AdoptionPet {
-  adoptionPetID: number;
+  adoptionpetid: number;
   clientid: number;
-  petName: string;
+  petname: string;
   breed?: string;
   age?: number;
   gender?: string;
   type?: string;
-  imageURL?: string;
+  imageurl?: string;
   location?: string;
   shelter?: string;
   description?: string;
-  goodWithKids: boolean;
-  goodWithOtherPets: boolean;
-  houseTrained: boolean;
-  specialNeeds: boolean;
-  datePosted: Date;
+  goodwithkids: boolean;
+  goodwithotherpets: boolean;
+  housetrained: boolean;
+  specialneeds: boolean;
+  dateposted: Date;
 }
 
 export interface LostPet {
-  lostPetID: number;
+  lostpetid: number;
   clientid: number;
-  petName: string;
+  petname: string;
   breed?: string;
   age?: number;
   type?: string;
-  imageURL?: string;
-  dateLost?: Date;
+  imageurl?: string;
+  datelost?: Date;
   location?: string;
   description?: string;
-  datePosted: Date;
-  categorieID?: number;
+  dateposted: Date;
+  categorieid?: number;
 }
 
 // API Response Models

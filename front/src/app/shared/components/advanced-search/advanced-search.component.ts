@@ -40,7 +40,7 @@ export interface SearchFilters {
           <div class="col-md-3">
             <select class="form-select" formControlName="categoryId">
               <option value="">All Categories</option>
-              <option *ngFor="let category of categories" [value]="category.categorieID">
+              <option *ngFor="let category of categories" [value]="category.categorieid">
                 {{ category.nom }}
               </option>
             </select>
