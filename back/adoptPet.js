@@ -38,7 +38,29 @@ router.post('/add', authenticateJWT, upload.single('image'), async (req, res) =>
   console.log("Received data:", req.body); // Logs form data to the console
   console.log("Received file:", req.file);  // Logs file details to the console
 
+  // Extract and trim all string fields to prevent leading/trailing spaces
   const { petName, breed, age, type, gender, location, shelter, description, goodWithKids, goodWithOtherPets, houseTrained, specialNeeds } = req.body;
+  
+  // Trim all string fields
+  const trimmedPetName = petName ? petName.trim() : '';
+  const trimmedBreed = breed ? breed.trim() : '';
+  const trimmedType = type ? type.trim() : '';
+  const trimmedGender = gender ? gender.trim() : '';
+  const trimmedLocation = location ? location.trim() : '';
+  const trimmedShelter = shelter ? shelter.trim() : '';
+  const trimmedDescription = description ? description.trim() : '';
+  
+  // Validate required fields
+  if (!trimmedPetName || !trimmedBreed || !trimmedType || !trimmedGender) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  
+  // Validate pet type
+  const validTypes = ['Dog', 'Cat', 'Bird', 'Other'];
+  if (!validTypes.includes(trimmedType)) {
+    return res.status(400).json({ error: 'Invalid pet type' });
+  }
+  
   const goodWithKids2 = goodWithKids ? 1 : 0;
   const goodWithOtherPets2 = goodWithOtherPets ? 1 : 0;
   const houseTrained2= houseTrained ? 1 : 0;
@@ -76,7 +98,7 @@ router.post('/add', authenticateJWT, upload.single('image'), async (req, res) =>
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`;
 
   req.pool.query(sql, [
-    clientid, petName, breed, age, type, gender, imageURL, location, shelter, description,
+    clientid, trimmedPetName, trimmedBreed, age, trimmedType, trimmedGender, imageURL, trimmedLocation, trimmedShelter, trimmedDescription,
     goodWithKids2, goodWithOtherPets2, houseTrained2, specialNeeds2
   ], (err, results) => {
     if (err) {
@@ -92,19 +114,28 @@ router.delete('/delete/:id', authenticateJWT, (req, res) => {
   const adoptionId = req.params.id;
   const clientid = req.clientid; // Retrieved from the JWT token
 
-  const sql = `DELETE FROM adoptionpet WHERE adoptionpetid = $1 AND clientid = $2`;
-
-  req.pool.query(sql, [adoptionId, clientid], (err, results) => {
+  // First check if the pet exists and belongs to the user
+  const checkSql = 'SELECT * FROM adoptionpet WHERE adoptionpetid = $1 AND clientid = $2';
+  req.pool.query(checkSql, [adoptionId, clientid], (err, results) => {
     if (err) {
-      console.error("Error during deletion:", err);
+      console.error("Error checking pet ownership:", err);
       return res.status(500).json({ error: 'Database error' });
     }
 
     if (results.rows.length === 0) {
-      return res.status(403).json({ error: "Unauthorized or entry not found" });
+      return res.status(403).json({ error: "You can only delete your own pets" });
     }
 
-    res.status(200).json({ message: "Adoption ad deleted successfully" });
+    // If pet exists and belongs to user, delete it
+    const deleteSql = 'DELETE FROM adoptionpet WHERE adoptionpetid = $1 AND clientid = $2';
+    req.pool.query(deleteSql, [adoptionId, clientid], (err, deleteResults) => {
+      if (err) {
+        console.error("Error during deletion:", err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+
+      res.status(200).json({ message: "Adoption ad deleted successfully" });
+    });
   });
 });
 
@@ -201,35 +232,6 @@ router.get('/pets', (req, res) => {
       return res.status(500).json({ error: 'Database error' });
     }
     res.status(200).json(results.rows);
-  });
-});
-
-// In your backend Express app
-// In your backend Express app
-// Route to delete a pet from adoption
-router.delete('/delete/:id', authenticateJWT, (req, res) => {
-  const petId = req.params.id;
-  const clientid = req.clientid; // Extract clientid from the JWT token
-
-  const sql = 'SELECT * FROM adoptionpet WHERE adoptionpetid = $1 AND clientid = $2';
-  req.pool.query(sql, [petId, clientid], (err, results) => {
-    if (err) {
-      console.error('Error checking pet ownership:', err);
-      return res.status(500).json({ error: 'Database error' });
-    }
-
-    if (results.rows.length === 0) {
-      return res.status(403).json({ error: 'You can only delete your own pets' });
-    }
-
-    const deleteSql = 'DELETE FROM adoptionpet WHERE adoptionpetid = $1';
-    req.pool.query(deleteSql, [petId], (err) => {
-      if (err) {
-        console.error('Error deleting pet:', err);
-        return res.status(500).json({ error: 'Failed to delete pet' });
-      }
-      res.status(200).json({ message: 'Pet deleted successfully' });
-    });
   });
 });
 

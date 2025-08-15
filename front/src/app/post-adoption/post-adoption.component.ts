@@ -162,62 +162,95 @@ export class PostAdoptionComponent implements OnInit {
   }
 
   handleSelectChange(field: string, event: any): void {
-    this.formData[field] = event.target.value;
+    // Handle select change if needed
+  }
+
+  handleSelectKeydown(event: KeyboardEvent): void {
+    // Prevent accidental selection when using Tab key
+    if (event.key === 'Tab') {
+      // Allow normal Tab navigation
+      return;
+    }
+    
+    // Prevent selection with Enter key if no value is selected
+    if (event.key === 'Enter' && !this.formData.type) {
+      event.preventDefault();
+      return;
+    }
   }
 
   handleSubmit(): void {
     this.isSubmitting = true;
-  
-    // Get current user info from auth service
-    this.authService.getAuthStatusObservable().pipe(
-      filter(authStatus => this.authService.isAuthChecked()),
-      take(1)
-    ).subscribe({
-      next: (authStatus) => {
-        if (authStatus.isAuthenticated && authStatus.user) {
-          // Step 1: Merge with updated fields
-          const updatedClientInfo = {
-            ...authStatus.user,
-            nom: this.formData.contactName,
-            tel: this.formData.contactPhone,
-            email: this.formData.contactEmail
-          };
-  
-          // Step 2: Send full updated client info
-          const headers = this.getAuthHeaders(); // Get headers here
-          this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, updatedClientInfo, {
-            withCredentials: true,
-            headers: headers
-          }).subscribe({
-            next: (response: any) => {
-              console.log('Client info updated successfully:', response);
-              
-              // Update the token in localStorage if a new one is provided
-              if (response.token) {
-                localStorage.setItem('authToken', response.token);
-                console.log('New token stored:', response.token);
-              }
-              
-              // Continue with pet posting
-              this.postPet();
-            },
-            error: (error) => {
-              console.error('Error updating client info:', error);
-              this.toastService.error('Error updating contact info: ' + (error.error?.error || error.message));
-              this.isSubmitting = false;
-            }
-          });
-        } else {
-          this.toastService.error('You must be logged in to post an adoption.');
-          this.isSubmitting = false;
-        }
-      },
-      error: (error) => {
-        console.error('Error getting auth status:', error);
-        this.toastService.error('Authentication error. Please try again.');
-        this.isSubmitting = false;
-      }
-    });
+
+    // Validate and clean form data before submission
+    if (!this.validateAndCleanForm()) {
+      this.isSubmitting = false;
+      return;
+    }
+
+    // Post adoption data
+    this.postPet();
+  }
+
+  private validateAndCleanForm(): boolean {
+    // Trim all string fields to prevent leading/trailing spaces
+    this.formData.petName = this.formData.petName?.trim() || '';
+    this.formData.breed = this.formData.breed?.trim() || '';
+    this.formData.type = this.formData.type?.trim() || '';
+    this.formData.gender = this.formData.gender?.trim() || '';
+    this.formData.location = this.formData.location?.trim() || '';
+    this.formData.shelter = this.formData.shelter?.trim() || '';
+    this.formData.description = this.formData.description?.trim() || '';
+    this.formData.contactName = this.formData.contactName?.trim() || '';
+    this.formData.contactPhone = this.formData.contactPhone?.trim() || '';
+    this.formData.contactEmail = this.formData.contactEmail?.trim() || '';
+
+    // Validate required fields
+    if (!this.formData.petName) {
+      this.toastService.error('Pet name is required.');
+      return false;
+    }
+    if (!this.formData.breed) {
+      this.toastService.error('Breed is required.');
+      return false;
+    }
+    if (!this.formData.type) {
+      this.toastService.error('Pet type is required.');
+      return false;
+    }
+    if (!this.formData.gender) {
+      this.toastService.error('Gender is required.');
+      return false;
+    }
+    if (!this.formData.location) {
+      this.toastService.error('Location is required.');
+      return false;
+    }
+    if (!this.formData.description) {
+      this.toastService.error('Description is required.');
+      return false;
+    }
+    if (!this.formData.contactName) {
+      this.toastService.error('Contact name is required.');
+      return false;
+    }
+    if (!this.formData.contactPhone) {
+      this.toastService.error('Contact phone is required.');
+      return false;
+    }
+    if (!this.formData.contactEmail) {
+      this.toastService.error('Contact email is required.');
+      return false;
+    }
+
+    // Validate pet type
+    const validTypes = ['Dog', 'Cat', 'Bird', 'Other'];
+    if (!validTypes.includes(this.formData.type)) {
+      this.toastService.error('Invalid pet type selected.');
+      return false;
+    }
+
+    return true;
   }
   
   postPet(): void {

@@ -50,8 +50,8 @@
 
             <div>
               <label for="type">Pet Type *</label>
-              <select id="type" name="type" required [(ngModel)]="formData.type" (change)="handleSelectChange('type', $event)">
-                <option disabled selected>Select pet type</option>
+              <select id="type" name="type" required [(ngModel)]="formData.type" (change)="handleSelectChange('type', $event)" (keydown)="handleSelectKeydown($event)">
+                <option value="" disabled>Select pet type</option>
                 <option value="Dog">Dog</option>
                 <option value="Cat">Cat</option>
                 <option value="Bird">Bird</option>

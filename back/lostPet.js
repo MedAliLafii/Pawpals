@@ -33,7 +33,27 @@ router.post('/add', authenticateJWT, upload.single('image'), async (req, res) =>
   console.log("Received data:", req.body); // Logs form data to the console
   console.log("Received file:", req.file);  // Logs file details to the console
 
+  // Extract and trim all string fields to prevent leading/trailing spaces
   const { name, breed, age, type, dateLost, location, description } = req.body;
+  
+  // Trim all string fields
+  const trimmedName = name ? name.trim() : '';
+  const trimmedBreed = breed ? breed.trim() : '';
+  const trimmedType = type ? type.trim() : '';
+  const trimmedLocation = location ? location.trim() : '';
+  const trimmedDescription = description ? description.trim() : '';
+  
+  // Validate required fields
+  if (!trimmedName || !trimmedBreed || !trimmedType) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  
+  // Validate pet type
+  const validTypes = ['Dog', 'Cat', 'Bird', 'Other'];
+  if (!validTypes.includes(trimmedType)) {
+    return res.status(400).json({ error: 'Invalid pet type' });
+  }
+  
   let imageURL = null;
 
   // Handle image upload to Vercel Blob
@@ -61,7 +81,7 @@ router.post('/add', authenticateJWT, upload.single('image'), async (req, res) =>
 
   const sql = `INSERT INTO lostpet (clientid, petname, breed, age, type, imageurl, datelost, location, description)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
-  req.pool.query(sql, [req.clientid, name, breed, age, type, imageURL, dateLost, location, description], (err, results) => {
+  req.pool.query(sql, [req.clientid, trimmedName, trimmedBreed, age, trimmedType, imageURL, dateLost, trimmedLocation, trimmedDescription], (err, results) => {
     if (err) {
       console.error('Error while adding a lost pet:', err);
       return res.status(500).json({ error: 'Database error' });

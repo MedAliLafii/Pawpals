@@ -95,18 +95,93 @@ export class PostLostComponent implements OnInit {
     this.formData[field] = selectElement.value as LostPetFormFields[K];
   }
 
+  handleSelectKeydown(event: KeyboardEvent): void {
+    // Prevent accidental selection when using Tab key
+    if (event.key === 'Tab') {
+      // Allow normal Tab navigation
+      return;
+    }
+    
+    // Prevent selection with Enter key if no value is selected
+    if (event.key === 'Enter' && !this.formData.type) {
+      event.preventDefault();
+      return;
+    }
+  }
+
   handleSubmit(form: NgForm) {
     this.isSubmitting = true;
-  
-    const requiredFields: (keyof LostPetFormFields)[] = ['name', 'breed', 'age', 'description', 'dateLost'];
-    for (const field of requiredFields) {
-      if (!this.formData[field]) {
-        this.toastService.error('Please fill all required fields.');
-        this.isSubmitting = false;
-        return;
-      }
+
+    // Validate and clean form data before submission
+    if (!this.validateAndCleanForm()) {
+      this.isSubmitting = false;
+      return;
     }
-  
+
+    // Continue with form submission
+    this.submitForm();
+  }
+
+  private validateAndCleanForm(): boolean {
+    // Trim all string fields to prevent leading/trailing spaces
+    this.formData.name = this.formData.name?.trim() || '';
+    this.formData.breed = this.formData.breed?.trim() || '';
+    this.formData.type = this.formData.type?.trim() || '';
+    this.formData.location = this.formData.location?.trim() || '';
+    this.formData.description = this.formData.description?.trim() || '';
+    this.formData.contactName = this.formData.contactName?.trim() || '';
+    this.formData.contactPhone = this.formData.contactPhone?.trim() || '';
+    this.formData.contactEmail = this.formData.contactEmail?.trim() || '';
+
+    // Validate required fields
+    if (!this.formData.name) {
+      this.toastService.error('Pet name is required.');
+      return false;
+    }
+    if (!this.formData.breed) {
+      this.toastService.error('Breed is required.');
+      return false;
+    }
+    if (!this.formData.type) {
+      this.toastService.error('Pet type is required.');
+      return false;
+    }
+    if (!this.formData.dateLost) {
+      this.toastService.error('Date lost is required.');
+      return false;
+    }
+    if (!this.formData.location) {
+      this.toastService.error('Location is required.');
+      return false;
+    }
+    if (!this.formData.description) {
+      this.toastService.error('Description is required.');
+      return false;
+    }
+    if (!this.formData.contactName) {
+      this.toastService.error('Contact name is required.');
+      return false;
+    }
+    if (!this.formData.contactPhone) {
+      this.toastService.error('Contact phone is required.');
+      return false;
+    }
+    if (!this.formData.contactEmail) {
+      this.toastService.error('Contact email is required.');
+      return false;
+    }
+
+    // Validate pet type
+    const validTypes = ['Dog', 'Cat', 'Bird', 'Other'];
+    if (!validTypes.includes(this.formData.type)) {
+      this.toastService.error('Invalid pet type selected.');
+      return false;
+    }
+
+    return true;
+  }
+
+  private submitForm() {
     // Get current user info from auth service
     this.authService.getAuthStatusObservable().pipe(
       filter(authStatus => this.authService.isAuthChecked()),

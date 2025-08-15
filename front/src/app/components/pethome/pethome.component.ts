@@ -116,13 +116,29 @@ export class PethomeComponent implements OnInit, OnChanges {
   }
 
   deleteAdoption(pet: any): void {
-          this.http.delete(`${environment.BACK_URL}/adoptPet/delete/${pet.adoptionpetid}`, {
-      withCredentials: true
+    // Get token from localStorage and include it in the request
+    const token = localStorage.getItem('authToken');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    this.http.delete(`${environment.BACK_URL}/adoptPet/delete/${pet.adoptionpetid}`, {
+      withCredentials: true,
+      headers: headers
     }).subscribe(
       (res) => {
         this.toastService.success('Adoption post deleted successfully.');
         location.reload();
-      },      (err) => console.error('Error deleting post', err)
+      },
+      (err) => {
+        console.error('Error deleting post', err);
+        if (err.status === 403) {
+          this.toastService.error('You can only delete your own pet posts.');
+        } else {
+          this.toastService.error('Failed to delete post. Please try again.');
+        }
+      }
     );
   }
   

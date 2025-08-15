@@ -41,8 +41,8 @@
             
             <div>
               <label for="type">Pet Type *</label>
-              <select id="type" name="type" [(ngModel)]="formData.type" required>
-                <option value="" disabled selected>Select type</option>
+              <select id="type" name="type" [(ngModel)]="formData.type" required (keydown)="handleSelectKeydown($event)">
+                <option value="" disabled>Select type</option>
                 <option value="Dog">Dog</option>
                 <option value="Cat">Cat</option>
                 <option value="Bird">Bird</option>
