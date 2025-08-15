@@ -102,3 +102,77 @@
 .report-button:hover {
   background-color: #166534;
 }
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 2rem 0;
+  }
+
+  .hero-title {
+    font-size: 1.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+
+  .categories-section {
+    padding: 1rem 0;
+  }
+
+  .categories-container {
+    padding: 0 0.5rem;
+  }
+
+  .categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .category-card-wrapper {
+    height: 6rem;
+  }
+
+  .category-card-title {
+    font-size: 1rem;
+  }
+
+  .filters-and-listings {
+    flex-direction: column;
+    margin-top: 1rem;
+  }
+
+  .filter-sidebar {
+    padding: 0.5rem;
+    order: 1; /* Show filters first */
+  }
+
+  .pet-cards-section {
+    padding-left: 0;
+    margin-left: 0;
+    order: 2; /* Show pet cards second */
+  }
+
+  .report-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .categories-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .category-card-wrapper {
+    height: 5rem;
+  }
+
+  .category-card-title {
+    font-size: 0.9rem;
+  }
+}

@@ -30,7 +30,7 @@ clientRoutes.post('/registerClient', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // SQL query to insert the client into the database
-        const sql = 'INSERT INTO client (nom, email, motdepasse, adresse, tel, region) VALUES ($1, $2, $3, $4, $5, $6) RETURNING clientID';
+        const sql = 'INSERT INTO client (nom, email, motdepasse, adresse, tel, region) VALUES ($1, $2, $3, $4, $5, $6) RETURNING clientid';
         const values = [name, email, hashedPassword, address, tel, region];
 
         // Execute the query
@@ -47,8 +47,8 @@ clientRoutes.post('/registerClient', async (req, res) => {
             }
 
             // Création d'un panier associé au client nouvellement inscrit
-            const clientID = result.rows[0].clientid;
-            pool.query("INSERT INTO panier (clientID) VALUES ($1)", [clientID], (error, result) => {
+            const clientid = result.rows[0].clientid;
+            pool.query('INSERT INTO panier (clientid) VALUES ($1)', [clientid], (error, result) => {
                 if (error) reject(error);
             });
 
@@ -67,7 +67,7 @@ clientRoutes.post('/registerClient', async (req, res) => {
             });
 
             // Success response
-            return res.status(201).json({ message: 'Client sign up successfull', clientId: clientID });
+            return res.status(201).json({ message: 'Client sign up successfull', clientId: clientid });
         });
     } catch (error) {
         console.error('Error during password hashing:', error);
@@ -248,33 +248,35 @@ clientRoutes.post('/changePassword', async (req, res) => {
             }
 
             console.log('ChangePassword - Token verified successfully:', decoded);
-            const clientID = decoded.client.clientID;
+            const clientid = decoded.client.clientid;
             const email = decoded.client.email;
 
             // Vérifier le mot de passe actuel
-            const query = 'SELECT motdepasse FROM client WHERE clientID = $1';
-            pool.query(query, [clientID], async (error, results) => {
+            const query = 'SELECT motdepasse FROM client WHERE clientid = $1';
+            pool.query(query, [clientid], async (error, results) => {
                 if (error) {
                     console.error('Error while searching for client:', error);
-                    return res.status(500).json({ error: 'Internal error.' });
+                    return res.status(500).json({ error: 'Database error' });
                 }
 
                 if (results.rows.length === 0) {
                     return res.status(404).json({ error: 'Client not found.' });
                 }
 
-                // Vérifier si le mot de passe actuel est correct
-                const passwordMatch = await bcrypt.compare(currentPassword, results.rows[0].motdepasse);
-                if (!passwordMatch) {
+                const currentPassword = results.rows[0].motdepasse;
+
+                // Vérifier si l'ancien mot de passe est correct
+                const isCurrentPasswordValid = await bcrypt.compare(oldPassword, currentPassword);
+                if (!isCurrentPasswordValid) {
                     return res.status(400).json({ error: 'Current password is incorrect.' });
                 }
 
-                // Hachage du nouveau mot de passe
+                // Hacher le nouveau mot de passe
                 const hashedPassword = await bcrypt.hash(newPassword, 10);
 
                 // Mise à jour du mot de passe
-                const updateQuery = 'UPDATE client SET motdepasse = $1 WHERE clientID = $2';
-                pool.query(updateQuery, [hashedPassword, clientID], (error, result) => {
+                const updateQuery = 'UPDATE client SET motdepasse = $1 WHERE clientid = $2';
+                pool.query(updateQuery, [hashedPassword, clientid], (error, result) => {
                     if (error) {
                         console.error('Error updating password', error);
                         return res.status(500).json({ error: 'Error during password change.' });
@@ -355,6 +357,43 @@ clientRoutes.post('/verifyToken', async (req, res) => {
     }
 });
 
+// Route to get fresh client data from database
+clientRoutes.get('/getClientData', async (req, res) => {
+    const pool = req.pool;
+    const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ error: 'Token required.' });
+    }
+
+    try {
+        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+            if (err) {
+                return res.status(401).json({ error: 'Invalid or expired token.' });
+            }
+
+            const clientid = decoded.client.clientid;
+            const query = 'SELECT nom, region, adresse, tel, email FROM client WHERE clientid = $1';
+
+            pool.query(query, [clientid], (error, results) => {
+                if (error) {
+                    console.error('Error fetching client data:', error);
+                    return res.status(500).json({ error: 'Error fetching client data' });
+                }
+
+                if (results.rows.length === 0) {
+                    return res.status(404).json({ error: 'Client not found.' });
+                }
+
+                res.status(200).json({ client: results.rows[0] });
+            });
+        });
+    } catch (error) {
+        console.error('GetClientData - Global error:', error);
+        return res.status(500).json({ error: 'Error fetching client data.' });
+    }
+});
+
 // Route for logout
 clientRoutes.post('/logout', async (req, res) => {
     const cookieOptions = {
@@ -395,10 +434,10 @@ clientRoutes.get('/getClientInfo', async (req, res) => {
             }
 
             console.log('GetClientInfo - Token verified successfully:', decoded);
-            const clientID = decoded.client.clientID;
-            const query = 'SELECT nom, region, adresse, tel, email FROM client WHERE clientID = $1';
+            const clientid = decoded.client.clientid;
+            const query = 'SELECT nom, region, adresse, tel, email FROM client WHERE clientid = $1';
 
-            pool.query(query, [clientID], (error, results) => {
+            pool.query(query, [clientid], (error, results) => {
                 if (error) {
                     console.error('Error retrieving data:', error);
                     return res.status(500).json({ error: 'Error retrieving data.' });
@@ -424,38 +463,94 @@ clientRoutes.put('/updateClientInfo', async (req, res) => {
     const token = req.cookies.token || req.headers.authorization?.split(' ')[1]; // Check both cookies and Authorization header
     const { nom, region, adresse, tel } = req.body;
 
-    console.log('UpdateClientInfo - Token from cookies:', req.cookies.token);
-    console.log('UpdateClientInfo - Token from headers:', req.headers.authorization);
-    console.log('UpdateClientInfo - Final token:', token);
+    console.log('UpdateClientInfo - Request body:', { nom, region, adresse, tel });
+    console.log('UpdateClientInfo - Token:', token);
 
     if (!token) {
-        console.log('UpdateClientInfo - No token found');
         return res.status(401).json({ error: 'Token required for update.' });
     }
 
     try {
         jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
             if (err) {
-                console.log('UpdateClientInfo - Token verification failed:', err.message);
+                console.error('UpdateClientInfo - Token verification failed:', err);
                 return res.status(401).json({ error: 'Invalid or expired token.' });
             }
 
-            console.log('UpdateClientInfo - Token verified successfully:', decoded);
-            const clientID = decoded.client.clientID;
-            const query = 'UPDATE client SET nom = $1, region = $2, adresse = $3, tel = $4 WHERE clientID = $5';
+            console.log('UpdateClientInfo - Full decoded token:', JSON.stringify(decoded, null, 2));
+            console.log('UpdateClientInfo - Client object:', JSON.stringify(decoded.client, null, 2));
+            console.log('UpdateClientInfo - Token verified, clientid:', decoded.client.clientid);
+            const clientid = decoded.client.clientid; // Fixed: clientid -> clientid
+            const query = 'UPDATE client SET nom = $1, region = $2, adresse = $3, tel = $4 WHERE clientid = $5';
 
-            pool.query(query, [nom, region, adresse, tel, clientID], (error, result) => {
-                if (error) {
-                    console.error('Error during update:', error);
-                    return res.status(500).json({ error: 'Error during update' });
+            console.log('UpdateClientInfo - SQL Query:', query);
+            console.log('UpdateClientInfo - Parameters:', [nom, region, adresse, tel, clientid]);
+
+            // First, let's verify the client exists and see current data
+            const testQuery = 'SELECT nom, region, adresse, tel FROM client WHERE clientid = $1';
+            pool.query(testQuery, [clientid], (testError, testResult) => {
+                if (testError) {
+                    console.error('Test query error:', testError);
+                    return res.status(500).json({ error: 'Error checking client data' });
+                }
+                
+                console.log('Test query result:', testResult.rows);
+                
+                if (testResult.rows.length === 0) {
+                    console.error('Client not found with clientid:', clientid);
+                    return res.status(404).json({ error: 'Client not found' });
                 }
 
-                if (result.rowCount === 0) {
-                    return res.status(404).json({ error: 'Client not found or no changes made.' });
-                }
+                // Now proceed with the update
+                pool.query(query, [nom, region, adresse, tel, clientid], (error, result) => {
+                    if (error) {
+                        console.error('Error during update:', error);
+                        return res.status(500).json({ error: 'Error during update' });
+                    }
 
-                console.log('UpdateClientInfo - Update successful for client ID:', clientID);
-                res.status(200).json({ message: 'Update successful.' });
+                    console.log('Update result:', result);
+                    console.log('Rows affected:', result.rowCount);
+
+                    if (result.rowCount === 0) {
+                        return res.status(404).json({ error: 'Client not found or no changes made.' });
+                    }
+
+                    // Create new JWT token with updated client data
+                    const updatedClient = {
+                        clientid: clientid,
+                        nom: nom,
+                        email: decoded.client.email,
+                        motdepasse: decoded.client.motdepasse,
+                        adresse: adresse,
+                        tel: tel,
+                        region: region
+                    };
+
+                    const newToken = jwt.sign({ client: updatedClient }, process.env.JWT_SECRET, { 
+                        expiresIn: '1d' 
+                    });
+
+                    // Set the new token in a cookie
+                    const cookieOptions = {
+                        httpOnly: true,
+                        secure: true,
+                        sameSite: 'none',
+                        maxAge: 24 * 60 * 60 * 1000, // 1 day
+                        path: '/'
+                    };
+                    
+                    if (process.env.NODE_ENV === 'production') {
+                        cookieOptions.domain = '.vercel.app';
+                    }
+                    
+                    res.cookie('token', newToken, cookieOptions);
+
+                    res.status(200).json({ 
+                        message: 'Update successful.',
+                        token: newToken,
+                        client: updatedClient
+                    });
+                });
             });
         });
     } catch (error) {
@@ -486,17 +581,17 @@ clientRoutes.delete('/account', async (req, res) => {
             }
 
             console.log('DeleteAccount - Token verified successfully:', decoded);
-            const clientID = decoded.client.clientID;
+            const clientid = decoded.client.clientid; // Fixed: clientid -> clientid
             const email = decoded.client.email;
 
             // First, delete related data (cart items, orders, etc.)
             const deleteQueries = [
-                'DELETE FROM panier_produit WHERE panierID IN (SELECT panierID FROM panier WHERE clientID = $1)',
-                'DELETE FROM panier WHERE clientID = $1',
-                'DELETE FROM commande_produit WHERE commandeID IN (SELECT commandeID FROM commande WHERE clientID = $1)',
-                'DELETE FROM commande WHERE clientID = $1',
-                'DELETE FROM adoptionpet WHERE clientID = $1',
-                'DELETE FROM lostpet WHERE clientID = $1'
+                'DELETE FROM panier_produit WHERE panierid IN (SELECT panierid FROM panier WHERE clientid = $1)',
+                'DELETE FROM panier WHERE clientid = $1',
+                'DELETE FROM commande_produit WHERE commandeID IN (SELECT commandeID FROM commande WHERE clientid = $1)',
+                'DELETE FROM commande WHERE clientid = $1',
+                'DELETE FROM adoptionpet WHERE clientid = $1',
+                'DELETE FROM lostpet WHERE clientid = $1'
             ];
 
             // Execute delete queries in sequence
@@ -504,7 +599,7 @@ clientRoutes.delete('/account', async (req, res) => {
             const totalQueries = deleteQueries.length;
 
             deleteQueries.forEach((query, index) => {
-                pool.query(query, [clientID], (error, result) => {
+                pool.query(query, [clientid], (error, result) => {
                     if (error) {
                         console.error(`Error deleting related data (query ${index + 1}):`, error);
                     }
@@ -514,8 +609,8 @@ clientRoutes.delete('/account', async (req, res) => {
                     // When all related data is deleted, delete the client
                     if (completedQueries === totalQueries) {
                         // Delete the client
-                        const deleteClientQuery = 'DELETE FROM client WHERE clientID = $1';
-                        pool.query(deleteClientQuery, [clientID], (error, result) => {
+                        const deleteClientQuery = 'DELETE FROM client WHERE clientid = $1';
+                        pool.query(deleteClientQuery, [clientid], (error, result) => {
                             if (error) {
                                 console.error('Error deleting client:', error);
                                 return res.status(500).json({ error: 'Error deleting account.' });

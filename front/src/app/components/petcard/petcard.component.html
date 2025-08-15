@@ -26,13 +26,13 @@
       </div>
 
       <button 
-      (click)="clientId === pet.clientID ? deleteLostPet(pet) : openPetModal(pet)"
+      (click)="clientId === pet.clientid ? deleteLostPet(pet) : openPetModal(pet)"
       [ngStyle]="{
-        background: clientId === pet.clientID 
+        background: clientId === pet.clientid 
           ? 'linear-gradient(135deg, #ef4444, #dc2626)' 
           : 'linear-gradient(135deg, #22c55e, #16a34a)'
       }">
-      {{ clientId === pet.clientID ? "Delete" : "I've seen this pet" }}
+      {{ clientId === pet.clientid ? "Delete" : "I've seen this pet" }}
     </button>
 
 

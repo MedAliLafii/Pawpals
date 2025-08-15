@@ -28,6 +28,8 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(0, 0, 0, 0.1);
     animation: modalFadeIn 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
   }
   
   /* Modal header */
@@ -36,6 +38,7 @@
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #f0f0f0;
+    flex-shrink: 0;
   }
   
   /* Header title */
@@ -62,13 +65,17 @@
     color: #e74c3c;
   }
   
- 
+  /* Modal body */
+  .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+  }
   
   /* Contact owner button */
   .modal-body .contact-owner {
-    
     color: white;
-    background-color: #34a853; /* Green background */
+    background-color: #34a853;
     padding: 0.8rem 1.5rem;
     border-radius: 8px;
     text-decoration: none;
@@ -76,16 +83,30 @@
     transition: all 0.3s;
     border: none;
     cursor: pointer;
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
+    display: inline-block;
+    margin-top: 1rem;
   }
   
   .modal-body .contact-owner:hover {
-    background-color: #2d8a4e; /* Darker green on hover */
+    background-color: #2d8a4e;
     transform: translateY(-2px);
-    color:white;
+    color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Mobile responsive for contact button */
+  @media (max-width: 768px) {
+    .modal-body {
+      padding-bottom: 80px; /* Space for the contact button */
+    }
+    
+    .modal-body .contact-owner {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 10;
+      margin-top: 0;
+    }
   }
   
   /* Larger image size */

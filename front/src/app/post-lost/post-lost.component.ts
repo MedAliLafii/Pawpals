@@ -123,36 +123,22 @@ export class PostLostComponent implements OnInit {
           };
   
           // Step 2: Send full updated client info
-          this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, updatedClientInfo, { 
+          const headers = this.getAuthHeaders();
+          this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, updatedClientInfo, {
             withCredentials: true,
-            headers: this.getAuthHeaders()
+            headers: headers
           }).subscribe({
-            next: () => {
-              // Step 3: Prepare FormData for lost pet
-              const lostPetData = new FormData();
-              for (const key in this.formData) {
-                const value = this.formData[key as keyof LostPetFormFields];
-                if (value !== null && value !== undefined) {
-                  lostPetData.append(key, value instanceof File ? value : value.toString());
-                }
+            next: (response: any) => {
+              console.log('Client info updated successfully:', response);
+              
+              // Update the token in localStorage if a new one is provided
+              if (response.token) {
+                localStorage.setItem('authToken', response.token);
+                console.log('New token stored:', response.token);
               }
-  
-              // Step 4: Post lost pet
-              this.http.post(`${environment.BACK_URL}/lostpet/add`, lostPetData, { 
-                withCredentials: true,
-                headers: this.getAuthHeaders()
-              }).subscribe({
-                next: () => {
-                  this.toastService.success('Lost pet posted successfully!');
-                  this.router.navigate(['/lost']);
-                  this.isSubmitting = false;
-                },
-                error: (error) => {
-                  console.error('Error posting lost pet:', error);
-                  this.toastService.error('Error posting lost pet: ' + (error.error?.error || error.message));
-                  this.isSubmitting = false;
-                }
-              });
+              
+              // Continue with pet posting
+              this.postPet();
             },
             error: (error) => {
               console.error('Error updating client info:', error);
@@ -173,6 +159,33 @@ export class PostLostComponent implements OnInit {
     });
   }
   
+  postPet(): void {
+    // Step 3: Prepare FormData for lost pet
+    const lostPetData = new FormData();
+    for (const key in this.formData) {
+      const value = this.formData[key as keyof LostPetFormFields];
+      if (value !== null && value !== undefined) {
+        lostPetData.append(key, value instanceof File ? value : value.toString());
+      }
+    }
+
+    // Step 4: Post lost pet
+    this.http.post(`${environment.BACK_URL}/lostpet/add`, lostPetData, { 
+      withCredentials: true,
+      headers: this.getAuthHeaders()
+    }).subscribe({
+      next: () => {
+        this.toastService.success('Lost pet posted successfully!');
+        this.router.navigate(['/lost']);
+        this.isSubmitting = false;
+      },
+      error: (error) => {
+        console.error('Error posting lost pet:', error);
+        this.toastService.error('Error posting lost pet: ' + (error.error?.error || error.message));
+        this.isSubmitting = false;
+      }
+    });
+  }
 
   triggerFileInput() {
     const fileInput = document.getElementById('image') as HTMLInputElement;

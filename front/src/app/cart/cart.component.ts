@@ -52,27 +52,59 @@ export class CartComponent implements OnInit {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    this.http.get<{produits: any[], total: number}>(
-      `${environment.BACK_URL}/Cart/fetch`, // API URL to get cart items
+    this.http.get<any>(
+      `${environment.BACK_URL}/Cart`, // Fixed: removed /fetch, using correct route
       { 
         withCredentials: true, // Sends cookies for authentication
         headers: headers
       }
     ).subscribe(
       (response) => {
-        // On success: store products and total price
-        this.cartItems = response.produits;
-        this.totalPrice = response.total;
-        console.log(response); // Log the response
+        // Ensure response is an array
+        const cartItems = Array.isArray(response) ? response : [];
+        
+        // On success: store products and calculate total price
+        this.cartItems = cartItems;
+        this.totalPrice = this.calculateTotal(cartItems);
+        console.log('Cart response:', response); // Log the response
+        console.log('Cart items:', this.cartItems);
+        console.log('Total price:', this.totalPrice);
       },
       (error) => {
         // On request error
         console.error('Error fetching cart', error);
+        this.cartItems = []; // Set empty array on error
+        this.totalPrice = 0;
         if (error.status === 401) {
           this.toastService.error("Authentication error. Please log in again.");
         }
       }
     );
+  }
+
+  // Method to calculate total price from cart items
+  calculateTotal(items: any[]): number {
+    if (!Array.isArray(items)) {
+      console.error('calculateTotal: items is not an array:', items);
+      return 0;
+    }
+    return items.reduce((total, item) => {
+      const price = Number(item.prix) || 0;
+      const quantity = Number(item.quantite) || 0;
+      return total + (price * quantity);
+    }, 0);
+  }
+
+  // Helper method to format price
+  formatPrice(price: any): string {
+    return Number(price || 0).toFixed(2);
+  }
+
+  // Helper method to calculate item total
+  calculateItemTotal(price: any, quantity: any): string {
+    const numPrice = Number(price || 0);
+    const numQuantity = Number(quantity || 0);
+    return (numPrice * numQuantity).toFixed(2);
   }
 
   // Method triggered when quantity of an item changes
@@ -87,11 +119,11 @@ export class CartComponent implements OnInit {
     }
 
     // Update the quantity through the API
-    this.updateQuantity(item.produitID, newQuantity);
+    this.updateQuantity(item.produitid, newQuantity); // Fixed: produitID -> produitid
   }
 
   // Method to send a request to the backend to update quantity
-  updateQuantity(produitID: number, quantite: number): void {
+  updateQuantity(produitid: number, quantite: number): void { // Fixed: produitID -> produitid
     const token = localStorage.getItem('authToken');
     const headers: Record<string, string> = {};
     if (token) {
@@ -100,7 +132,7 @@ export class CartComponent implements OnInit {
     
     this.http.put(
       `${environment.BACK_URL}/Cart/update`, // Update URL
-      { produitID, quantite }, // Data to send
+      { produitID: produitid, quantite }, // Keep produitID for backend compatibility
       { 
         withCredentials: true, // Sends cookies
         headers: headers
@@ -127,7 +159,7 @@ export class CartComponent implements OnInit {
   }
 
   // Method to remove an item from the cart
-  removeFromCart(produitID: number): void {
+  removeFromCart(produitid: number): void { // Fixed: produitID -> produitid
     const token = localStorage.getItem('authToken');
     const headers: Record<string, string> = {};
     if (token) {
@@ -137,7 +169,7 @@ export class CartComponent implements OnInit {
     this.http.delete(
       `${environment.BACK_URL}/Cart/remove`, // Deletion URL
       {
-        body: { produitID }, // Product ID to remove (sent in the body)
+        body: { produitID: produitid }, // Keep produitID for backend compatibility
         withCredentials: true, // Sends cookies
         headers: headers
       }
@@ -147,9 +179,11 @@ export class CartComponent implements OnInit {
         this.fetchCart(); // Reload the cart after removal
       },
       (error) => {
-        console.error('Error while removing item from cart:', error);
+        console.error('An error occurred while removing item', error);
         if (error.status === 401) {
           this.toastService.error("Authentication error. Please log in again.");
+        } else {
+          this.toastService.error("An error occurred while removing item.");
         }
       }
     );

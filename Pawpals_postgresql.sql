@@ -2,7 +2,7 @@
 -- Converted from MySQL to PostgreSQL
 
 CREATE TABLE "client" (
-  "clientID" SERIAL PRIMARY KEY,
+  "clientid" SERIAL PRIMARY KEY,
   "nom" varchar(100) NOT NULL,
   "email" varchar(100) NOT NULL UNIQUE,
   "motdepasse" varchar(100) NOT NULL,
@@ -30,27 +30,27 @@ CREATE TABLE "produit" (
 );
 
 CREATE TABLE "panier" (
-  "panierID" SERIAL PRIMARY KEY,
-  "clientID" integer NOT NULL,
-  FOREIGN KEY ("clientID") REFERENCES "client" ("clientID") ON DELETE CASCADE
+  "panierid" SERIAL PRIMARY KEY,
+  "clientid" integer NOT NULL,
+  FOREIGN KEY ("clientid") REFERENCES "client" ("clientid") ON DELETE CASCADE
 );
 
 CREATE TABLE "panier_produit" (
-  "panierID" integer NOT NULL,
+  "panierid" integer NOT NULL,
   "produitID" integer NOT NULL,
   "quantite" integer NOT NULL CHECK ("quantite" > 0),
-  PRIMARY KEY ("panierID", "produitID"),
-  FOREIGN KEY ("panierID") REFERENCES "panier" ("panierID") ON DELETE CASCADE,
+  PRIMARY KEY ("panierid", "produitID"),
+  FOREIGN KEY ("panierid") REFERENCES "panier" ("panierid") ON DELETE CASCADE,
   FOREIGN KEY ("produitID") REFERENCES "produit" ("produitID") ON DELETE CASCADE
 );
 
 CREATE TABLE "commande" (
   "commandeID" SERIAL PRIMARY KEY,
-  "clientID" integer NOT NULL,
+  "clientid" integer NOT NULL,
   "dateCommande" date NOT NULL,
   "statut" varchar(50) NOT NULL,
   "total" decimal(10,2) NOT NULL CHECK ("total" >= 0),
-  FOREIGN KEY ("clientID") REFERENCES "client" ("clientID") ON DELETE CASCADE
+  FOREIGN KEY ("clientid") REFERENCES "client" ("clientid") ON DELETE CASCADE
 );
 
 CREATE TABLE "commande_produit" (
@@ -64,7 +64,7 @@ CREATE TABLE "commande_produit" (
 
 CREATE TABLE "adoptionpet" (
   "adoptionPetID" SERIAL PRIMARY KEY,
-  "clientID" integer NOT NULL,
+  "clientid" integer NOT NULL,
   "petName" varchar(100) NOT NULL,
   "breed" varchar(100) DEFAULT NULL,
   "age" integer DEFAULT NULL,
@@ -79,12 +79,12 @@ CREATE TABLE "adoptionpet" (
   "houseTrained" boolean DEFAULT false,
   "specialNeeds" boolean DEFAULT false,
   "datePosted" timestamp DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY ("clientID") REFERENCES "client" ("clientID") ON DELETE CASCADE
+  FOREIGN KEY ("clientid") REFERENCES "client" ("clientid") ON DELETE CASCADE
 );
 
 CREATE TABLE "lostpet" (
   "lostPetID" SERIAL PRIMARY KEY,
-  "clientID" integer NOT NULL,
+  "clientid" integer NOT NULL,
   "petName" varchar(100) NOT NULL,
   "breed" varchar(100) DEFAULT NULL,
   "age" integer DEFAULT NULL,
@@ -95,7 +95,7 @@ CREATE TABLE "lostpet" (
   "description" text,
   "datePosted" timestamp DEFAULT CURRENT_TIMESTAMP,
   "categorieID" integer DEFAULT NULL,
-  FOREIGN KEY ("clientID") REFERENCES "client" ("clientID") ON DELETE CASCADE,
+  FOREIGN KEY ("clientid") REFERENCES "client" ("clientid") ON DELETE CASCADE,
   FOREIGN KEY ("categorieID") REFERENCES "categorie" ("categorieID") ON DELETE SET NULL
 );
 

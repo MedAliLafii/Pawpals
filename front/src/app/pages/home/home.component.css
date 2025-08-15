@@ -373,6 +373,120 @@ app-product-card {
     top: 20%;
     left: 0;
   }
+
+  /* Mobile responsive styles for Our Services section */
+  @media (max-width: 768px) {
+    .navigation-section {
+      padding: 3rem 1rem;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .star-wrapper {
+      height: auto;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 0 1rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .central-image {
+      position: relative;
+      top: auto;
+      left: auto;
+      transform: none;
+      width: 12rem;
+      height: 12rem;
+      margin-bottom: 1rem;
+      align-self: center;
+    }
+
+    .service-card {
+      position: relative;
+      width: 100%;
+      max-width: 20rem;
+      margin: 0 auto;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e5e7eb;
+      text-align: center;
+      padding: 1.5rem;
+      align-self: center;
+    }
+
+    .service-card .icon {
+      text-align: center;
+      margin-bottom: 0.5rem;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .service-card h3,
+    .service-card p {
+      text-align: center;
+    }
+
+    /* Remove absolute positioning classes on mobile */
+    .top,
+    .top-right,
+    .bottom-right,
+    .bottom-left,
+    .top-left {
+      position: relative;
+      top: auto;
+      left: auto;
+      right: auto;
+      bottom: auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .navigation-section {
+      padding: 2rem 0.5rem;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .star-wrapper {
+      gap: 1.5rem;
+      padding: 0 0.5rem;
+    }
+
+    .central-image {
+      width: 10rem;
+      height: 10rem;
+    }
+
+    .service-card {
+      padding: 1rem;
+      max-width: 18rem;
+    }
+
+    .service-card .icon {
+      font-size: 1.5rem;
+    }
+
+    .service-card h3 {
+      font-size: 1rem;
+    }
+
+    .service-card p {
+      font-size: 0.8rem;
+    }
+  }
   /*************************************/
  /* Container for the title and button */
 .title-container {

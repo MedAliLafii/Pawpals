@@ -45,7 +45,7 @@ export class PetCardComponent implements OnInit, OnChanges {
       (authStatus) => {
         if (authStatus.isAuthenticated) {
           console.log('Logged in:', authStatus.user);
-          this.clientId = authStatus.user.clientID;
+          this.clientId = authStatus.user.clientid;
           this.isLoggedIn = true;
         } else {
           console.log('Not logged in');
@@ -129,7 +129,7 @@ export class PetCardComponent implements OnInit, OnChanges {
       });
   }
   handleButtonClick(pet: any): void {
-    if (this.clientId === pet.clientID) {
+    if (this.clientId === pet.clientid) {
       this.deleteLostPet(pet);
     } else {
       this.openPetModal(pet);

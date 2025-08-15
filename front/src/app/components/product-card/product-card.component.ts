@@ -67,7 +67,7 @@ export class ProductCardComponent implements OnInit {
           
           this.http.post(
             `${environment.BACK_URL}/Cart/add`,
-            { produitID: this.produitID, quantite: this.selectedQuantity },
+            { produitID: parseInt(this.produitID), quantite: this.selectedQuantity },
             { 
               withCredentials: true,
               headers: headers

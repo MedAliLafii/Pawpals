@@ -63,7 +63,7 @@
         </tr>
         <tr *ngFor="let item of cartItems">
           <td>{{ item.quantite }} × {{ item.nom }}</td>
-          <td>{{ (item.prix * item.quantite) | number:'1.2-2' }} DT</td>
+          <td>{{ getItemTotal(item.prix, item.quantite) | number:'1.2-2' }} DT</td>
         </tr>
         <tr>
           <td><strong>Total</strong></td>

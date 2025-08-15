@@ -25,6 +25,7 @@ export class HeaderComponent implements OnInit {
   isLoggedIn = false;
   cartItemCount = 0;
   showUserMenu = false;
+  showMobileMenu = false;
   userName = '';
 
   // Search functionality
@@ -74,7 +75,14 @@ export class HeaderComponent implements OnInit {
     });
   }
 
+  // Mobile menu methods
+  toggleMobileMenu(): void {
+    this.showMobileMenu = !this.showMobileMenu;
+  }
 
+  closeMobileMenu(): void {
+    this.showMobileMenu = false;
+  }
 
   // Redirect user based on login status
   goToPage(): void {
@@ -126,6 +134,9 @@ export class HeaderComponent implements OnInit {
     }
     if (!target.closest('.search-container')) {
       this.showSearchBar = false;
+    }
+    if (!target.closest('.mobile-menu') && !target.closest('.mobile-menu-btn')) {
+      this.showMobileMenu = false;
     }
   }
 

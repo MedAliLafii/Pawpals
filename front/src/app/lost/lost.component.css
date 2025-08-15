@@ -74,3 +74,57 @@ body {
   }
   
  
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 2rem 0;
+  }
+
+  .hero-title {
+    font-size: 1.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+
+  .filters-and-listings {
+    flex-direction: column;
+    margin-top: 1rem;
+  }
+
+  .filter-sidebar {
+    padding: 0.5rem;
+    order: 1; /* Show filters first */
+  }
+
+  .pet-cards-section {
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+    order: 2; /* Show pet cards second */
+  }
+
+  .report-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 1.25rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .report-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+

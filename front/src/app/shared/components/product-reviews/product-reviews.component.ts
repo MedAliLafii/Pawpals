@@ -10,7 +10,7 @@ import { filter, take } from 'rxjs/operators';
 export interface Review {
   reviewID: number;
   produitID: number;
-  clientID: number;
+  clientid: number;
   rating: number;
   comment: string;
   datePosted: Date;

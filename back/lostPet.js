@@ -18,14 +18,14 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Middleware to extract clientID from JWT token
+// Middleware to extract clientid from JWT token
 function authenticateJWT(req, res, next) {
   const token = req.cookies.token || req.headers.authorization?.split(' ')[1]; 
   if (!token) return res.status(403).send('Access denied');
   
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET); 
-    req.clientID = decoded.client.clientid; // Changed from clientID to clientid
+    req.clientid = decoded.client.clientid; // Changed from clientid to clientid
     next();
   } catch (error) {
     return res.status(401).send('Invalid token');
@@ -42,7 +42,7 @@ router.post('/add', authenticateJWT, upload.single('image'), (req, res) => {
 
   const sql = `INSERT INTO lostpet (clientid, petname, breed, age, type, imageurl, datelost, location, description)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
-req.pool.query(sql, [req.clientID, name, breed, age, type, imageURL, dateLost, location, description], (err, results) => {
+req.pool.query(sql, [req.clientid, name, breed, age, type, imageURL, dateLost, location, description], (err, results) => {
   // Continue as normal
 
     if (err) {
@@ -69,7 +69,7 @@ router.get('/', (req, res) => {
                  c.nom AS "ownerName",
                  c.tel AS "ownerPhone",
                  c.email AS "ownerEmail",
-                 lp.clientid AS "clientID"
+                 lp.clientid AS "clientid"
                FROM lostpet lp
                LEFT JOIN client c ON lp.clientid = c.clientid`; // Use LEFT JOIN to handle missing clients
 
@@ -98,7 +98,7 @@ router.get('/all', (req, res) => {
                  c.nom AS "ownerName",
                  c.tel AS "ownerPhone",
                  c.email AS "ownerEmail",
-                 lp.clientid AS "clientID"
+                 lp.clientid AS "clientid"
                FROM lostpet lp
                LEFT JOIN client c ON lp.clientid = c.clientid`; // Use LEFT JOIN to handle missing clients
 
@@ -130,7 +130,7 @@ router.get('/pets', (req, res) => {
       c.tel AS "ownerPhone",
       c.email AS "ownerEmail", 
       lp.location,
-      lp.clientid AS "clientID"
+      lp.clientid AS "clientid"
          FROM 
        lostpet lp
      INNER JOIN 
@@ -166,12 +166,12 @@ router.get('/pets', (req, res) => {
 // Route to delete a lost pet entry
 router.delete('/delete/:id', authenticateJWT, (req, res) => {
   const lostPetId = req.params.id;
-  const clientID = req.clientID; // Retrieved from the JWT token
+  const clientid = req.clientid; // Retrieved from the JWT token
 
   // SQL query to delete the lost pet entry for the authenticated client
   const sql = `DELETE FROM lostpet WHERE lostpetid = $1 AND clientid = $2`;
 
-  req.pool.query(sql, [lostPetId, clientID], (err, results) => {
+  req.pool.query(sql, [lostPetId, clientid], (err, results) => {
     if (err) {
       console.error("Error during deletion:", err);
       return res.status(500).json({ error: 'Database error' });

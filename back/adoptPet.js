@@ -22,14 +22,14 @@ const upload = multer({ storage });
 // Route to create an adoption pet entry
 // Inside the backend POST route
 
-// Middleware to extract clientID from JWT token (if you're using JWT for authentication)
+// Middleware to extract clientid from JWT token (if you're using JWT for authentication)
 function authenticateJWT(req, res, next) {
   const token = req.cookies.token || req.headers.authorization?.split(' ')[1]; 
   if (!token) return res.status(403).send('Access denied');
   
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET); 
-    req.clientID = decoded.client.clientid; // Changed from clientID to clientid
+    req.clientid = decoded.client.clientid; // Changed from clientid to clientid
     next();
   } catch (error) {
     return res.status(401).send('Invalid token');
@@ -49,7 +49,7 @@ router.post('/add', authenticateJWT, upload.single('image'), (req, res) => {
   const houseTrained2= houseTrained ? 1 : 0;
   const specialNeeds2 = specialNeeds ? 1 : 0;
 
-  const clientID = req.clientID;  // Get the clientID from the JWT payload
+  const clientid = req.clientid;  // Get the clientid from the JWT payload
   const imageURL = req.file ? 'uploads/' + req.file.filename : null;
 
   const sql = `INSERT INTO adoptionpet 
@@ -58,7 +58,7 @@ router.post('/add', authenticateJWT, upload.single('image'), (req, res) => {
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`;
 
   req.pool.query(sql, [
-    clientID, petName, breed, age, type, gender, imageURL, location, shelter, description,
+    clientid, petName, breed, age, type, gender, imageURL, location, shelter, description,
     goodWithKids2, goodWithOtherPets2, houseTrained2, specialNeeds2
   ], (err, results) => {
     if (err) {
@@ -72,11 +72,11 @@ router.post('/add', authenticateJWT, upload.single('image'), (req, res) => {
 // Route to delete an adoption pet entry
 router.delete('/delete/:id', authenticateJWT, (req, res) => {
   const adoptionId = req.params.id;
-  const clientID = req.clientID; // Retrieved from the JWT token
+  const clientid = req.clientid; // Retrieved from the JWT token
 
   const sql = `DELETE FROM adoptionpet WHERE adoptionpetid = $1 AND clientid = $2`;
 
-  req.pool.query(sql, [adoptionId, clientID], (err, results) => {
+  req.pool.query(sql, [adoptionId, clientid], (err, results) => {
     if (err) {
       console.error("Error during deletion:", err);
       return res.status(500).json({ error: 'Database error' });
@@ -97,7 +97,7 @@ router.get('/', (req, res) => {
   const sql = `
     SELECT 
       ap.adoptionpetid AS "adoptionPetID", 
-      ap.clientid AS "clientID", 
+      ap.clientid AS "clientid", 
       ap.petname AS "petName", 
       ap.breed, 
       ap.age, 
@@ -135,7 +135,7 @@ router.get('/pets', (req, res) => {
   let sql = `
     SELECT 
       ap.adoptionpetid AS "adoptionPetID",
-      ap.clientid AS "clientID", 
+      ap.clientid AS "clientid", 
       ap.petname AS "petName", 
       ap.breed, 
       ap.age, 
@@ -191,10 +191,10 @@ router.get('/pets', (req, res) => {
 // Route to delete a pet from adoption
 router.delete('/delete/:id', authenticateJWT, (req, res) => {
   const petId = req.params.id;
-  const clientID = req.clientID; // Extract clientID from the JWT token
+  const clientid = req.clientid; // Extract clientid from the JWT token
 
   const sql = 'SELECT * FROM adoptionpet WHERE adoptionpetid = $1 AND clientid = $2';
-  req.pool.query(sql, [petId, clientID], (err, results) => {
+  req.pool.query(sql, [petId, clientid], (err, results) => {
     if (err) {
       console.error('Error checking pet ownership:', err);
       return res.status(500).json({ error: 'Database error' });

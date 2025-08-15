@@ -30,6 +30,11 @@
 
             <!-- Right side: search icon, cart, login/logout -->
             <div class="header-section-1-buttons">
+                <!-- Mobile Menu Button -->
+                <button class="mobile-menu-btn" (click)="toggleMobileMenu()" title="Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+
                 <!-- Search functionality -->
                 <div class="search-container">
                     <button class="search-icon-btn" (click)="toggleSearch()" title="Search">
@@ -84,6 +89,21 @@
                     <i class="fa-regular fa-user" style="color: #22c55e;"></i>
                     Login
                 </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" [class.show]="showMobileMenu">
+            <div class="mobile-menu-links">
+                <a routerLink="/adoption" (click)="closeMobileMenu()">
+                    <i class="fas fa-heart"></i> Adoption
+                </a>
+                <a routerLink="/lost" (click)="closeMobileMenu()">
+                    <i class="fas fa-search"></i> Lost Pets
+                </a>
+                <a routerLink="/shop" (click)="closeMobileMenu()">
+                    <i class="fas fa-shopping-bag"></i> Shop
+                </a>
             </div>
         </div>
     </div>

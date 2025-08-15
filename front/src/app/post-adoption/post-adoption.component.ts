@@ -148,39 +148,22 @@ export class PostAdoptionComponent implements OnInit {
           };
   
           // Step 2: Send full updated client info
-          this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, updatedClientInfo, { 
+          const headers = this.getAuthHeaders(); // Get headers here
+          this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, updatedClientInfo, {
             withCredentials: true,
-            headers: this.getAuthHeaders()
+            headers: headers
           }).subscribe({
-            next: () => {
-              // Step 3: Build FormData for adoption
-              const formData = new FormData();
-              for (const key in this.formData) {
-                if (this.formData[key] !== undefined && this.formData[key] !== null) {
-                  if (typeof this.formData[key] === 'boolean') {
-                    formData.append(key, this.formData[key].toString());
-                  } else {
-                    formData.append(key, this.formData[key] as string | Blob);
-                  }
-                }
+            next: (response: any) => {
+              console.log('Client info updated successfully:', response);
+              
+              // Update the token in localStorage if a new one is provided
+              if (response.token) {
+                localStorage.setItem('authToken', response.token);
+                console.log('New token stored:', response.token);
               }
-  
-              // Step 4: Post adoption data
-              this.http.post(`${environment.BACK_URL}/adoptPet/add`, formData, { 
-                withCredentials: true,
-                headers: this.getAuthHeaders()
-              }).subscribe({
-                next: () => {
-                  this.toastService.success('Pet adoption posted successfully!');
-                  this.router.navigate(['/adoption']);
-                  this.isSubmitting = false;
-                },
-                error: (error) => {
-                  console.error('Error posting adoption:', error);
-                  this.toastService.error('Error posting adoption: ' + (error.error?.error || error.message));
-                  this.isSubmitting = false;
-                }
-              });
+              
+              // Continue with pet posting
+              this.postPet();
             },
             error: (error) => {
               console.error('Error updating client info:', error);
@@ -196,6 +179,37 @@ export class PostAdoptionComponent implements OnInit {
       error: (error) => {
         console.error('Error getting auth status:', error);
         this.toastService.error('Authentication error. Please try again.');
+        this.isSubmitting = false;
+      }
+    });
+  }
+  
+  postPet(): void {
+    // Step 3: Build FormData for adoption
+    const formData = new FormData();
+    for (const key in this.formData) {
+      if (this.formData[key] !== undefined && this.formData[key] !== null) {
+        if (typeof this.formData[key] === 'boolean') {
+          formData.append(key, this.formData[key].toString());
+        } else {
+          formData.append(key, this.formData[key] as string | Blob);
+        }
+      }
+    }
+
+    // Step 4: Post adoption data
+    this.http.post(`${environment.BACK_URL}/adoptPet/add`, formData, { 
+      withCredentials: true,
+      headers: this.getAuthHeaders()
+    }).subscribe({
+      next: () => {
+        this.toastService.success('Pet adoption posted successfully!');
+        this.router.navigate(['/adoption']);
+        this.isSubmitting = false;
+      },
+      error: (error) => {
+        console.error('Error posting adoption:', error);
+        this.toastService.error('Error posting adoption: ' + (error.error?.error || error.message));
         this.isSubmitting = false;
       }
     });

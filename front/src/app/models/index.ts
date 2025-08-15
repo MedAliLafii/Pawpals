@@ -1,6 +1,6 @@
 // User/Client Models
 export interface User {
-  clientID: number;
+  clientid: number;
   nom: string;
   email: string;
   adresse?: string;
@@ -48,15 +48,15 @@ export interface CartItem {
 }
 
 export interface Cart {
-  panierID: number;
-  clientID: number;
+  panierid: number;
+  clientid: number;
   items: CartItem[];
 }
 
 // Order Models
 export interface Order {
   commandeID: number;
-  clientID: number;
+  clientid: number;
   dateCommande: Date;
   statut: string;
   total: number;
@@ -72,7 +72,7 @@ export interface OrderItem {
 // Pet Models
 export interface AdoptionPet {
   adoptionPetID: number;
-  clientID: number;
+  clientid: number;
   petName: string;
   breed?: string;
   age?: number;
@@ -91,7 +91,7 @@ export interface AdoptionPet {
 
 export interface LostPet {
   lostPetID: number;
-  clientID: number;
+  clientid: number;
   petName: string;
   breed?: string;
   age?: number;

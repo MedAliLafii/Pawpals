@@ -157,19 +157,11 @@ import { filter, take } from 'rxjs/operators';
           </div>
         </div>
 
-        <!-- Statistics -->
-        <div class="profile-section" *ngIf="userStats">
-          <h3><i class="fas fa-chart-bar"></i> My Activity</h3>
-          <div class="stats-grid">
-
-            <div class="stat-card">
-              <div class="stat-number">{{ userStats.adoptedPets }}</div>
-              <div class="stat-label">Adopted Pets</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number">{{ userStats.memberSince }}</div>
-              <div class="stat-label">Member Since</div>
-            </div>
+        <!-- Member Since -->
+        <div class="member-info">
+          <div class="member-since">
+            <span class="member-year">2024</span>
+            <span class="member-label">Member since 2024</span>
           </div>
         </div>
       </div>
@@ -251,6 +243,39 @@ import { filter, take } from 'rxjs/operators';
       gap: 1rem;
     }
 
+    .member-info {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .member-since {
+      text-align: center;
+      padding: 2rem;
+      background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+      border-radius: 0.5rem;
+      border: 1px solid #bae6fd;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .member-year {
+      display: block;
+      font-size: 3rem;
+      font-weight: bold;
+      color: #22c55e;
+      margin-bottom: 0.5rem;
+    }
+
+    .member-label {
+      display: block;
+      color: #64748b;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -309,7 +334,6 @@ import { filter, take } from 'rxjs/operators';
 export class UserProfileComponent implements OnInit {
   profileForm: FormGroup;
   isUpdating = false;
-  userStats: any = null;
 
   constructor(
     private fb: FormBuilder,
@@ -329,38 +353,37 @@ export class UserProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUserProfile();
-    this.loadUserStats();
   }
 
   loadUserProfile(): void {
-    this.authService.getAuthStatusObservable().pipe(
-      filter(authStatus => this.authService.isAuthChecked()),
-      take(1)
-    ).subscribe({
-      next: (authStatus) => {
-        if (authStatus.isAuthenticated && authStatus.user) {
-          this.profileForm.patchValue({
-            nom: authStatus.user.nom || '',
-            email: authStatus.user.email || '',
-            tel: authStatus.user.tel || '',
-            region: authStatus.user.region || '',
-            adresse: authStatus.user.adresse || ''
-          });
-        }
+    // Get token for Authorization header
+    const token = localStorage.getItem('authToken');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Fetch fresh client data from database using existing endpoint
+    this.http.get(`${environment.BACK_URL}/Client/getClientInfo`, { 
+      withCredentials: true,
+      headers: headers
+    }).subscribe({
+      next: (response: any) => {
+        // The getClientInfo endpoint returns the client data directly, not wrapped in a 'client' object
+        this.profileForm.patchValue({
+          nom: response.nom || '',
+          email: response.email || '',
+          tel: response.tel || '',
+          region: response.region || '',
+          adresse: response.adresse || ''
+        });
+        console.log('Fresh client data loaded:', response);
       },
       error: (error) => {
         console.error('Error loading profile:', error);
         this.toastService.error('Failed to load profile');
       }
     });
-  }
-
-  loadUserStats(): void {
-    // For now, we'll use mock stats since the backend doesn't have a stats endpoint
-    this.userStats = {
-      adoptedPets: 0,
-      memberSince: '2024'
-    };
   }
 
   updateProfile(): void {
@@ -385,8 +408,18 @@ export class UserProfileComponent implements OnInit {
         headers: headers
       })
         .subscribe({
-          next: () => {
+          next: (response: any) => {
             this.toastService.success('Profile updated successfully!');
+            
+            // Update the token in localStorage if a new one is provided
+            if (response.token) {
+              localStorage.setItem('authToken', response.token);
+              console.log('New token stored:', response.token);
+            }
+            
+            // Reload the user profile to reflect changes
+            this.loadUserProfile();
+            
             this.isUpdating = false;
           },
           error: (error) => {

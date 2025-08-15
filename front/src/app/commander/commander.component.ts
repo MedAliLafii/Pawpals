@@ -70,19 +70,26 @@ export class CommanderComponent implements OnInit {
   fetchClient(): void {
     this.isLoading = true; // Activating the loading state
 
-    // Get client information from auth service
-    this.authService.getAuthStatusObservable().pipe(
-      filter(authStatus => this.authService.isAuthChecked()),
-      take(1)
-    ).subscribe({
-      next: (authStatus) => {
-        if (authStatus.isAuthenticated && authStatus.user) {
-          // Filling the form fields with retrieved data
-          this.form.lname = authStatus.user.nom;
-          this.form.region = authStatus.user.region;
-          this.form.houseadd = authStatus.user.adresse;
-          this.form.phone = authStatus.user.tel;
-        }
+    // Get token for Authorization header
+    const token = localStorage.getItem('authToken');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Fetch fresh client data from database using existing endpoint
+    this.http.get(`${environment.BACK_URL}/Client/getClientInfo`, { 
+      withCredentials: true,
+      headers: headers
+    }).subscribe({
+      next: (response: any) => {
+        // The getClientInfo endpoint returns the client data directly, not wrapped in a 'client' object
+        // Filling the form fields with retrieved data
+        this.form.lname = response.nom;
+        this.form.region = response.region;
+        this.form.houseadd = response.adresse;
+        this.form.phone = response.tel;
+        console.log('Fresh client data loaded in commander:', response);
       },
       error: (error) => {
         // Displaying an error if the request fails
@@ -92,20 +99,14 @@ export class CommanderComponent implements OnInit {
     });
 
     // Fetching cart content with Authorization header
-    const token = localStorage.getItem('authToken');
-    const headers: Record<string, string> = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    this.http.get<CommandeResponse>(`${environment.BACK_URL}/Cart/fetch`, { 
+    this.http.get<any[]>(`${environment.BACK_URL}/Cart`, { 
       withCredentials: true,
       headers: headers
     }).subscribe(
       (response) => {
         // Updating cart items and total price
-        this.cartItems = response.produits;
-        this.totalPrice = response.total;
+        this.cartItems = response;
+        this.totalPrice = this.calculateTotal(response);
         this.isLoading = false;
       },
       (error) => {
@@ -120,11 +121,28 @@ export class CommanderComponent implements OnInit {
     );
   }
 
+  // Method to calculate total price from cart items
+  calculateTotal(items: any[]): number {
+    if (!Array.isArray(items)) {
+      return 0;
+    }
+    return items.reduce((total, item) => {
+      const price = Number(item.prix) || 0;
+      const quantity = Number(item.quantite) || 0;
+      return total + (price * quantity);
+    }, 0);
+  }
+
   // Method to calculate the total price of the cart from the items
   getTotal(): number {
     return this.cartItems.reduce(
-      (total, item) => total + (item.prix * item.quantite), 0
+      (total, item) => total + (Number(item.prix) * item.quantite), 0
     );
+  }
+
+  // Helper method to calculate item total for template
+  getItemTotal(price: any, quantity: any): number {
+    return Number(price || 0) * Number(quantity || 0);
   }
 
   // Method called when placing the order
@@ -138,6 +156,9 @@ export class CommanderComponent implements OnInit {
     // Creating the object to send to update the client info
     var form2 = { nom, region, adresse, tel };
 
+    console.log('Commander - Form data being sent:', form2);
+    console.log('Commander - Original form:', this.form);
+
     // Get token for Authorization header
     const token = localStorage.getItem('authToken');
     const headers: Record<string, string> = {};
@@ -145,12 +166,30 @@ export class CommanderComponent implements OnInit {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
+    console.log('Commander - Token:', token);
+    console.log('Commander - Headers:', headers);
+
+    // Show loading state
+    this.isLoading = true;
+
     // PUT request to update client info
     this.http.put(`${environment.BACK_URL}/Client/updateClientInfo`, form2, { 
       withCredentials: true,
       headers: headers
     }).subscribe({
-      next: () => {
+      next: (response: any) => {
+        console.log('Client info updated successfully:', response);
+        this.toastService.success('Client information updated successfully');
+        
+        // Update the token in localStorage if a new one is provided
+        if (response.token) {
+          localStorage.setItem('authToken', response.token);
+          console.log('New token stored:', response.token);
+        }
+        
+        // Fetch fresh client data to update the form
+        this.fetchClient();
+        
         // If the update is successful, place the order
         this.http.post(`${environment.BACK_URL}/Cart/commander`, {}, { 
           withCredentials: true,
@@ -159,12 +198,14 @@ export class CommanderComponent implements OnInit {
           next: () => {
             // Displaying a toast if the order is placed successfully
             this.toastService.success('Your order has been placed successfully');
+            this.isLoading = false;
             // Redirecting to the home page
             this.router.navigate(['/home']);
           },
           error: (error) => {
             // Displaying an error if the order fails
             console.error('Error placing order:', error);
+            this.isLoading = false;
             if (error.status === 401) {
               this.toastService.error("Authentication error. Please log in again.");
               this.router.navigate(['/login']);
@@ -177,6 +218,7 @@ export class CommanderComponent implements OnInit {
       error: (error) => {
         // Displaying an error if updating client info fails
         console.error('Error updating client info:', error);
+        this.isLoading = false;
         if (error.status === 401) {
           this.toastService.error("Authentication error. Please log in again.");
           this.router.navigate(['/login']);

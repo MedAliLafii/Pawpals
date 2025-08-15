@@ -45,7 +45,7 @@ export class PethomeComponent implements OnInit, OnChanges {
       (authStatus) => {
         if (authStatus.isAuthenticated) {
           console.log('Logged in:', authStatus.user);
-          this.clientId = authStatus.user.clientID;
+          this.clientId = authStatus.user.clientid;
           this.isLoggedIn = true;
         } else {
           console.log('Not logged in');
